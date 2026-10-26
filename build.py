@@ -12,6 +12,7 @@ def ekey(p):
     rel=norm(os.path.splitext(os.path.relpath(p,'assets').replace(os.sep,'/'))[0])
     return rel if '/' in rel else 'tokens/'+rel
 EMBED={ekey(p):uri(p,160 if 'railroad' in p else 128) for p in sorted(glob.glob('assets/**/*.png',recursive=True))}
+for p in sorted(glob.glob('assets/sounds/*.mp3')):EMBED[ekey(p)]='data:audio/mpeg;base64,'+base64.b64encode(open(p,'rb').read()).decode()
 T=lambda k:EMBED['tokens/'+k]
 TOKENS={'water':T('purification'),'prevention':T('prevention'),'infection':T('infection-rate'),'outbreak':T('outbreak'),'rail':T('railroad')}
 board='data:image/jpeg;base64,'+base64.b64encode(open('assets/img0.jpeg','rb').read()).decode()
@@ -24,7 +25,7 @@ ver=re.search(r"UI_VERSION='([\d.]+)'",d('src/ui.js')).group(1)
 os.makedirs('versions',exist_ok=True)
 out=['index.html','versions/iberia-v'+ver+'.html']
 for f in out:open(f,'w',encoding='utf-8').write(html)
-print(len(html),'bytes ->',', '.join(out),'|',len(EMBED),'built-in graphics')
+print(len(html),'bytes ->',', '.join(out),'|',len(EMBED),'built-in graphics and sounds')
 
 # versions/index.html: list of every playable version
 vs=sorted(glob.glob('versions/iberia-v*.html'),key=lambda f:[int(x) for x in re.findall(r'\d+',os.path.basename(f))],reverse=True)

@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.6',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.7',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 const RATE_POS=[622,676,728,783,835,888,940].map(x=>[x,55]);
 const OUT_POS=[[1390,342],[1449,387],[1390,431],[1449,476],[1391,522],[1450,567],[1391,611],[1450,657],[1391,707]];
@@ -37,7 +37,22 @@ function tokenImg(name){return asset('tokens/'+name)||BUILTIN[name.replace('puri
 async function loadAssets(files){for(let u of Object.values(ASSETS))URL.revokeObjectURL(u);ASSETS={};let n=0;for(let f of files){if(!/\.(png|jpe?g|webp|gif|svg|wav|mp3|ogg)$/i.test(f.name))continue;let p=f.webkitRelativePath||f.name;ASSETS[norm(p)]=URL.createObjectURL(f);n++}
  let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC);$('assetStatus').textContent=n?n+' files loaded from your folder'+(b?' (including board image).':'.'):'No local files loaded. '+REPO_STATUS;render()}
 const BOARD_SRC=document.getElementById('boardImage').getAttribute('href');
-function playSound(name){if(!$('sound').checked)return;let a=asset('audio/'+name);if(a){try{new Audio(a).play()}catch(e){}}}
+/* ---------- sounds (assets/sounds/*.mp3; a local folder or the repo can replace them) ---------- */
+const SND_VOL={click:.45,move:.7,draw:.8,cube:.7,outbreak:.9,epidemic:.75,win:.7,lose:.7},SND_KEY='iberia-sound';
+let sndCtx=null,sndBuf={},sndLast={},sndPrefs={on:false,vol:.7};try{Object.assign(sndPrefs,JSON.parse(localStorage.getItem(SND_KEY)||'{}'))}catch(e){}
+function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'tokens/'+name]){k=norm(k);for(let src of [ASSETS,REPO,typeof EMBED!=='undefined'?EMBED:{}])if(src[k]&&!out.includes(src[k]))out.push(src[k])}return out}
+function soundUrl(name){return soundUrls(name)[0]||null}
+function saveSound(){try{localStorage.setItem(SND_KEY,JSON.stringify(sndPrefs))}catch(e){}}
+function syncSoundUI(){let b=$('muteButton');if(b){b.classList.toggle('off',!sndPrefs.on);b.title=sndPrefs.on?'Sound on (click to mute)':'Sound off (click to turn on)';b.setAttribute('aria-pressed',String(sndPrefs.on))}if($('sound'))$('sound').checked=sndPrefs.on;if($('volume'))$('volume').value=Math.round(sndPrefs.vol*100)}
+function setSound(on){sndPrefs.on=on;saveSound();syncSoundUI();if(on){unlockSound();playSound('click')}}
+function unlockSound(){try{if(!sndCtx){let A=window.AudioContext||window.webkitAudioContext;if(A)sndCtx=new A()}if(sndCtx&&sndCtx.state==='suspended')sndCtx.resume()}catch(e){}}
+function decodeUrl(url){if(!sndBuf[url])sndBuf[url]=fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((ok,no)=>sndCtx.decodeAudioData(a,ok,no))).catch(()=>null);return sndBuf[url]}
+// try the local folder, then the repo, then the built-in copy
+async function soundBuffer(name){if(!sndCtx)return null;for(let u of soundUrls(name)){let b=await decodeUrl(u);if(b)return b}return null}
+function playSound(name,delay=0){if(!sndPrefs.on)return;let url=soundUrl(name);if(!url)return;let now=performance.now()+delay;if(sndLast[name]&&Math.abs(now-sndLast[name])<45)return;sndLast[name]=now;
+ let vol=sndPrefs.vol*(SND_VOL[name]??.7);(window.soundLog=window.soundLog||[]).push(name);unlockSound();
+ if(!sndCtx){setTimeout(()=>{try{let a=new Audio(url);a.volume=Math.min(1,vol);a.play().catch(()=>{})}catch(e){}},delay);return}
+ soundBuffer(name).then(b=>{if(!b||!sndCtx)return;let s=sndCtx.createBufferSource(),g=sndCtx.createGain();s.buffer=b;s.playbackRate.value=name==='cube'||name==='click'?0.94+Math.random()*.12:1;g.gain.value=vol;s.connect(g).connect(sndCtx.destination);s.start(sndCtx.currentTime+Math.max(0,delay)/1000)})}
 
 /* ---------- helpers ---------- */
 function el(tag,props={},parent){let n=Object.assign(document.createElement(tag),props);if(parent)parent.appendChild(n);return n}
@@ -85,10 +100,10 @@ function choicesFor(type){if(!canAct())return [];let p=state.players[state.activ
 function recompute(){for(let t of TYPES)legal[t]=choicesFor(t);if(mode&&!legal[mode]?.length)mode='';selectedCards=selectedCards.filter(k=>state.players[state.active].hand.includes(k))}
 
 /* ---------- perform with choices + reveals ---------- */
-async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);let before=state;state=n;commands.push(resolved);if(REVEALS.has(resolved.type)||state.status!=='playing')history=[];else{let fresh=state.log.slice(before.log.length);history.push({state:before,commands:commands.length-1,label:fresh[fresh.length-1]||resolved.type});if(history.length>60)history.shift()}selectedCards=[];recompute();render();autosave();notice(state.status==='playing'?'Done.':state.status);queueFx(state.fx);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
+async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);let before=state;state=n;commands.push(resolved);if(REVEALS.has(resolved.type)||state.status!=='playing')history=[];else{let fresh=state.log.slice(before.log.length);history.push({state:before,commands:commands.length-1,label:fresh[fresh.length-1]||resolved.type});if(history.length>60)history.shift()}selectedCards=[];recompute();render();autosave();notice(state.status==='playing'?'Done.':state.status);if(MOVES.has(resolved.type))playSound('move');queueFx(state.fx);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
 
 /* ---------- reveal & alert overlay ---------- */
-let fxQueue=[],fxTimer=null,fxCurrent=null;
+let fxQueue=[],fxTimer=null,fxCurrent=null;const MOVES=new Set(['carriage','train','ship','start']);
 function cardFace(k,landscape){let box=el('div',{className:'bigCard'+(landscape?' landscape':'')});let src=null;
  if(C[k])src=asset((landscape?'cards/infection/':'cards/player/')+slug(C[k].name));else if(EVENTS[k])src=asset('cards/events/'+slug(EVENTS[k]));else if(String(k).startsWith('epidemic'))src=asset('cards/epidemic');
  if(src){el('img',{src,alt:cardName(k)},box);return box}
@@ -97,12 +112,12 @@ function queueFx(list){let speed=+$('fxSpeed').value;list=list||[];if(list.lengt
 function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';let done=fxCurrent;if(done&&done.after)applyCubes(done.after,done);fxCurrent=fxQueue.shift()||null;
  while(fxCurrent&&fxCurrent.silent){applyCubes(fxCurrent.after,null);fxCurrent=fxQueue.shift()||null}
  if(!fxCurrent){settleCubes();return}let f=fxCurrent,speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
- if(f.kind==='playerDraw'){let row=el('div',{className:'fxRow'},b);for(let k of f.cards)row.appendChild(cardFace(k));el('div',{className:'fxCaption',textContent:state.players[f.seat].name+' draws'},b);dur=3500;playSound('card-draw')}
- else if(f.kind==='infection'){b.appendChild(cardFace(f.city,true));el('div',{className:'fxCaption',textContent:'Infect '+C[f.city].name},b);dur=3000;playSound('card-draw')}
+ if(f.kind==='playerDraw'){let row=el('div',{className:'fxRow'},b);for(let k of f.cards)row.appendChild(cardFace(k));el('div',{className:'fxCaption',textContent:state.players[f.seat].name+' draws'},b);dur=3500;playSound('draw')}
+ else if(f.kind==='infection'){b.appendChild(cardFace(f.city,true));el('div',{className:'fxCaption',textContent:'Infect '+C[f.city].name},b);dur=3000;playSound('draw')}
  else if(f.kind==='research'){el('div',{className:'fxCaption',textContent:f.color[0].toUpperCase()+f.color.slice(1)+' disease researched'},b);dur=3000}
  else if(f.kind==='epidemic'){let a=el('div',{className:'alert'},b);let ban=asset('alerts/epidemic');if(ban)el('img',{className:'banner',src:ban},a);el('h3',{textContent:'Epidemic'},a);let row=el('div',{className:'fxRow',style:'justify-content:center;margin:8px 0'},a);row.appendChild(cardFace('epidemic_0'));row.appendChild(cardFace(f.city,true));el('p',{textContent:'Infection rate is now '+f.rate+'. '+C[f.city].name+' receives 3 cubes; the discard pile is shuffled onto the deck.'},a);dur=2800;playSound('epidemic')}
  else if(f.kind==='outbreak'){let a=el('div',{className:'alert outbreak'},b);let ban=asset('alerts/outbreak');if(ban)el('img',{className:'banner',src:ban},a);let h=el('h3',{},a);el('img',{className:'tok',src:tokenImg('outbreak')},h);h.append('Outbreak');el('p',{textContent:C[f.city].name+' · '+f.color+' disease'},a);el('p',{textContent:'Outbreaks: '+f.count+' / 8'},a);dur=2800;playSound('outbreak')}
- else if(f.kind==='end'){let a=el('div',{className:'alert'+(state.status==='won'?' win':'')},b);el('h3',{textContent:state.status==='won'?'Victory':'Defeat'},a);el('p',{textContent:f.text},a);dur=6000}
+ else if(f.kind==='end'){let a=el('div',{className:'alert'+(state.status==='won'?' win':'')},b);el('h3',{textContent:state.status==='won'?'Victory':'Defeat'},a);el('p',{textContent:f.text},a);dur=6000;playSound(state.status==='won'?'win':'lose')}
  let sticky=f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||speed===0,ms=dur*(speed>0?speed:1);
  let sk=el('div',{className:'fxSkip'},b);let btn=el('button',{textContent:fxQueue.length?'Continue ('+fxQueue.length+' more)':'Continue'},sk);btn.onclick=e=>{e.stopPropagation();nextFx()};
  if(!sticky){let bar=el('div',{className:'fxBar',title:'Closes automatically; click to continue now'},sk);el('i',{style:'animation-duration:'+ms+'ms'},bar);fxTimer=setTimeout(nextFx,ms)}
@@ -117,7 +132,7 @@ function settleCubes(){if(flyTimer)return;if(!fxCurrent&&!fxQueue.length&&cubeVi
 function flushFly(){if(!flyTimer)return;clearTimeout(flyTimer);flyTimer=null;$('flyers').replaceChildren();cubeView=flyTarget;flyTarget=null}
 function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[];
  for(let c of MAP.cities)for(let k of COLORS){let d=(next[c.id][k]||0)-(from[c.id][k]||0);for(let j=0;j<d;j++)adds.push([c.id,k,(from[c.id][k]||0)+j])}
- let speed=+$('fxSpeed').value;if(!f||!adds.length||speed<0||matchMedia('(prefers-reduced-motion: reduce)').matches){cubeView=next;paint();settleCubes();return}
+ let speed=+$('fxSpeed').value;if(!f||!adds.length||speed<0||matchMedia('(prefers-reduced-motion: reduce)').matches){if(adds.length)playSound('cube');cubeView=next;paint();settleCubes();return}
  let g=$('flyers'),src0=f.kind==='outbreak'?[C[f.city].x,C[f.city].y]:[760,520],dur=f.kind==='outbreak'?650:800,step=Math.min(140,700/adds.length),last=0;
  // keep the arriving cubes hidden until they land
  let hold=JSON.parse(JSON.stringify(from));for(let [cid,k] of adds)hold[cid][k]=hold[cid][k]||0;cubeView=hold;paint();
@@ -126,7 +141,7 @@ function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[
   let [ox,oy]=src0,delay=i*step;last=Math.max(last,delay+dur);
   let mx=(ox+tx)/2,my=Math.min(oy,ty)-80;
   node.animate([{transform:`translate(${ox}px,${oy}px) scale(${f.kind==='outbreak'?1.2:3})`,opacity:0},{transform:`translate(${ox}px,${oy}px) scale(${f.kind==='outbreak'?1.4:3.2})`,opacity:1,offset:.12},{transform:`translate(${mx}px,${my}px) scale(1.9)`,opacity:1,offset:.55},{transform:`translate(${tx}px,${ty}px) scale(.85)`,opacity:1,offset:.9},{transform:`translate(${tx}px,${ty}px) scale(1)`,opacity:1}],{duration:dur,delay,easing:'ease-in-out',fill:'both'});
-  setTimeout(()=>{if(flyTarget!==next)return;cubeView[cid][k]=Math.max(cubeView[cid][k]||0,j+1);node.remove();paint()},delay+dur)});
+  setTimeout(()=>{if(flyTarget!==next)return;playSound('cube');cubeView[cid][k]=Math.max(cubeView[cid][k]||0,j+1);node.remove();paint()},delay+dur)});
  flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;$('flyers').replaceChildren();cubeView=flyTarget;flyTarget=null;paint();settleCubes()},last+30)}
 function resetFx(){clearTimeout(fxTimer);fxQueue=[];fxCurrent=null;if(flyTimer){clearTimeout(flyTimer);flyTimer=null}flyTarget=null;$('flyers').replaceChildren();cubeView=null;$('fx').replaceChildren();$('fx').className=''}
 
@@ -268,4 +283,7 @@ $('undo').onclick=undo;
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'&&!document.querySelector('dialog[open]')&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||'')){e.preventDefault();undo()}});
 $('assetButton').onclick=()=>$('assetFiles').click();$('assetFiles').onchange=()=>loadAssets([...$('assetFiles').files]);$('assetClear').onclick=()=>{loadAssets([]);$('assetStatus').textContent=REPO_STATUS};
 $('showRegions').onchange=paint;$('showNames').onchange=paint;window.addEventListener('resize',fitLayout);
+$('muteButton').onclick=e=>{e.stopPropagation();setSound(!sndPrefs.on)};$('sound').onchange=()=>setSound($('sound').checked);$('volume').oninput=()=>{sndPrefs.vol=+$('volume').value/100;saveSound()};$('volume').onchange=()=>playSound('cube');syncSoundUI();
+// soft wooden click for every button (moves, alerts and cubes have their own sounds)
+document.addEventListener('click',e=>{let b=e.target.closest('button,a.btn,.card[role=button]');if(b&&b.id!=='muteButton'&&!b.disabled)playSound('click')},true);
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
