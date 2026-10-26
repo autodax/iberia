@@ -19,6 +19,11 @@ async def main():
       ok(fit<0.02,f'{W}x{H} board aspect snug ({fit:.3f})')
       await pg.screenshot(path=f'/tmp/shot_{W}x{H}.png')
       await pg.close()
+    # repo graphics are the default
+    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.wait_for_function("Object.keys(REPO).length>0",timeout=20000)
+    ok(await pg.evaluate("Object.keys(REPO).length>=17&&asset('tokens/cube-red')===REPO['tokens/cube-red']&&asset('tokens/hospital-blue').startsWith('https://')"),'repo graphics used by default: '+str(await pg.evaluate("Object.keys(REPO).length")))
+    ok(await pg.evaluate("document.getElementById('assetStatus').textContent.includes('GitHub repo')"),'graphics status shows repo')
+    await pg.close()
     # gameplay in 1366
     pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)))
     await pg.goto(F)
@@ -34,9 +39,9 @@ async def main():
     if await pg.evaluate("document.getElementById('choiceDialog').open"):
       await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(200)
     ok(await pg.evaluate("state.phase==='actions'&&!!state.prevention"),'begun with prevention token placed')
-    ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].some(i=>i.getAttribute('href')===TOKENS.prevention)"),'prevention token drawn')
-    ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].some(i=>i.getAttribute('href')===TOKENS.infection)"),'infection marker drawn')
-    ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].some(i=>i.getAttribute('href')===TOKENS.outbreak)"),'outbreak marker drawn')
+    ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].some(i=>i.getAttribute('href')===tokenImg('prevention'))"),'prevention token drawn')
+    ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].some(i=>i.getAttribute('href')===tokenImg('infection_rate'))"),'infection marker drawn')
+    ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].some(i=>i.getAttribute('href')===tokenImg('outbreak'))"),'outbreak marker drawn')
     btns=await pg.evaluate("[...document.querySelectorAll('#actionButtons button')].map(b=>b.textContent)");ok('Carriage / boat' in btns,'carriage shown: '+','.join(btns))
     ok('Research disease' not in btns,'research hidden')
     await pg.click('text=Carriage / boat');await pg.wait_for_timeout(100)
@@ -81,7 +86,7 @@ async def main():
     await pg.click('.hand >> nth=1 >> text=Purify Water');await pg.wait_for_selector('#eventDialog[open]')
     await pg.select_option('#pw0','r01');await pg.select_option('#pw1','r02');await pg.click('#eventConfirm');await pg.wait_for_timeout(200)
     ok(await pg.evaluate("state.water.r01===1&&state.water.r02===1&&state.discard.includes('purify_water')"),'Purify Water event via UI')
-    ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].filter(i=>i.getAttribute('href')===TOKENS.water).length===2"),'water drops drawn')
+    ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].filter(i=>i.getAttribute('href')===tokenImg('purification')).length===2"),'water drops drawn')
     # save / load
     env=await pg.evaluate("JSON.stringify(envelope())")
     await pg.evaluate("state=initial('other',4,['sailor','agronomist']);render()")
