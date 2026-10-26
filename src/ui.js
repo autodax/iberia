@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.0',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.1',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 const RATE_POS=[622,676,728,783,835,888,940].map(x=>[x,55]);
 const OUT_POS=[[1390,342],[1449,387],[1390,431],[1449,476],[1391,522],[1450,567],[1391,611],[1450,657],[1391,707]];
@@ -13,16 +13,28 @@ const TYPES=['carriage','train','ship','build','treat','hospital','purify','agro
 const LABEL={carriage:'Carriage / boat',train:'Train',ship:'Ship',build:'Build railroad',treat:'Treat disease',hospital:'Build hospital',purify:'Purify water',agronomist:'Agronomist: water',research:'Research disease',share:'Share knowledge',pgive:'Politician: give',pswap:'Politician: swap',peek:'Scientist: look at 3'};
 
 /* ---------- local assets ---------- */
-let ASSETS={};
+let ASSETS={},REPO={},REPO_STATUS='Loading graphics from the GitHub repo…';
+const REPO_NAME='autodax/iberia',REPO_BRANCH='main';
+// Repo graphics are the default: every file under assets/ in the GitHub repo is used by name.
+// Top-level files map to tokens/<name> (img0/board -> board/iberia); subfolders keep their path (pawns/pawn-nurse.png -> pawns/pawn-nurse).
+function repoKey(rel){let k=norm(rel);if(!k.includes('/'))k=(k==='img0'||k==='board'||k==='iberia')?'board/iberia':'tokens/'+k;return k}
+function repoBase(){return location.protocol.startsWith('http')&&/github\.io$/.test(location.hostname)?'assets/':'https://raw.githubusercontent.com/'+REPO_NAME+'/'+REPO_BRANCH+'/assets/'}
+async function loadRepoAssets(){let files=null;
+ try{let r=await fetch('https://api.github.com/repos/'+REPO_NAME+'/git/trees/'+REPO_BRANCH+'?recursive=1',{cache:'no-store'});if(r.ok){let j=await r.json();files=j.tree.filter(t=>t.type==='blob'&&t.path.startsWith('assets/')).map(t=>t.path.slice(7))}}catch(e){}
+ if(!files)files=typeof REPO_FILES!=='undefined'?REPO_FILES:[];
+ files=files.filter(f=>/\.(png|jpe?g|webp|gif|svg|wav|mp3|ogg)$/i.test(f));let base=repoBase(),found={};
+ await Promise.all(files.map(f=>new Promise(res=>{let url=base+f.split('/').map(encodeURIComponent).join('/');if(/\.(wav|mp3|ogg)$/i.test(f)){found[repoKey(f)]=url;return res()}let im=new Image();im.onload=()=>{found[repoKey(f)]=url;res()};im.onerror=()=>res();im.src=url})));
+ REPO=found;let n=Object.keys(found).length;REPO_STATUS=n?n+' graphics loaded from the GitHub repo ('+REPO_NAME+'/assets).':'Could not reach the GitHub repo; using the copies built into this file.';
+ if(!Object.keys(ASSETS).length){$('assetStatus').textContent=REPO_STATUS;let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC)}render()}
 const BUILTIN={water:TOKENS.water,prevention:TOKENS.prevention,infection_rate:TOKENS.infection,outbreak:TOKENS.outbreak,railroad:TOKENS.rail};
 function slug(t){return String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 function norm(path){return path.toLowerCase().replace(/\\/g,'/').replace(/^.*?iberia-assets\//,'').replace(/\.[a-z0-9]+$/,'').replace(/_/g,'-')}
-function asset(key){return ASSETS[norm(key)]||null}
+function asset(key){let k=norm(key);return ASSETS[k]||REPO[k]||(typeof EMBED!=='undefined'&&EMBED[k])||null}
 const ROLE_SLUG={scientist:['scientist','royal-academy-scientist'],rural_doctor:['rural-doctor'],sailor:['sailor'],agronomist:['agronomist'],railwayman:['railwayman'],politician:['politician'],nurse:['nurse']};
 function roleAsset(prefix,role){for(let s of ROLE_SLUG[role]||[role]){let a=asset(prefix+s);if(a)return a}return null}
 function tokenImg(name){return asset('tokens/'+name)||BUILTIN[name.replace('purification','water')]}
 async function loadAssets(files){for(let u of Object.values(ASSETS))URL.revokeObjectURL(u);ASSETS={};let n=0;for(let f of files){if(!/\.(png|jpe?g|webp|gif|svg|wav|mp3|ogg)$/i.test(f.name))continue;let p=f.webkitRelativePath||f.name;ASSETS[norm(p)]=URL.createObjectURL(f);n++}
- let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC);$('assetStatus').textContent=n?n+' files loaded from your folder'+(b?' (including board image).':'.'):'No usable files found.';render()}
+ let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC);$('assetStatus').textContent=n?n+' files loaded from your folder'+(b?' (including board image).':'.'):'No local files loaded. '+REPO_STATUS;render()}
 const BOARD_SRC=document.getElementById('boardImage').getAttribute('href');
 function playSound(name){if(!$('sound').checked)return;let a=asset('audio/'+name);if(a){try{new Audio(a).play()}catch(e){}}}
 
@@ -141,7 +153,7 @@ async function makeCmd(){let p=state.players[state.active],cmd={type:mode};
 
 /* ---------- board ---------- */
 function drawPawn(g,x,y,role,num,active){let col=PAWN[role]||'#888',dark=role==='scientist'?'#6b6250':'#1b1b1b';if(active)svg('ellipse',{cx:x,cy:y,rx:14,ry:5,fill:'none',stroke:'#16e0f0','stroke-width':3},g);let img=roleAsset('pawns/pawn-',role);if(img){svg('image',{href:img,x:x-12,y:y-36,width:24,height:36},g)}else{svg('ellipse',{cx:x,cy:y,rx:10,ry:3.5,fill:col,stroke:dark,'stroke-width':1.3},g);svg('path',{d:`M${x-9} ${y} C${x-8} ${y-9} ${x-5} ${y-14} ${x-4} ${y-18} L${x+4} ${y-18} C${x+5} ${y-14} ${x+8} ${y-9} ${x+9} ${y} Z`,fill:col,stroke:dark,'stroke-width':1.3},g);svg('circle',{cx:x,cy:y-24,r:6.5,fill:col,stroke:dark,'stroke-width':1.3},g)}if(num!=null){let t=svg('text',{x,y:y-6,'text-anchor':'middle',style:'font-size:10px;stroke-width:2.4px'},g);t.textContent=num}}
-function drawHospital(g,x,y,color){let img=asset('tokens/hospital-'+color);if(img){svg('image',{href:img,x:x-13,y:y-24,width:26,height:26},g);return}let c=HOSP[color];svg('path',{d:`M${x-12} ${y} V${y-13} L${x} ${y-24} L${x+12} ${y-13} V${y} Z`,fill:c,stroke:'#111','stroke-width':1.4},g);svg('path',{d:`M${x-14} ${y-12} L${x} ${y-25} L${x+14} ${y-12}`,fill:'none',stroke:'#111','stroke-width':2.2},g);svg('rect',{x:x-3,y:y-8,width:6,height:8,fill:'#f3e6c8',stroke:'#111','stroke-width':.8},g);svg('rect',{x:x-9.5,y:y-11,width:4,height:4,fill:'#f3e6c8'},g);svg('rect',{x:x+5.5,y:y-11,width:4,height:4,fill:'#f3e6c8'},g);svg('rect',{x:x-1,y:y-21,width:2,height:7,fill:'#fff'},g);svg('rect',{x:x-3.5,y:y-18.5,width:7,height:2,fill:'#fff'},g)}
+function drawHospital(g,x,y,color){let img=asset('tokens/hospital-'+color);if(img){svg('image',{href:img,x:x-15,y:y-28,width:30,height:30},g);return}let c=HOSP[color];svg('path',{d:`M${x-12} ${y} V${y-13} L${x} ${y-24} L${x+12} ${y-13} V${y} Z`,fill:c,stroke:'#111','stroke-width':1.4},g);svg('path',{d:`M${x-14} ${y-12} L${x} ${y-25} L${x+14} ${y-12}`,fill:'none',stroke:'#111','stroke-width':2.2},g);svg('rect',{x:x-3,y:y-8,width:6,height:8,fill:'#f3e6c8',stroke:'#111','stroke-width':.8},g);svg('rect',{x:x-9.5,y:y-11,width:4,height:4,fill:'#f3e6c8'},g);svg('rect',{x:x+5.5,y:y-11,width:4,height:4,fill:'#f3e6c8'},g);svg('rect',{x:x-1,y:y-21,width:2,height:7,fill:'#fff'},g);svg('rect',{x:x-3.5,y:y-18.5,width:7,height:2,fill:'#fff'},g)}
 function paint(){for(let k of ['areas','tracks','pieces'])$(k).replaceChildren();let A=$('areas'),T=$('tracks'),P=$('pieces');let p=state.players[state.active];
  let regionMode=['purify','agronomist'].includes(mode)&&canAct(),targets=['carriage','train','ship','build'].includes(mode)&&canAct()?new Set((legal[mode]||[]).map(c=>c.to)):new Set();
  for(let r of MAP.regions){let active=regionMode&&r.id===sel.region,cand=regionMode&&(legal[mode]||[]).some(c=>c.region===r.id);if(active||cand||$('showRegions').checked||state.prevention===r.id){let poly=svg('polygon',{points:r.boundary_cities.map(k=>C[k].x+','+C[k].y).join(' '),fill:active?'#00edff':state.prevention===r.id?'#e04040':'#4a9aff','fill-opacity':active?.28:cand?.1:state.prevention===r.id?.1:.04,stroke:active?'#00efff':'none','stroke-width':3},A);if(cand)poly.style.cursor='pointer';poly.onclick=()=>{if(cand){sel.region=r.id;selectedCards=[];render()}}}if($('showRegions').checked){let t=svg('text',{x:r.label_position.x,y:r.label_position.y+30,'text-anchor':'middle',style:'font-size:11px'},P);t.textContent=r.id}}
@@ -153,9 +165,9 @@ function paint(){for(let k of ['areas','tracks','pieces'])$(k).replaceChildren()
  // tracks
  let [rx,ry]=RATE_POS[state.rateIndex];svg('image',{href:tokenImg('infection_rate'),x:rx-24,y:ry-24,width:48,height:48},P);
  let [ox,oy]=OUT_POS[Math.min(8,state.outbreaks)];svg('image',{href:tokenImg('outbreak'),x:ox-25,y:oy-25,width:50,height:50},P);
- for(let c of state.research){let [x,y]=RESEARCH_POS[c];let img=asset('tokens/research-'+c);if(img)svg('image',{href:img,x:x-20,y:y-20,width:40,height:40},P);else{svg('circle',{cx:x,cy:y,r:17,fill:DISEASE[c],stroke:'#f6e8cd','stroke-width':3},P);let t=svg('text',{x,y:y+6,'text-anchor':'middle',style:'font-size:18px'},P);t.textContent='✓'}}
+ for(let c of state.research){let [x,y]=RESEARCH_POS[c];let img=asset('tokens/research-'+c);if(img){svg('circle',{cx:x,cy:y,r:23,fill:'#f6e8cd',stroke:'#2e4339','stroke-width':2.5},P);svg('image',{href:img,x:x-17,y:y-18,width:34,height:34},P)}else{svg('circle',{cx:x,cy:y,r:17,fill:DISEASE[c],stroke:'#f6e8cd','stroke-width':3},P);let t=svg('text',{x,y:y+6,'text-anchor':'middle',style:'font-size:18px'},P);t.textContent='✓'}}
  // cities: cubes, hospitals, targets
- for(let c of MAP.cities){let present=COLORS.filter(k=>state.cubes[c.id][k]);present.forEach((k,i)=>{let x=c.x+14+i*19,y=c.y-2;let img=asset('tokens/cube-'+k);if(img)svg('image',{href:img,x,y:y-9,width:18,height:18},P);else svg('rect',{x,y:y-9,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},P);let t=svg('text',{x:x+8.5,y:y+4.5,'text-anchor':'middle',style:'font-size:12px'},P);t.textContent=state.cubes[c.id][k]});
+ for(let c of MAP.cities){let present=COLORS.filter(k=>state.cubes[c.id][k]);{let cx=c.x+13;for(let k of present){let n=state.cubes[c.id][k],img=asset('tokens/cube-'+k);if(img){for(let j=0;j<n;j++)svg('image',{href:img,x:cx+j*9,y:c.y-14-(j%2)*3,width:19,height:19},P);cx+=19+(n-1)*9+3}else{svg('rect',{x:cx,y:c.y-11,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},P);let t=svg('text',{x:cx+8.5,y:c.y+2.5,'text-anchor':'middle',style:'font-size:12px'},P);t.textContent=n;cx+=19}}}
   for(let color of COLORS)if(state.hospitals[color]===c.id)drawHospital(P,c.x-20,c.y+20,color);
   let tg=targets.has(c.id),dot=svg('circle',{cx:c.x,cy:c.y,r:15,fill:tg?'#00edff':'#fff','fill-opacity':tg?.25:0,stroke:tg?'#00efff':'transparent','stroke-width':3},P);svg('title',{},dot).textContent=c.name+(c.port?' (port)':'');if(tg){dot.style.cursor='pointer';dot.onclick=()=>{sel.to=c.id;sel.to2='';render()}}if($('showNames').checked){let t=svg('text',{x:c.x+12,y:c.y-18,style:'font-size:12px'},P);t.textContent=c.name}}
  // pawns
@@ -215,10 +227,10 @@ $('playerCount').onchange=drawRoleFields;
 $('randomRoles').onclick=()=>{let pool=Object.keys(ROLES);for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}roleChoice=pool.slice(0,5);drawRoleFields()};
 $('newGame').onclick=async()=>{if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;state=initial($('seed').value,+$('difficulty').value,roleChoice.slice(0,n));history=[];commands=[];mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.')}catch(e){notice(e.message,true)}};
 $('saveButton').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(envelope(),null,2)],{type:'application/json'})),a=el('a',{href:u,download:'iberia-save-v09-turn'+state.turn+'.json'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
-function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(o.version===VERSION,'This save is from v'+(o.version||'?')+'. Older restricted-content saves (0.1.x) cannot load in the full 0.9 rules; start a new game.');invariant(o.state);state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';fxQueue=[];nextFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
+function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';fxQueue=[];nextFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
 $('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('menu').close()}$('loadFile').value=''};
 $('resumeButton').onclick=()=>{try{let raw=localStorage.getItem(SAVE_KEY);requireRule(raw,'No local autosave found');restore(JSON.parse(raw))}catch(e){notice(e.message,true)}};
 $('undoButton').onclick=()=>{if(!history.length){notice('No undo history in this session.');return}state=history.pop();commands.pop();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Debug undo — previously revealed cards cannot be forgotten.')};
-$('assetButton').onclick=()=>$('assetFiles').click();$('assetFiles').onchange=()=>loadAssets([...$('assetFiles').files]);$('assetClear').onclick=()=>{loadAssets([]);$('assetStatus').textContent='Using built-in artwork.'};
+$('assetButton').onclick=()=>$('assetFiles').click();$('assetFiles').onchange=()=>loadAssets([...$('assetFiles').files]);$('assetClear').onclick=()=>{loadAssets([]);$('assetStatus').textContent=REPO_STATUS};
 $('showRegions').onchange=paint;$('showNames').onchange=paint;window.addEventListener('resize',fitLayout);
-recompute();render();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
+recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');

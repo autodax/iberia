@@ -1,5 +1,5 @@
 // Iberia prototype rules engine v0.9 — standard base game (7 roles, 15 Events, 2–5 players)
-const VERSION='0.9.0';
+const VERSION='0.9.1';
 const COLORS=['blue','red','yellow','black'],RATE=[2,2,2,3,3,4,4];
 const C=Object.fromEntries(MAP.cities.map(c=>[c.id,c])),R=Object.fromEntries(MAP.regions.map(r=>[r.id,r]));
 const edgeKey=(a,b)=>[a,b].sort().join('|'),EDGES=new Map(MAP.connections.map(e=>[edgeKey(e.a,e.b),e]));
@@ -50,7 +50,7 @@ function initial(seed='iberia',difficulty=4,roles=['sailor','agronomist']){
  invariant(s);return s}
 
 function invariant(s){
- requireRule(s.version===VERSION,'Unsupported save version');
+ requireRule(/^0\.9\./.test(s.version),'Unsupported save version');
  let n=s.players.length;requireRule(n>=2&&n<=5&&Number.isInteger(s.active)&&s.active>=0&&s.active<n,'Invalid players');
  requireRule(['setup','actions','epidemic','infection','ended'].includes(s.phase),'Invalid phase');
  requireRule(Number.isInteger(s.actions)&&s.actions>=0&&s.actions<=40,'Invalid action budget');
