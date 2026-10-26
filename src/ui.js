@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.10',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.11',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // Where the board picture sits in map coordinates (cities are in a 1521x1080 frame). Measured for the
 // current assets/img0.jpeg by matching it to the previous board; the frame is cropped to the picture.
@@ -11,7 +11,8 @@ const PAWN={sailor:'#2f6fb3',agronomist:'#3f8f3a',railwayman:'#8a5a2b',politicia
 const DISEASE={red:'#c0303a',blue:'#2f6fb3',yellow:'#d1a514',black:'#1d1d1d'};
 const HOSP={red:'#b8333b',blue:'#2f67a8',yellow:'#d4a91c',black:'#2a2a2a'};
 const REVEALS=new Set(['start','draw','infect','epidemic','peek']);
-let state=initial('iberia-test-1',4,['sailor','agronomist']),history=[],commands=[],mode='',legal={},selectedCards=[],busy=false;
+function newSeed(){let a=new Uint32Array(2);try{crypto.getRandomValues(a)}catch(e){a[0]=Math.random()*2**32;a[1]=Date.now()}return a[0].toString(36)+a[1].toString(36).slice(0,3)}
+let state=initial(newSeed(),4,['sailor','agronomist']),history=[],commands=[],mode='',legal={},selectedCards=[],busy=false;
 let sel={to:null,to2:'',color:'red',region:'r34',direction:'give',other:null,passenger:false,extra:'',swapTake:null};
 const TYPES=['carriage','train','ship','build','treat','hospital','purify','agronomist','research','share','pgive','pswap','peek'];
 const LABEL={carriage:'Carriage / boat',train:'Train',ship:'Ship',build:'Build railroad',treat:'Treat disease',hospital:'Build hospital',purify:'Purify water',agronomist:'Agronomist: water',research:'Research disease',share:'Share knowledge',pgive:'Politician: give',pswap:'Politician: swap',peek:'Scientist: look at 3'};
@@ -290,7 +291,7 @@ let roleChoice=['sailor','agronomist','railwayman','politician','nurse'];
 function drawRoleFields(){let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++)field('Player '+(i+1)+' role','role'+i,Object.entries(ROLES),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},box)}
 $('playerCount').onchange=drawRoleFields;
 $('randomRoles').onclick=()=>{let pool=Object.keys(ROLES);for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}roleChoice=pool.slice(0,5);drawRoleFields()};
-$('newGame').onclick=async()=>{if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;state=initial($('seed').value,+$('difficulty').value,roleChoice.slice(0,n));history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.')}catch(e){notice(e.message,true)}};
+$('newGame').onclick=async()=>{if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;let seed=$('seed').value.trim()||newSeed();state=initial(seed,+$('difficulty').value,roleChoice.slice(0,n));$('seed').value='';history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.')}catch(e){notice(e.message,true)}};
 $('saveButton').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(envelope(),null,2)],{type:'application/json'})),a=el('a',{href:u,download:'iberia-save-v09-turn'+state.turn+'.json'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';resetFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
 $('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('menu').close()}$('loadFile').value=''};

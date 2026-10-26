@@ -1,3 +1,7 @@
+# v0.9.11
+- Every game is now shuffled differently. The page and Menu → New game used a fixed shuffle seed ("iberia-test-1"), so the same hands, starting cities and Events came up each time. A random seed is now chosen for each game.
+- The seed box in Menu → New game is optional: leave it blank for a random game, or type a seed to replay a deal. The current seed is shown in the footer.
+
 # v0.9.10
 - Prevented infections are now announced. When a purification token or the Nurse's prevention token stops a cube, the popup for that infection, epidemic or outbreak lists each protected city and what protected it (with how many purification tokens were used and how many are left in that region).
 - After the popup closes, each protected city flashes on the board with the token that saved it, with a soft chime.
