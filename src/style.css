@@ -111,3 +111,10 @@ header .sndBtn.off{opacity:.75}
 header .sndBtn.off .waves{display:none}
 header .sndBtn.off .cross{display:inline}
 #volume{width:100%;accent-color:#8a6a3a}
+/* prevented infections */
+.blocked{background:var(--parch);border:1px solid var(--tanBorder);border-left:5px solid #2f8fc9;border-radius:6px;padding:7px 12px;box-shadow:0 4px 16px #0005;color:var(--ink);max-width:420px;font-size:13.5px}
+.alert .blocked{box-shadow:none;margin-top:8px;text-align:left}
+.blocked .bhead{font-weight:700;font-size:14px;margin-bottom:4px}
+.blocked .brow{display:flex;align-items:center;gap:8px;margin:3px 0}
+.blocked .brow img{width:26px;height:26px;flex:none}
+.blocked .brow.nurse img{width:24px;height:24px}
