@@ -1,3 +1,9 @@
+# v0.9.2
+- 3D pawns for all 7 roles (assets/pawns/), lit and angled to match the cube and hospital art; used on the board and in the hand panels.
+- Pawns drawn slightly larger, with more space between pawns sharing a city.
+- tools/render_pawns.py regenerates the pawn images (numpy + Pillow).
+- Built-in fallback graphics now include subfolders of assets/.
+
 # v0.9.1
 - Graphics now load from the `assets/` folder of the GitHub repo by default. Add or replace a file there and the game uses it on next load, no rebuild needed. A local folder (Menu) still overrides; copies built into the HTML are the offline fallback.
 - New built-in artwork: disease cubes, hospitals, research markers (microscopes), infection-rate, outbreak, prevention, purification and railroad tokens.
