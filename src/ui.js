@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.5',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.6',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 const RATE_POS=[622,676,728,783,835,888,940].map(x=>[x,55]);
 const OUT_POS=[[1390,342],[1449,387],[1390,431],[1449,476],[1391,522],[1450,567],[1391,611],[1450,657],[1391,707]];
@@ -93,8 +93,10 @@ function cardFace(k,landscape){let box=el('div',{className:'bigCard'+(landscape?
  if(C[k])src=asset((landscape?'cards/infection/':'cards/player/')+slug(C[k].name));else if(EVENTS[k])src=asset('cards/events/'+slug(EVENTS[k]));else if(String(k).startsWith('epidemic'))src=asset('cards/epidemic');
  if(src){el('img',{src,alt:cardName(k)},box);return box}
  let color=C[k]?C[k].color:EVENTS[k]?'event':'epidemic';el('div',{className:'band '+color},box);el('div',{className:'kind',textContent:landscape?'Infection':C[k]?'City · '+C[k].color:EVENTS[k]?'Event':'Epidemic'},box);el('div',{className:'nm',textContent:cardName(k)},box);if(EVENTS[k])el('div',{className:'kind',textContent:EVENT_TEXT[k],style:'text-transform:none;letter-spacing:0;font-size:10px'},box);return box}
-function queueFx(list){let speed=+$('fxSpeed').value;for(let f of list||[]){if(f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'){fxQueue.push(f);continue}if(speed>=0)fxQueue.push(f)}if(!fxCurrent)nextFx()}
-function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';fxCurrent=fxQueue.shift()||null;if(!fxCurrent)return;let f=fxCurrent,speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
+function queueFx(list){let speed=+$('fxSpeed').value;list=list||[];if(list.length&&list[0].pre&&!cubeView&&!fxCurrent&&!fxQueue.length){cubeView=list[0].pre;paint()}for(let f of list){if(f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'){fxQueue.push(f);continue}if(speed>=0)fxQueue.push(f);else if(f.after)fxQueue.push({...f,silent:true})}if(!fxCurrent)nextFx()}
+function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';let done=fxCurrent;if(done&&done.after)applyCubes(done.after,done);fxCurrent=fxQueue.shift()||null;
+ while(fxCurrent&&fxCurrent.silent){applyCubes(fxCurrent.after,null);fxCurrent=fxQueue.shift()||null}
+ if(!fxCurrent){settleCubes();return}let f=fxCurrent,speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
  if(f.kind==='playerDraw'){let row=el('div',{className:'fxRow'},b);for(let k of f.cards)row.appendChild(cardFace(k));el('div',{className:'fxCaption',textContent:state.players[f.seat].name+' draws'},b);dur=3500;playSound('card-draw')}
  else if(f.kind==='infection'){b.appendChild(cardFace(f.city,true));el('div',{className:'fxCaption',textContent:'Infect '+C[f.city].name},b);dur=3000;playSound('card-draw')}
  else if(f.kind==='research'){el('div',{className:'fxCaption',textContent:f.color[0].toUpperCase()+f.color.slice(1)+' disease researched'},b);dur=3000}
@@ -106,6 +108,27 @@ function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();bo
  if(!sticky){let bar=el('div',{className:'fxBar',title:'Closes automatically; click to continue now'},sk);el('i',{style:'animation-duration:'+ms+'ms'},bar);fxTimer=setTimeout(nextFx,ms)}
  box.className='on';box.onclick=()=>nextFx();setTimeout(()=>btn.focus({preventScroll:true}),0)}
 document.addEventListener('keydown',e=>{if(fxCurrent&&(e.key==='Enter'||e.key===' '||e.key==='Escape')&&!document.querySelector('dialog[open]')){e.preventDefault();nextFx()}});
+
+
+/* ---------- cubes appear after their alert, flying in ---------- */
+let cubeView=null,flyTimer=null,flyTarget=null;
+function cubeSpot(cid,color,j,view){let c=C[cid],cx=c.x+13;for(let k of COLORS){let n=view[cid][k];if(!n)continue;if(k===color)return [cx+j*9+9.5,c.y-14-(j%2)*3+9.5];cx+=19+(n-1)*9+3}return [c.x+20,c.y-5]}
+function settleCubes(){if(flyTimer)return;if(!fxCurrent&&!fxQueue.length&&cubeView){cubeView=null;paint()}}
+function flushFly(){if(!flyTimer)return;clearTimeout(flyTimer);flyTimer=null;$('flyers').replaceChildren();cubeView=flyTarget;flyTarget=null}
+function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[];
+ for(let c of MAP.cities)for(let k of COLORS){let d=(next[c.id][k]||0)-(from[c.id][k]||0);for(let j=0;j<d;j++)adds.push([c.id,k,(from[c.id][k]||0)+j])}
+ let speed=+$('fxSpeed').value;if(!f||!adds.length||speed<0||matchMedia('(prefers-reduced-motion: reduce)').matches){cubeView=next;paint();settleCubes();return}
+ let g=$('flyers'),src0=f.kind==='outbreak'?[C[f.city].x,C[f.city].y]:[760,520],dur=f.kind==='outbreak'?650:800,step=Math.min(140,700/adds.length),last=0;
+ // keep the arriving cubes hidden until they land
+ let hold=JSON.parse(JSON.stringify(from));for(let [cid,k] of adds)hold[cid][k]=hold[cid][k]||0;cubeView=hold;paint();
+ adds.forEach(([cid,k,j],i)=>{let [tx,ty]=cubeSpot(cid,k,j,next),img=asset('tokens/cube-'+k),node;
+  if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19},g);else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},g);
+  let [ox,oy]=src0,delay=i*step;last=Math.max(last,delay+dur);
+  let mx=(ox+tx)/2,my=Math.min(oy,ty)-80;
+  node.animate([{transform:`translate(${ox}px,${oy}px) scale(${f.kind==='outbreak'?1.2:3})`,opacity:0},{transform:`translate(${ox}px,${oy}px) scale(${f.kind==='outbreak'?1.4:3.2})`,opacity:1,offset:.12},{transform:`translate(${mx}px,${my}px) scale(1.9)`,opacity:1,offset:.55},{transform:`translate(${tx}px,${ty}px) scale(.85)`,opacity:1,offset:.9},{transform:`translate(${tx}px,${ty}px) scale(1)`,opacity:1}],{duration:dur,delay,easing:'ease-in-out',fill:'both'});
+  setTimeout(()=>{if(flyTarget!==next)return;cubeView[cid][k]=Math.max(cubeView[cid][k]||0,j+1);node.remove();paint()},delay+dur)});
+ flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;$('flyers').replaceChildren();cubeView=flyTarget;flyTarget=null;paint();settleCubes()},last+30)}
+function resetFx(){clearTimeout(fxTimer);fxQueue=[];fxCurrent=null;if(flyTimer){clearTimeout(flyTimer);flyTimer=null}flyTarget=null;$('flyers').replaceChildren();cubeView=null;$('fx').replaceChildren();$('fx').className=''}
 
 /* ---------- hands ---------- */
 function drawSupply(){for(let im of document.querySelectorAll('#resources img[data-tok]')){let src=tokenImg(im.dataset.tok);if(src&&im.getAttribute('src')!==src)im.src=src;im.hidden=!src}
@@ -176,7 +199,7 @@ function paint(){for(let k of ['areas','tracks','pieces'])$(k).replaceChildren()
  let [ox,oy]=OUT_POS[Math.min(8,state.outbreaks)];svg('image',{href:tokenImg('outbreak'),x:ox-25,y:oy-25,width:50,height:50},P);
  for(let c of state.research){let [x,y]=RESEARCH_POS[c];let img=asset('tokens/research-'+c);if(img){svg('circle',{cx:x,cy:y,r:23,fill:'#f6e8cd',stroke:'#2e4339','stroke-width':2.5},P);svg('image',{href:img,x:x-17,y:y-18,width:34,height:34},P)}else{svg('circle',{cx:x,cy:y,r:17,fill:DISEASE[c],stroke:'#f6e8cd','stroke-width':3},P);let t=svg('text',{x,y:y+6,'text-anchor':'middle',style:'font-size:18px'},P);t.textContent='✓'}}
  // cities: cubes, hospitals, targets
- for(let c of MAP.cities){let present=COLORS.filter(k=>state.cubes[c.id][k]);{let cx=c.x+13;for(let k of present){let n=state.cubes[c.id][k],img=asset('tokens/cube-'+k);if(img){for(let j=0;j<n;j++)svg('image',{href:img,x:cx+j*9,y:c.y-14-(j%2)*3,width:19,height:19},P);cx+=19+(n-1)*9+3}else{svg('rect',{x:cx,y:c.y-11,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},P);let t=svg('text',{x:cx+8.5,y:c.y+2.5,'text-anchor':'middle',style:'font-size:12px'},P);t.textContent=n;cx+=19}}}
+ let CV=cubeView||state.cubes;for(let c of MAP.cities){let present=COLORS.filter(k=>CV[c.id][k]);{let cx=c.x+13;for(let k of present){let n=CV[c.id][k],img=asset('tokens/cube-'+k);if(img){for(let j=0;j<n;j++)svg('image',{href:img,x:cx+j*9,y:c.y-14-(j%2)*3,width:19,height:19},P);cx+=19+(n-1)*9+3}else{svg('rect',{x:cx,y:c.y-11,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},P);let t=svg('text',{x:cx+8.5,y:c.y+2.5,'text-anchor':'middle',style:'font-size:12px'},P);t.textContent=n;cx+=19}}}
   for(let color of COLORS)if(state.hospitals[color]===c.id)drawHospital(P,c.x-20,c.y+20,color);
   let tg=targets.has(c.id),dot=svg('circle',{cx:c.x,cy:c.y,r:15,fill:tg?'#00edff':'#fff','fill-opacity':tg?.25:0,stroke:tg?'#00efff':'transparent','stroke-width':3},P);svg('title',{},dot).textContent=c.name+(c.port?' (port)':'');if(tg){dot.style.cursor='pointer';dot.onclick=()=>{sel.to=c.id;sel.to2='';render()}}if($('showNames').checked){let t=svg('text',{x:c.x+12,y:c.y-18,style:'font-size:12px'},P);t.textContent=c.name}}
  // pawns
@@ -234,13 +257,13 @@ let roleChoice=['sailor','agronomist','railwayman','politician','nurse'];
 function drawRoleFields(){let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++)field('Player '+(i+1)+' role','role'+i,Object.entries(ROLES),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},box)}
 $('playerCount').onchange=drawRoleFields;
 $('randomRoles').onclick=()=>{let pool=Object.keys(ROLES);for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}roleChoice=pool.slice(0,5);drawRoleFields()};
-$('newGame').onclick=async()=>{if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;state=initial($('seed').value,+$('difficulty').value,roleChoice.slice(0,n));history=[];commands=[];mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.')}catch(e){notice(e.message,true)}};
+$('newGame').onclick=async()=>{if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;state=initial($('seed').value,+$('difficulty').value,roleChoice.slice(0,n));history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.')}catch(e){notice(e.message,true)}};
 $('saveButton').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(envelope(),null,2)],{type:'application/json'})),a=el('a',{href:u,download:'iberia-save-v09-turn'+state.turn+'.json'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
-function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';fxQueue=[];nextFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
+function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';resetFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
 $('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('menu').close()}$('loadFile').value=''};
 $('resumeButton').onclick=()=>{try{let raw=localStorage.getItem(SAVE_KEY);requireRule(raw,'No local autosave found');restore(JSON.parse(raw))}catch(e){notice(e.message,true)}};
 {let base=/github\.io$/.test(location.hostname)?'':'https://autodax.github.io/iberia/';$('rulesLink').href=base+'docs/Iberia_rulebook.pdf';$('guideLink').href=base+'docs/Guide.pdf'}
-function undo(){if(busy||!history.length||state.status!=='playing')return;let h=history.pop();state=h.state;commands.length=h.commands;mode='';selectedCards=[];fxQueue=[];nextFx();recompute();render();autosave();notice('Undone: '+h.label)}
+function undo(){if(busy||!history.length||state.status!=='playing')return;let h=history.pop();state=h.state;commands.length=h.commands;mode='';selectedCards=[];resetFx();recompute();render();autosave();notice('Undone: '+h.label)}
 $('undo').onclick=undo;
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'&&!document.querySelector('dialog[open]')&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||'')){e.preventDefault();undo()}});
 $('assetButton').onclick=()=>$('assetFiles').click();$('assetFiles').onchange=()=>loadAssets([...$('assetFiles').files]);$('assetClear').onclick=()=>{loadAssets([]);$('assetStatus').textContent=REPO_STATUS};
