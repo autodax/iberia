@@ -1,3 +1,8 @@
+# v0.9.6
+- New disease cubes stay off the board until their alert is dismissed, then fly in. Infection and Epidemic cubes drop from the popup onto the city; Outbreak cubes spread out from the outbreaking city to its neighbors, one after another.
+- With Card reveals set to Off, cubes appear at once with no animation (also when the system's reduce-motion setting is on).
+- Built-in offline board image updated to the current repo board.
+
 # v0.9.5
 - Supply panel icons: outbreak marker, infection-rate marker, railroad and purification tokens next to their counts; cube icons with the number left of each color; research markers show which diseases are researched (greyed out until then). Hover any of them for a description.
 - Rules and Guide buttons in the header open the rulebook and the rules summary PDFs in a new window.

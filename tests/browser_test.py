@@ -34,6 +34,17 @@ async def main():
     ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='infection'"),'Until clicked keeps reveals up')
     ok(await pg.evaluate("$('hands').closest('aside')!==null"),'hands are in the right-hand column')
     await pg.close()
+    # cubes appear after the alert closes, flying in
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F);await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(200)
+    await pg.evaluate("(()=>{let s=CP(state);s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;state=s;recompute();render()})()")
+    cid=await pg.evaluate("state.infectionDeck[0]");shown=f"COLORS.reduce((a,k)=>a+(cubeView||state.cubes)['{cid}'][k],0)";real=f"COLORS.reduce((a,k)=>a+state.cubes['{cid}'][k],0)"
+    b0=await pg.evaluate(real);await pg.evaluate("perform({type:'infect'})");await pg.wait_for_timeout(400)
+    ok(await pg.evaluate(real)>b0 and await pg.evaluate(shown)==b0,'new cube hidden while the infection popup is up')
+    await pg.click('#fx .fxSkip button');await pg.wait_for_timeout(300)
+    ok(await pg.evaluate("$('flyers').children.length>0"),'cube flies in after the popup closes')
+    await pg.wait_for_timeout(1000)
+    ok(await pg.evaluate(f"{shown}==={real}&&cubeView===null&&$('flyers').children.length===0"),'cube lands and the board matches the game state')
+    await pg.close()
     # supply icons and rules links
     pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.wait_for_timeout(400)
     ok(await pg.evaluate("[...document.querySelectorAll('#resources img')].filter(i=>!i.hidden&&i.getAttribute('src')).length>=12"),'supply icons shown (4 counters, 4 cubes, 4 research)')
