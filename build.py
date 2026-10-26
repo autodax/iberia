@@ -8,7 +8,10 @@ def uri(p,maxw=128):
     b=io.BytesIO();im.save(b,'PNG',optimize=True);return 'data:image/png;base64,'+base64.b64encode(b.getvalue()).decode()
 norm=lambda s:re.sub(r'_','-',s.lower())
 # every PNG in assets/ becomes a built-in graphic at tokens/<name>; a local asset folder still overrides it
-EMBED={'tokens/'+norm(os.path.splitext(os.path.basename(p))[0]):uri(p,160 if 'railroad' in p else 128) for p in sorted(glob.glob('assets/*.png'))}
+def ekey(p):
+    rel=norm(os.path.splitext(os.path.relpath(p,'assets').replace(os.sep,'/'))[0])
+    return rel if '/' in rel else 'tokens/'+rel
+EMBED={ekey(p):uri(p,160 if 'railroad' in p else 128) for p in sorted(glob.glob('assets/**/*.png',recursive=True))}
 T=lambda k:EMBED['tokens/'+k]
 TOKENS={'water':T('purification'),'prevention':T('prevention'),'infection':T('infection-rate'),'outbreak':T('outbreak'),'rail':T('railroad')}
 board='data:image/jpeg;base64,'+base64.b64encode(open('assets/img0.jpeg','rb').read()).decode()

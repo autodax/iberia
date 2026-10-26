@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.1',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.2',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 const RATE_POS=[622,676,728,783,835,888,940].map(x=>[x,55]);
 const OUT_POS=[[1390,342],[1449,387],[1390,431],[1449,476],[1391,522],[1450,567],[1391,611],[1450,657],[1391,707]];
@@ -49,7 +49,7 @@ function cityItems(filter){return MAP.cities.filter(filter||(()=>true)).slice().
 function seatItems(filter){return state.players.map((p,i)=>[String(i),playerLabel(state,i)]).filter(([i])=>!filter||filter(+i))}
 function field(label,id,items,value,onchange,parent){let l=el('label',{textContent:label},parent),s=el('select',{id},l);for(let [v,t] of items)el('option',{value:v,textContent:t},s);if(items.some(([v])=>String(v)===String(value)))s.value=value;else if(items[0])s.value=items[0][0];s.onchange=()=>onchange(s.value);return s}
 function check(label,checked,onchange,parent){let l=el('label',{className:'check'},parent),c=el('input',{type:'checkbox',checked},l);el('span',{textContent:label},l);c.onchange=()=>onchange(c.checked);return c}
-function pawnIcon(role,parent,size=14){let s=svg('svg',{width:size,height:size*1.4,viewBox:'-12 -34 24 36'},parent);drawPawn(s,0,0,role,null,false);return s}
+function pawnIcon(role,parent,size=14){let s=svg('svg',{width:size,height:size*1.5,viewBox:'-15 -42 30 45'},parent);drawPawn(s,0,0,role,null,false);return s}
 
 /* ---------- choice / confirm dialog ---------- */
 function choose(title,options,labels){return new Promise(res=>{let d=$('choiceDialog');$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();options.forEach((o,i)=>el('button',{textContent:labels?.[i]??o,onclick:()=>{d.close();res(o)}},box));$('choiceCancel').onclick=()=>{d.close();res(null)};d.oncancel=e=>{e.preventDefault();d.close();res(null)};d.showModal()})}
@@ -103,7 +103,7 @@ function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();bo
 
 /* ---------- hands ---------- */
 function drawHands(){let box=$('hands'),n=state.players.length;box.replaceChildren();box.style.gridTemplateColumns='repeat('+(n<=3?n:Math.ceil(n/2))+',minmax(0,1fr))';
- state.players.forEach((p,i)=>{let h=el('div',{className:'hand'+(state.active===i&&state.phase!=='setup'?' active':'')+(p.hand.length>HAND_LIMIT?' over':'')},box);let t=el('div',{className:'handTitle'},h);pawnIcon(p.role,t,11);el('span',{textContent:p.name+' · '+roleName(p.role)+' · '+(p.city?C[p.city].name:'choose start')+' · '+p.hand.length+'/'+HAND_LIMIT,title:ROLE_TEXT[p.role]},t);
+ state.players.forEach((p,i)=>{let h=el('div',{className:'hand'+(state.active===i&&state.phase!=='setup'?' active':'')+(p.hand.length>HAND_LIMIT?' over':'')},box);let t=el('div',{className:'handTitle'},h);pawnIcon(p.role,t,12);el('span',{textContent:p.name+' · '+roleName(p.role)+' · '+(p.city?C[p.city].name:'choose start')+' · '+p.hand.length+'/'+HAND_LIMIT,title:ROLE_TEXT[p.role]},t);
   let cards=el('div',{className:'handCards'},h);for(let k of p.hand){let b=el('button',{className:'card '+(C[k]?.color||'event')+(selectedCards.includes(k)&&i===state.active?' selected':''),textContent:cardName(k),title:C[k]?cardName(k)+' — '+C[k].color:EVENTS[k]+': '+EVENT_TEXT[k]},cards);
    if(p.hand.length>HAND_LIMIT&&!['epidemic','setup','ended'].includes(state.phase)&&!EVENTS[k]){b.textContent='✕ '+cardName(k);b.title='Discard to reach the hand limit';b.onclick=()=>perform({type:'discard',seat:i,card:k})}
    else if(EVENTS[k]){b.onclick=()=>openEvent(i,k);b.disabled=['setup','ended'].includes(state.phase)}
@@ -152,7 +152,7 @@ async function makeCmd(){let p=state.players[state.active],cmd={type:mode};
  return cmd}
 
 /* ---------- board ---------- */
-function drawPawn(g,x,y,role,num,active){let col=PAWN[role]||'#888',dark=role==='scientist'?'#6b6250':'#1b1b1b';if(active)svg('ellipse',{cx:x,cy:y,rx:14,ry:5,fill:'none',stroke:'#16e0f0','stroke-width':3},g);let img=roleAsset('pawns/pawn-',role);if(img){svg('image',{href:img,x:x-12,y:y-36,width:24,height:36},g)}else{svg('ellipse',{cx:x,cy:y,rx:10,ry:3.5,fill:col,stroke:dark,'stroke-width':1.3},g);svg('path',{d:`M${x-9} ${y} C${x-8} ${y-9} ${x-5} ${y-14} ${x-4} ${y-18} L${x+4} ${y-18} C${x+5} ${y-14} ${x+8} ${y-9} ${x+9} ${y} Z`,fill:col,stroke:dark,'stroke-width':1.3},g);svg('circle',{cx:x,cy:y-24,r:6.5,fill:col,stroke:dark,'stroke-width':1.3},g)}if(num!=null){let t=svg('text',{x,y:y-6,'text-anchor':'middle',style:'font-size:10px;stroke-width:2.4px'},g);t.textContent=num}}
+function drawPawn(g,x,y,role,num,active){let col=PAWN[role]||'#888',dark=role==='scientist'?'#6b6250':'#1b1b1b';if(active)svg('ellipse',{cx:x,cy:y,rx:14,ry:5,fill:'none',stroke:'#16e0f0','stroke-width':3},g);let img=roleAsset('pawns/pawn-',role);if(img){svg('image',{href:img,x:x-15,y:y-42,width:30,height:45},g)}else{svg('ellipse',{cx:x,cy:y,rx:10,ry:3.5,fill:col,stroke:dark,'stroke-width':1.3},g);svg('path',{d:`M${x-9} ${y} C${x-8} ${y-9} ${x-5} ${y-14} ${x-4} ${y-18} L${x+4} ${y-18} C${x+5} ${y-14} ${x+8} ${y-9} ${x+9} ${y} Z`,fill:col,stroke:dark,'stroke-width':1.3},g);svg('circle',{cx:x,cy:y-24,r:6.5,fill:col,stroke:dark,'stroke-width':1.3},g)}if(num!=null){let t=svg('text',{x,y:img?y-11:y-6,'text-anchor':'middle',style:'font-size:10px;stroke-width:2.4px'},g);t.textContent=num}}
 function drawHospital(g,x,y,color){let img=asset('tokens/hospital-'+color);if(img){svg('image',{href:img,x:x-15,y:y-28,width:30,height:30},g);return}let c=HOSP[color];svg('path',{d:`M${x-12} ${y} V${y-13} L${x} ${y-24} L${x+12} ${y-13} V${y} Z`,fill:c,stroke:'#111','stroke-width':1.4},g);svg('path',{d:`M${x-14} ${y-12} L${x} ${y-25} L${x+14} ${y-12}`,fill:'none',stroke:'#111','stroke-width':2.2},g);svg('rect',{x:x-3,y:y-8,width:6,height:8,fill:'#f3e6c8',stroke:'#111','stroke-width':.8},g);svg('rect',{x:x-9.5,y:y-11,width:4,height:4,fill:'#f3e6c8'},g);svg('rect',{x:x+5.5,y:y-11,width:4,height:4,fill:'#f3e6c8'},g);svg('rect',{x:x-1,y:y-21,width:2,height:7,fill:'#fff'},g);svg('rect',{x:x-3.5,y:y-18.5,width:7,height:2,fill:'#fff'},g)}
 function paint(){for(let k of ['areas','tracks','pieces'])$(k).replaceChildren();let A=$('areas'),T=$('tracks'),P=$('pieces');let p=state.players[state.active];
  let regionMode=['purify','agronomist'].includes(mode)&&canAct(),targets=['carriage','train','ship','build'].includes(mode)&&canAct()?new Set((legal[mode]||[]).map(c=>c.to)):new Set();
@@ -171,7 +171,7 @@ function paint(){for(let k of ['areas','tracks','pieces'])$(k).replaceChildren()
   for(let color of COLORS)if(state.hospitals[color]===c.id)drawHospital(P,c.x-20,c.y+20,color);
   let tg=targets.has(c.id),dot=svg('circle',{cx:c.x,cy:c.y,r:15,fill:tg?'#00edff':'#fff','fill-opacity':tg?.25:0,stroke:tg?'#00efff':'transparent','stroke-width':3},P);svg('title',{},dot).textContent=c.name+(c.port?' (port)':'');if(tg){dot.style.cursor='pointer';dot.onclick=()=>{sel.to=c.id;sel.to2='';render()}}if($('showNames').checked){let t=svg('text',{x:c.x+12,y:c.y-18,style:'font-size:12px'},P);t.textContent=c.name}}
  // pawns
- let byCity={};state.players.forEach((q,i)=>{if(q.city)(byCity[q.city]=byCity[q.city]||[]).push(i)});for(let [cid,seats] of Object.entries(byCity)){let c=C[cid],n=seats.length;seats.forEach((i,j)=>{let x=c.x+(j-(n-1)/2)*16,y=c.y-6;drawPawn(P,x,y,state.players[i].role,i+1,i===state.active&&state.phase!=='setup')})}}
+ let byCity={};state.players.forEach((q,i)=>{if(q.city)(byCity[q.city]=byCity[q.city]||[]).push(i)});for(let [cid,seats] of Object.entries(byCity)){let c=C[cid],n=seats.length;seats.forEach((i,j)=>{let x=c.x+(j-(n-1)/2)*20,y=c.y-4;drawPawn(P,x,y,state.players[i].role,i+1,i===state.active&&state.phase!=='setup')})}}
 
 /* ---------- render ---------- */
 function render(){let p=state.players[state.active];$('turnStatus').textContent=state.phase==='setup'?'Choose starting cities':state.status!=='playing'?(state.status==='won'?'Victory':'Defeat — '+state.status.replace('lost: ','')):'Turn '+state.turn+' · '+playerLabel(state,state.active)+' · '+state.actions+' action'+(state.actions===1?'':'s');
