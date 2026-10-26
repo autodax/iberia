@@ -177,6 +177,20 @@ async def main():
     await pg.evaluate("$('volume').value='30';$('volume').dispatchEvent(new Event('input'))")
     await pg.reload();await pg.wait_for_timeout(800)
     ok(await pg.evaluate("sndPrefs.on&&Math.abs(sndPrefs.vol-.3)<.01&&$('volume').value==='30'"),'sound setting and volume remembered')
+    # random seeds
+    seeds=set()
+    for _ in range(3):
+        await pg.reload();await pg.wait_for_timeout(300);seeds.add(await pg.evaluate("state.seed"))
+    ok(len(seeds)==3,'each page load gets a new random seed '+str(seeds))
+    async def newgame(seed=''):
+        await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close())")
+        await pg.evaluate("s=>{$('seed').value=s;$('newGame').click()}",seed);await pg.wait_for_selector('#choiceDialog[open]');await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(200)
+        return await pg.evaluate("[state.seed,state.eventsInGame.join(),state.players.map(p=>p.hand.join('/')).join(';')]")
+    a=await newgame();b2=await newgame()
+    ok(a[0]!=b2[0] and (a[1]!=b2[1] or a[2]!=b2[2]),'New game with a blank seed deals differently')
+    c1=await newgame('replay-me');c2=await newgame('replay-me')
+    ok(c1==c2 and c1[0]=='replay-me','typed seed replays the same deal')
+    ok(await pg.evaluate("$('seed').value===''"),'seed field clears after a new game')
     # prevented infections
     await pg.evaluate("window.soundLog=[];$('fxSpeed').value='2';resetFx();let c=MAP.cities[10].id,r=C[c].region_ids[0];queueFx([{kind:'infection',city:c,pre:CP(state.cubes),after:CP(state.cubes),blocked:[{city:c,by:'water',region:r,left:1,n:1}]}])");await pg.wait_for_timeout(200)
     ok(await pg.evaluate("!!document.querySelector('#fx.on .blocked')&&/Infection prevented/.test(document.querySelector('#fx .blocked').textContent)&&/purification token used/.test(document.querySelector('#fx .blocked').textContent)"),'prevented infection shown in popup')
