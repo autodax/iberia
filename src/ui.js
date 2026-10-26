@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.8',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.9',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // Where the board picture sits in map coordinates (cities are in a 1521x1080 frame). Measured for the
 // current assets/img0.jpeg by matching it to the previous board; the frame is cropped to the picture.
@@ -41,13 +41,13 @@ async function loadAssets(files){for(let u of Object.values(ASSETS))URL.revokeOb
  let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC);$('assetStatus').textContent=n?n+' files loaded from your folder'+(b?' (including board image).':'.'):'No local files loaded. '+REPO_STATUS;render()}
 const BOARD_SRC=document.getElementById('boardImage').getAttribute('href');
 /* ---------- sounds (assets/sounds/*.mp3; a local folder or the repo can replace them) ---------- */
-const SND_VOL={click:.45,move:.7,draw:.8,cube:.7,outbreak:.9,epidemic:.75,win:.7,lose:.7},SND_KEY='iberia-sound';
+const SND_VOL={move:.7,draw:.8,cube:.7,outbreak:.9,epidemic:.75,win:.7,lose:.7},SND_KEY='iberia-sound';
 let sndCtx=null,sndBuf={},sndLast={},sndPrefs={on:false,vol:.7};try{Object.assign(sndPrefs,JSON.parse(localStorage.getItem(SND_KEY)||'{}'))}catch(e){}
 function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'tokens/'+name]){k=norm(k);for(let src of [ASSETS,REPO,typeof EMBED!=='undefined'?EMBED:{}])if(src[k]&&!out.includes(src[k]))out.push(src[k])}return out}
 function soundUrl(name){return soundUrls(name)[0]||null}
 function saveSound(){try{localStorage.setItem(SND_KEY,JSON.stringify(sndPrefs))}catch(e){}}
 function syncSoundUI(){let b=$('muteButton');if(b){b.classList.toggle('off',!sndPrefs.on);b.title=sndPrefs.on?'Sound on (click to mute)':'Sound off (click to turn on)';b.setAttribute('aria-pressed',String(sndPrefs.on))}if($('sound'))$('sound').checked=sndPrefs.on;if($('volume'))$('volume').value=Math.round(sndPrefs.vol*100)}
-function setSound(on){sndPrefs.on=on;saveSound();syncSoundUI();if(on){unlockSound();playSound('click')}}
+function setSound(on){sndPrefs.on=on;saveSound();syncSoundUI();if(on){unlockSound();playSound('cube')}}
 function unlockSound(){try{if(!sndCtx){let A=window.AudioContext||window.webkitAudioContext;if(A)sndCtx=new A()}if(sndCtx&&sndCtx.state==='suspended')sndCtx.resume()}catch(e){}}
 function decodeUrl(url){if(!sndBuf[url])sndBuf[url]=fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((ok,no)=>sndCtx.decodeAudioData(a,ok,no))).catch(()=>null);return sndBuf[url]}
 // try the local folder, then the repo, then the built-in copy
@@ -55,7 +55,7 @@ async function soundBuffer(name){if(!sndCtx)return null;for(let u of soundUrls(n
 function playSound(name,delay=0){if(!sndPrefs.on)return;let url=soundUrl(name);if(!url)return;let now=performance.now()+delay;if(sndLast[name]&&Math.abs(now-sndLast[name])<45)return;sndLast[name]=now;
  let vol=sndPrefs.vol*(SND_VOL[name]??.7);(window.soundLog=window.soundLog||[]).push(name);unlockSound();
  if(!sndCtx){setTimeout(()=>{try{let a=new Audio(url);a.volume=Math.min(1,vol);a.play().catch(()=>{})}catch(e){}},delay);return}
- soundBuffer(name).then(b=>{if(!b||!sndCtx)return;let s=sndCtx.createBufferSource(),g=sndCtx.createGain();s.buffer=b;s.playbackRate.value=name==='cube'||name==='click'?0.94+Math.random()*.12:1;g.gain.value=vol;s.connect(g).connect(sndCtx.destination);s.start(sndCtx.currentTime+Math.max(0,delay)/1000)})}
+ soundBuffer(name).then(b=>{if(!b||!sndCtx)return;let s=sndCtx.createBufferSource(),g=sndCtx.createGain();s.buffer=b;s.playbackRate.value=name==='cube'?0.94+Math.random()*.12:1;g.gain.value=vol;s.connect(g).connect(sndCtx.destination);s.start(sndCtx.currentTime+Math.max(0,delay)/1000)})}
 
 /* ---------- helpers ---------- */
 function el(tag,props={},parent){let n=Object.assign(document.createElement(tag),props);if(parent)parent.appendChild(n);return n}
@@ -287,6 +287,4 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&
 $('assetButton').onclick=()=>$('assetFiles').click();$('assetFiles').onchange=()=>loadAssets([...$('assetFiles').files]);$('assetClear').onclick=()=>{loadAssets([]);$('assetStatus').textContent=REPO_STATUS};
 $('showRegions').onchange=paint;$('showNames').onchange=paint;window.addEventListener('resize',fitLayout);
 $('muteButton').onclick=e=>{e.stopPropagation();setSound(!sndPrefs.on)};$('sound').onchange=()=>setSound($('sound').checked);$('volume').oninput=()=>{sndPrefs.vol=+$('volume').value/100;saveSound()};$('volume').onchange=()=>playSound('cube');syncSoundUI();
-// soft wooden click for every button (moves, alerts and cubes have their own sounds)
-document.addEventListener('click',e=>{let b=e.target.closest('button,a.btn,.card[role=button]');if(b&&b.id!=='muteButton'&&!b.disabled)playSound('click')},true);
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');

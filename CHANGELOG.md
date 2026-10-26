@@ -1,3 +1,6 @@
+# v0.9.9
+- Removed the click sound on buttons so it no longer overlaps the other sounds. Moves, card draws, cube landings, outbreaks, epidemics and win/lose keep their sounds.
+
 # v0.9.8
 - Realigned the board picture with the updated assets/img0.jpeg (the new picture is about 1.4% smaller in frame and shifted right and down). Cities, routes, regions, tracks and pieces now sit on the printed board again; city markers are centered within about 1-2 pixels.
 - The board frame is cropped to the picture so there is no empty margin. The placement is BOARD_FIT in src/ui.js.
