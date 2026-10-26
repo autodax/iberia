@@ -1,5 +1,5 @@
 // Iberia prototype rules engine v0.9 — standard base game (7 roles, 15 Events, 2–5 players)
-const VERSION='0.9.9';
+const VERSION='0.9.10';
 const COLORS=['blue','red','yellow','black'],RATE=[2,2,2,3,3,4,4];
 const C=Object.fromEntries(MAP.cities.map(c=>[c.id,c])),R=Object.fromEntries(MAP.regions.map(r=>[r.id,r]));
 const edgeKey=(a,b)=>[a,b].sort().join('|'),EDGES=new Map(MAP.connections.map(e=>[edgeKey(e.a,e.b),e]));
@@ -85,12 +85,14 @@ function choice(ctx,options,description,labels){if(options.length===1)return opt
 function regionLabel(r){return r+' — '+R[r].adjacent_cities.map(k=>C[k].name).join(', ')}
 // Move any pawn; the Nurse re-places her prevention token in a region adjacent to her new city.
 function relocate(s,seat,to,ctx){let q=s.players[seat];q.city=to;if(q.role==='nurse'){let opts=C[to].region_ids.slice();s.prevention=choice(ctx,opts,'Nurse: choose the region for the prevention token next to '+C[to].name,opts.map(regionLabel));s.log.push('Prevention token → '+s.prevention)}}
+// Record a prevented cube on the alert that caused it (shown in the popup, then animated on the board).
+function noteBlocked(s,b){let f=s.fx&&s.fx[s.fx.length-1];if(!f)return;let list=f.blocked=f.blocked||[],e=list.find(x=>x.city===b.city&&x.by===b.by&&x.region===b.region);if(e){e.n++;e.left=b.left}else list.push({...b,n:1})}
 function protectedByNurse(s,id){return !!(s.prevention&&R[s.prevention].adjacent_cities.includes(id))}
 function addCube(s,id,color,ctx,erupted,queue){
  if(erupted.has(id))return false;
- if(protectedByNurse(s,id)){s.log.push('Prevention token protects '+C[id].name);return false}
+ if(protectedByNurse(s,id)){s.log.push('Prevention token protects '+C[id].name);noteBlocked(s,{city:id,by:'nurse',region:s.prevention});return false}
  let water=C[id].region_ids.filter(r=>s.water[r]>0);
- if(water.length){let r=choice(ctx,water,'Choose which purification token protects '+C[id].name,water.map(x=>regionLabel(x)+' (×'+s.water[x]+')'));s.water[r]--;s.waterSupply++;s.log.push('Purification in '+r+' protects '+C[id].name);return false}
+ if(water.length){let r=choice(ctx,water,'Choose which purification token protects '+C[id].name,water.map(x=>regionLabel(x)+' (×'+s.water[x]+')'));s.water[r]--;s.waterSupply++;s.log.push('Purification in '+regionLabel(r)+' protects '+C[id].name);noteBlocked(s,{city:id,by:'water',region:r,left:s.water[r]});return false}
  if(s.cubes[id][color]===3){erupted.add(id);s.outbreaks++;s.log.push('Outbreak '+s.outbreaks+': '+C[id].name);pushFx(s,{kind:'outbreak',city:id,color,count:s.outbreaks});if(s.outbreaks>=8){lose(s,'8 outbreaks');return true}queue.push(...ADJ[id].filter(n=>!erupted.has(n)));return true}
  if(s.supply[color]===0){lose(s,'no '+color+' cubes left');return false}
  s.cubes[id][color]++;s.supply[color]--;return false}

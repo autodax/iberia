@@ -1,3 +1,8 @@
+# v0.9.10
+- Prevented infections are now announced. When a purification token or the Nurse's prevention token stops a cube, the popup for that infection, epidemic or outbreak lists each protected city and what protected it (with how many purification tokens were used and how many are left in that region).
+- After the popup closes, each protected city flashes on the board with the token that saved it, with a soft chime.
+- These notices appear even when Card reveals is set to Off, so a save is never missed. Log entries now name the region's cities instead of its code.
+
 # v0.9.9
 - Removed the click sound on buttons so it no longer overlaps the other sounds. Moves, card draws, cube landings, outbreaks, epidemics and win/lose keep their sounds.
 

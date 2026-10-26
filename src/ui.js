@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.9',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.10',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // Where the board picture sits in map coordinates (cities are in a 1521x1080 frame). Measured for the
 // current assets/img0.jpeg by matching it to the previous board; the frame is cropped to the picture.
@@ -41,7 +41,7 @@ async function loadAssets(files){for(let u of Object.values(ASSETS))URL.revokeOb
  let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC);$('assetStatus').textContent=n?n+' files loaded from your folder'+(b?' (including board image).':'.'):'No local files loaded. '+REPO_STATUS;render()}
 const BOARD_SRC=document.getElementById('boardImage').getAttribute('href');
 /* ---------- sounds (assets/sounds/*.mp3; a local folder or the repo can replace them) ---------- */
-const SND_VOL={move:.7,draw:.8,cube:.7,outbreak:.9,epidemic:.75,win:.7,lose:.7},SND_KEY='iberia-sound';
+const SND_VOL={blocked:.7,move:.7,draw:.8,cube:.7,outbreak:.9,epidemic:.75,win:.7,lose:.7},SND_KEY='iberia-sound';
 let sndCtx=null,sndBuf={},sndLast={},sndPrefs={on:false,vol:.7};try{Object.assign(sndPrefs,JSON.parse(localStorage.getItem(SND_KEY)||'{}'))}catch(e){}
 function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'tokens/'+name]){k=norm(k);for(let src of [ASSETS,REPO,typeof EMBED!=='undefined'?EMBED:{}])if(src[k]&&!out.includes(src[k]))out.push(src[k])}return out}
 function soundUrl(name){return soundUrls(name)[0]||null}
@@ -111,17 +111,32 @@ function cardFace(k,landscape){let box=el('div',{className:'bigCard'+(landscape?
  if(C[k])src=asset((landscape?'cards/infection/':'cards/player/')+slug(C[k].name));else if(EVENTS[k])src=asset('cards/events/'+slug(EVENTS[k]));else if(String(k).startsWith('epidemic'))src=asset('cards/epidemic');
  if(src){el('img',{src,alt:cardName(k)},box);return box}
  let color=C[k]?C[k].color:EVENTS[k]?'event':'epidemic';el('div',{className:'band '+color},box);el('div',{className:'kind',textContent:landscape?'Infection':C[k]?'City · '+C[k].color:EVENTS[k]?'Event':'Epidemic'},box);el('div',{className:'nm',textContent:cardName(k)},box);if(EVENTS[k])el('div',{className:'kind',textContent:EVENT_TEXT[k],style:'text-transform:none;letter-spacing:0;font-size:10px'},box);return box}
-function queueFx(list){let speed=+$('fxSpeed').value;list=list||[];if(list.length&&list[0].pre&&!cubeView&&!fxCurrent&&!fxQueue.length){cubeView=list[0].pre;paint()}for(let f of list){if(f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'){fxQueue.push(f);continue}if(speed>=0)fxQueue.push(f);else if(f.after)fxQueue.push({...f,silent:true})}if(!fxCurrent)nextFx()}
-function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';let done=fxCurrent;if(done&&done.after)applyCubes(done.after,done);fxCurrent=fxQueue.shift()||null;
+// ---------- prevented infections ----------
+function blockedNote(f,b){let box=el('div',{className:'blocked'},b);
+ let all=f.blocked.reduce((a,x)=>a+x.n,0);
+ el('div',{className:'bhead',textContent:f.kind==='infection'&&f.blocked.every(x=>x.city===f.city)?'Infection prevented':all===1?'1 cube prevented':all+' cubes prevented'},box);
+ for(let x of f.blocked){let row=el('div',{className:'brow '+x.by},box);el('img',{src:tokenImg(x.by==='water'?'purification':'prevention')},row);
+  let t=el('div',{},row);el('strong',{textContent:C[x.city].name+(x.n>1?' ×'+x.n:'')},t);
+  el('span',{textContent:x.by==='water'?(x.n>1?' · '+x.n+' purification tokens used':' · purification token used')+(x.left?' ('+x.left+' left there)':''):' · protected by the Nurse\u2019s prevention token'},t)}}
+function showBlocked(list){if(+$('fxSpeed').value<0||matchMedia('(prefers-reduced-motion: reduce)').matches)return;let g=$('flyers');
+ list.forEach((x,i)=>{let c=C[x.city],img=tokenImg(x.by==='water'?'purification':'prevention'),grp=document.createElementNS(NS,'g');grp.setAttribute('class','shield');
+  let ring=document.createElementNS(NS,'circle');ring.setAttribute('cx',c.x);ring.setAttribute('cy',c.y);ring.setAttribute('r',18);ring.setAttribute('fill','none');ring.setAttribute('stroke',x.by==='water'?'#2f8fc9':'#e07aa6');ring.setAttribute('stroke-width',4);grp.appendChild(ring);
+  let im=document.createElementNS(NS,'image');im.setAttribute('href',img);im.setAttribute('x',c.x-18);im.setAttribute('y',c.y-46);im.setAttribute('width',36);im.setAttribute('height',36);grp.appendChild(im);g.appendChild(grp);
+  let d=i*260;ring.animate([{r:14,opacity:1},{r:44,opacity:0}],{duration:1100,delay:d,iterations:2,fill:'both'});
+  im.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)',offset:.25},{opacity:1,offset:.7},{opacity:0,transform:'translateY(-10px)'}],{duration:1900,delay:d,fill:'both'}).onfinish=()=>grp.remove();
+  setTimeout(()=>playSound('blocked'),d)})}
+function queueFx(list){let speed=+$('fxSpeed').value;list=list||[];if(list.length&&list[0].pre&&!cubeView&&!fxCurrent&&!fxQueue.length){cubeView=list[0].pre;paint()}for(let f of list){if(f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||f.blocked){fxQueue.push(f);continue}if(speed>=0)fxQueue.push(f);else if(f.after)fxQueue.push({...f,silent:true})}if(!fxCurrent)nextFx()}
+function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';let done=fxCurrent;if(done&&done.after)applyCubes(done.after,done);if(done&&done.blocked)showBlocked(done.blocked);fxCurrent=fxQueue.shift()||null;
  while(fxCurrent&&fxCurrent.silent){applyCubes(fxCurrent.after,null);fxCurrent=fxQueue.shift()||null}
  if(!fxCurrent){settleCubes();return}let f=fxCurrent,speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
  if(f.kind==='playerDraw'){let row=el('div',{className:'fxRow'},b);for(let k of f.cards)row.appendChild(cardFace(k));el('div',{className:'fxCaption',textContent:state.players[f.seat].name+' draws'},b);dur=3500;playSound('draw')}
- else if(f.kind==='infection'){b.appendChild(cardFace(f.city,true));el('div',{className:'fxCaption',textContent:'Infect '+C[f.city].name},b);dur=3000;playSound('draw')}
+ else if(f.kind==='infection'){b.appendChild(cardFace(f.city,true));el('div',{className:'fxCaption',textContent:'Infect '+C[f.city].name},b);dur=f.blocked?5000:3000;playSound('draw')}
  else if(f.kind==='research'){el('div',{className:'fxCaption',textContent:f.color[0].toUpperCase()+f.color.slice(1)+' disease researched'},b);dur=3000}
  else if(f.kind==='epidemic'){let a=el('div',{className:'alert'},b);let ban=asset('alerts/epidemic');if(ban)el('img',{className:'banner',src:ban},a);el('h3',{textContent:'Epidemic'},a);let row=el('div',{className:'fxRow',style:'justify-content:center;margin:8px 0'},a);row.appendChild(cardFace('epidemic_0'));row.appendChild(cardFace(f.city,true));el('p',{textContent:'Infection rate is now '+f.rate+'. '+C[f.city].name+' receives 3 cubes; the discard pile is shuffled onto the deck.'},a);dur=2800;playSound('epidemic')}
  else if(f.kind==='outbreak'){let a=el('div',{className:'alert outbreak'},b);let ban=asset('alerts/outbreak');if(ban)el('img',{className:'banner',src:ban},a);let h=el('h3',{},a);el('img',{className:'tok',src:tokenImg('outbreak')},h);h.append('Outbreak');el('p',{textContent:C[f.city].name+' · '+f.color+' disease'},a);el('p',{textContent:'Outbreaks: '+f.count+' / 8'},a);dur=2800;playSound('outbreak')}
  else if(f.kind==='end'){let a=el('div',{className:'alert'+(state.status==='won'?' win':'')},b);el('h3',{textContent:state.status==='won'?'Victory':'Defeat'},a);el('p',{textContent:f.text},a);dur=6000;playSound(state.status==='won'?'win':'lose')}
- let sticky=f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||speed===0,ms=dur*(speed>0?speed:1);
+ if(f.blocked)blockedNote(f,b);
+ let sticky=f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||speed===0||(f.blocked&&speed<0),ms=dur*(speed>0?speed:1);
  let sk=el('div',{className:'fxSkip'},b);let btn=el('button',{textContent:fxQueue.length?'Continue ('+fxQueue.length+' more)':'Continue'},sk);btn.onclick=e=>{e.stopPropagation();nextFx()};
  if(!sticky){let bar=el('div',{className:'fxBar',title:'Closes automatically; click to continue now'},sk);el('i',{style:'animation-duration:'+ms+'ms'},bar);fxTimer=setTimeout(nextFx,ms)}
  box.className='on';box.onclick=()=>nextFx();setTimeout(()=>btn.focus({preventScroll:true}),0)}
