@@ -1,3 +1,8 @@
+# v0.9.7
+- Sounds: wooden click for buttons, a heavier wooden tap for pawn moves, card slide for draws, a light tap as each cube lands, a deep thud for outbreaks, an alarm jingle for epidemics, and win/lose jingles.
+- Speaker button in the header mutes or unmutes; Menu has a volume slider. Sound starts muted and the setting is remembered.
+- Sounds are CC0 from Kenney (see docs/SOUNDS.md), stored in assets/sounds/ and built into index.html for offline play. Uploading a file with the same name to the repo replaces it.
+
 # v0.9.6
 - New disease cubes stay off the board until their alert is dismissed, then fly in. Infection and Epidemic cubes drop from the popup onto the city; Outbreak cubes spread out from the outbreaking city to its neighbors, one after another.
 - With Card reveals set to Off, cubes appear at once with no animation (also when the system's reduce-motion setting is on).
