@@ -94,3 +94,7 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 @media(max-width:1100px){header strong{font-size:13px}.handTitle{font-size:12.5px}.card{font-size:12.5px}}
 
 #setupPanel,#actionArea,#nextPhase,#message,#resources{flex:none}
+.actHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}.actHead h2{margin:0}
+#undo{padding:3px 12px;font-size:13px;white-space:nowrap}
+#undo::before{content:'\21B6  '}
+aside.roomy #undo{font-size:14px}

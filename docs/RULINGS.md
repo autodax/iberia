@@ -10,3 +10,4 @@ Sources: docs/Iberia_rulebook.pdf and docs/Guide.pdf in this repo.
 - Blue and black arrows on the board are decorative and ignored.
 - Founding dates: the rulebook only shows dates for the few cards pictured in it, so the first player stays a manual choice until all 48 dates are added.
 - Checked against Guide.pdf in v0.9.1: both ways of purifying water, the Agronomist's extra token, the Scientist's any-color purify, one cube per Treat even after research, any start city when a hand has no City card, losing when fewer than 2 Player cards remain, and the hand limit applying only after Epidemics.
+- Undo: allowed for any action, Event or discard that reveals no hidden cards. Drawing Player cards, Epidemics, infections, the Scientist's peek and Begin game clear the undo history, and so does the end of the game.

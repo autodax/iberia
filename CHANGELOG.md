@@ -1,3 +1,8 @@
+# v0.9.4
+- Undo: an Undo button appears next to Available actions whenever something can be taken back (or press Ctrl+Z / Cmd+Z). Hover over it to see what it will undo.
+- Undo steps back one action at a time, and Event plays and hand-limit discards can be undone as well. It stops at the last point where hidden cards were revealed: Begin game, drawing Player cards, Epidemics, infections and the Scientist's peek.
+- Removed the old Debug undo from the menu.
+
 # v0.9.3
 - Layout: the board fills the full height on the left; hands, actions and supplies are all in the right-hand column. The board is about 40% larger at 1366x768.
 - Larger hand text (card names and player titles), with more room for full city names. Text scales up again on large screens.
