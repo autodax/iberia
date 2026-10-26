@@ -1,5 +1,5 @@
 # Pandemic Iberia browser prototype v0.9.0
-Play at https://autodax.github.io/iberia/ or open `index.html` (same as `iberia-browser-prototype-v0.9.1.html`) in any modern browser. Everything is inside that one file.
+Play the current version at https://autodax.github.io/iberia/. Every version stays playable at https://autodax.github.io/iberia/versions/ in any modern browser. Everything is inside that one file.
 
 - 2-5 players, all 7 standard roles, all 15 Events (random selection per the setup table).
 - Outbreak and epidemic alerts; drawn player and infection cards are shown briefly (Menu > Card reveals: Normal / Fast / Off). Click a reveal to skip it.
@@ -8,3 +8,8 @@ Play at https://autodax.github.io/iberia/ or open `index.html` (same as `iberia-
 - Save/load: autosaves in the browser; Menu also exports/imports a save file. Saves from v0.8 and earlier are not compatible.
 
 Rebuild: `python3 build.py` (sources in `src/`). Tests: `node tests/engine.test.js` and `python3 tests/browser_test.py` (needs Playwright + Chromium; set CHROMIUM=/path/to/chrome to use a specific browser).
+
+## Reference documents
+- `docs/Iberia_rulebook.pdf`: the game manual.
+- `docs/Guide.pdf`: the rules summary, including the Events and Roles glossaries.
+- `docs/RULINGS.md`: how the prototype interprets unclear rules.

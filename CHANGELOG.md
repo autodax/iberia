@@ -3,6 +3,8 @@
 - New built-in artwork: disease cubes, hospitals, research markers (microscopes), infection-rate, outbreak, prevention, purification and railroad tokens.
 - Cubes are drawn one per cube; research markers sit on a parchment disc so they stand out on the vials.
 - v0.9.0 saves still load.
+- Every version is kept playable under versions/ (see versions/index.html).
+- Added the game manual and guide to docs/ and checked the rules against the guide.
 
 # v0.9.0
 - Added Railwayman, Politician, Rural Doctor, Royal Academy Scientist and Nurse roles (all 7 standard roles).

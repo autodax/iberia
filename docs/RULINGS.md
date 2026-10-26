@@ -1,5 +1,5 @@
 # Rulings used in v0.9
-Source: official Z-Man Pandemic Iberia rulebook.
+Sources: docs/Iberia_rulebook.pdf and docs/Guide.pdf in this repo.
 - Government Mobilization: moves are free, but ship travel still discards the matching City card unless the player is the Sailor.
 - New Rails places 1-2 railroads; Ring Railroads 1-3, only between two port cities. Dashed routes never take railroads.
 - Purify Water places up to 2 tokens, both may go in the same region.
@@ -8,3 +8,5 @@ Source: official Z-Man Pandemic Iberia rulebook.
 - Starting player is picked manually (rulebook: the player whose city card has the earliest founding date goes first).
 - Hospitals: one per color; building another moves it.
 - Blue and black arrows on the board are decorative and ignored.
+- Founding dates: the rulebook only shows dates for the few cards pictured in it, so the first player stays a manual choice until all 48 dates are added.
+- Checked against Guide.pdf in v0.9.1: both ways of purifying water, the Agronomist's extra token, the Scientist's any-color purify, one cube per Treat even after research, any start city when a hand has no City card, losing when fewer than 2 Player cards remain, and the hand limit applying only after Epidemics.

@@ -18,7 +18,12 @@ REPO_FILES=sorted(os.path.relpath(p,'assets').replace(os.sep,'/') for p in glob.
 js=mp+'\nconst REPO_FILES='+json.dumps(REPO_FILES)+';\nconst TOKENS='+json.dumps(TOKENS)+';\nconst EMBED='+json.dumps(EMBED)+';\n'+eng+'\n'+d('src/ui.js')
 html=d('src/index.html').replace('/*CSS*/',d('src/style.css')).replace('/*BOARD*/',board).replace('/*JS*/',js.replace('</script','<\\/script'))
 ver=re.search(r"UI_VERSION='([\d.]+)'",d('src/ui.js')).group(1)
-out=['index.html','iberia-browser-prototype-v'+ver+'.html']
-for f in glob.glob('iberia-browser-prototype-v*.html'):os.remove(f)
+os.makedirs('versions',exist_ok=True)
+out=['index.html','versions/iberia-v'+ver+'.html']
 for f in out:open(f,'w',encoding='utf-8').write(html)
 print(len(html),'bytes ->',', '.join(out),'|',len(EMBED),'built-in graphics')
+
+# versions/index.html: list of every playable version
+vs=sorted(glob.glob('versions/iberia-v*.html'),key=lambda f:[int(x) for x in re.findall(r'\d+',os.path.basename(f))],reverse=True)
+items=''.join('<li><a href="%s">%s</a>%s</li>'%(os.path.basename(f),os.path.basename(f)[7:-5],' (current)' if i==0 else '') for i,f in enumerate(vs))
+open('versions/index.html','w',encoding='utf-8').write('<!doctype html><meta charset="utf-8"><title>Iberia versions</title><style>body{background:#516b60;font-family:system-ui,sans-serif;color:#2e4339;margin:0;padding:40px}main{max-width:520px;margin:auto;background:#f6e8cd;border:2px solid #c9ab72;border-radius:8px;padding:20px 28px}a{color:#2e4339;font-weight:600}li{margin:8px 0}</style><main><h1>Iberia prototype versions</h1><p><a href="../">Play the current version</a></p><ul>'+items+'</ul></main>')
