@@ -1,6 +1,9 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.7',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.8',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
+// Where the board picture sits in map coordinates (cities are in a 1521x1080 frame). Measured for the
+// current assets/img0.jpeg by matching it to the previous board; the frame is cropped to the picture.
+const BOARD_FIT=[10.8,6.3,1499.7,1064.8];
 const RATE_POS=[622,676,728,783,835,888,940].map(x=>[x,55]);
 const OUT_POS=[[1390,342],[1449,387],[1390,431],[1449,476],[1391,522],[1450,567],[1391,611],[1450,657],[1391,707]];
 const RESEARCH_POS={red:[832,958],blue:[913,958],black:[973,958],yellow:[1048,958]};
@@ -73,8 +76,8 @@ async function ask(q){return (await choose(q,['yes','no'],['Yes — agreed','No'
 
 /* ---------- layout ---------- */
 function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pad=6,gap=6,head=34,foot=16,minSide=W>=1600?380:W>=1200?330:290,maxSide=560;
- let boardH=Math.max(200,H-2*pad-head-foot-2*gap),boardW=boardH*1521/1080;
- if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*1080/1521}
+ let boardH=Math.max(200,H-2*pad-head-foot-2*gap),boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];
+ if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
  let side=Math.min(maxSide,Math.max(minSide,W-2*pad-gap-boardW));
  let appW=2*pad+boardW+gap+side,appH=H;
  document.querySelector('aside').classList.toggle('roomy',H>=950&&side>=440);

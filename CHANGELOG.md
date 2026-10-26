@@ -1,3 +1,7 @@
+# v0.9.8
+- Realigned the board picture with the updated assets/img0.jpeg (the new picture is about 1.4% smaller in frame and shifted right and down). Cities, routes, regions, tracks and pieces now sit on the printed board again; city markers are centered within about 1-2 pixels.
+- The board frame is cropped to the picture so there is no empty margin. The placement is BOARD_FIT in src/ui.js.
+
 # v0.9.7
 - Sounds: wooden click for buttons, a heavier wooden tap for pawn moves, card slide for draws, a light tap as each cube lands, a deep thud for outbreaks, an alarm jingle for epidemics, and win/lose jingles.
 - Speaker button in the header mutes or unmutes; Menu has a volume slider. Sound starts muted and the setting is remembered.
