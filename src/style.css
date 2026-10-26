@@ -14,25 +14,26 @@ header button{padding:4px 10px}
 #turnStatus{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--parchLight)}
 #phaseLabel{font-size:11px;background:var(--greenDeep);color:var(--parchLight);padding:3px 8px;border-radius:5px;border:1px solid #8aa596}
 main{min-height:0;display:grid;grid-template-columns:var(--boardW,minmax(0,1fr)) var(--sideW,292px);gap:6px}
-#playArea{display:grid;grid-template-rows:var(--handsH,76px) var(--boardH,minmax(0,1fr));gap:6px;min-width:0;min-height:0}
-#hands{display:grid;gap:6px;min-height:0;align-content:start;grid-auto-rows:max-content;overflow:auto}
-.hand{padding:4px 6px;background:var(--parchLight);border:2px solid var(--tanBorder);border-radius:6px;min-width:0;overflow:hidden}
+#playArea{display:grid;min-width:0;min-height:0;align-items:start}
+#hands{display:grid;gap:6px;min-height:0;flex:0 1 auto;align-content:start;grid-auto-rows:max-content;overflow:auto;padding-bottom:6px;border-bottom:1px solid var(--tanBorder)}
+aside.roomy{font-size:15px}aside.roomy .handTitle{font-size:16.5px;line-height:22px}aside.roomy .card{font-size:15.5px;line-height:20px;height:28px;padding:3px 9px}aside.roomy .action{font-size:15px;padding:8px 6px}aside.roomy h2{font-size:17px}aside.roomy #actionHint,aside.roomy #message,aside.roomy #resources{font-size:14px}aside.roomy #cubeSupply,aside.roomy #researchStatus,aside.roomy #flags,aside.roomy .detail{font-size:13px}aside.roomy label{font-size:14px}
+.hand{padding:6px 8px;background:var(--parchLight);border:2px solid var(--tanBorder);border-radius:6px;min-width:0;overflow:hidden}
 .hand.active{border-color:var(--greenDeep);box-shadow:0 0 0 2px var(--cyan) inset}
 .hand.over{border-color:var(--warn)}
-.handTitle{display:flex;align-items:center;gap:4px;font-size:11px;line-height:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;color:var(--ink)}
+.handTitle{display:flex;align-items:center;gap:6px;font-size:14px;line-height:19px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;color:var(--ink)}
 .handTitle svg{flex:none}
-.handCards{display:flex;flex-wrap:wrap;gap:3px}
-.card{font-size:11px;line-height:14px;padding:2px 6px;height:21px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#f3e6c8;border:1px solid #8b7a5a;border-left:5px solid #98a6b0;border-radius:4px;color:#2b2b22}
+.handCards{display:flex;flex-wrap:wrap;gap:4px}
+.card{font-size:13.5px;line-height:18px;padding:2px 7px;height:24px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#f3e6c8;border:1px solid #8b7a5a;border-left:5px solid #98a6b0;border-radius:4px;color:#2b2b22}
 .card.blue,.miniCard.blue{border-left-color:#2f6fb3}.card.red,.miniCard.red{border-left-color:#c0303a}.card.yellow,.miniCard.yellow{border-left-color:#d1a514}.card.black,.miniCard.black{border-left-color:#1d1d1d}
 .card.event,.miniCard.event{border-left-color:#4f8a4a;font-style:normal;background:#eef0d8}
 .selected{outline:2px solid var(--cyan);outline-offset:0}
 #boardFrame{position:relative;width:var(--boardW,100%);height:var(--boardH,100%);min-height:0;min-width:0;background:var(--greenDeep);border-radius:4px;overflow:hidden}
 #board{display:block;width:100%;height:100%}
 svg text{font:bold 14px sans-serif;fill:white;stroke:#111;stroke-width:3px;paint-order:stroke;pointer-events:none}
-aside{min-height:0;background:var(--parch);border:1px solid var(--tanBorder);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:7px;overflow:auto}
+aside{min-height:0;min-width:0;background:var(--parch);border:1px solid var(--tanBorder);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:7px;overflow:auto}
 h2{font-size:15px;margin:0 0 6px;color:var(--ink)}
-#actionButtons{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.action{font-size:12px;padding:6px 4px}
+#actionButtons{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:5px}
+.action{font-size:13px;padding:6px 4px}
 .action.chosen{background:var(--accent);color:var(--parchLight);border-color:var(--greenDeep)}
 #actionForm{display:grid;gap:6px;margin-top:8px}
 label{display:block;font-size:12px}label select,label input:not([type=checkbox]){display:block;width:100%;margin-top:3px}
@@ -67,11 +68,14 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 .peekList{display:grid;gap:5px}.peekList div{display:flex;gap:5px;align-items:center}.peekList .miniCard{flex:1}
 /* reveal / alert overlay */
 #fx{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5}
-#fx.on{pointer-events:auto;cursor:pointer;background:#16231d55}
+#fx.on{pointer-events:auto;cursor:pointer;background:#16231d88}
 .fxBox{display:flex;flex-direction:column;align-items:center;gap:10px;animation:pop .22s ease-out}
 .fxRow{display:flex;gap:16px;align-items:center}
 .fxCaption{background:var(--parch);border:1px solid var(--tanBorder);border-radius:6px;padding:5px 12px;font-size:14px;font-weight:600;color:var(--ink);box-shadow:0 4px 16px #0005}
-.fxSkip{font-size:11px;color:var(--parchLight);text-shadow:0 1px 2px #000}
+.fxSkip{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--parchLight);text-shadow:0 1px 2px #000}
+.fxSkip button{background:var(--accent);color:var(--parchLight);border-color:var(--greenDeep);font-size:15px;font-weight:600;padding:7px 22px;text-shadow:none;box-shadow:0 4px 14px #0006}
+.fxBar{width:160px;height:4px;border-radius:2px;background:#ffffff33;overflow:hidden}.fxBar i{display:block;height:100%;background:var(--parchLight);transform-origin:left;animation:fxbar linear forwards}
+@keyframes fxbar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 .bigCard{width:150px;height:210px;border-radius:10px;background:#f3e6c8;border:2px solid #8b7a5a;box-shadow:0 8px 28px #0007;display:flex;flex-direction:column;overflow:hidden;color:#2b2b22}
 .bigCard.landscape{width:220px;height:150px}
 .bigCard img{width:100%;height:100%;object-fit:cover}
@@ -87,4 +91,6 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 .alert.win{border-color:var(--accent)}.alert.win h3{color:var(--accent)}
 @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
 @media(max-height:760px){.action{padding:5px 4px}aside{padding:8px;gap:5px}#actionForm{gap:5px}button{padding:5px 8px}}
-@media(max-width:1100px){header strong{font-size:13px}.handTitle{font-size:10px}.card{font-size:10px}}
+@media(max-width:1100px){header strong{font-size:13px}.handTitle{font-size:12.5px}.card{font-size:12.5px}}
+
+#setupPanel,#actionArea,#nextPhase,#message,#resources{flex:none}

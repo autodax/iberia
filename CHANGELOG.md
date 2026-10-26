@@ -1,3 +1,10 @@
+# v0.9.3
+- Layout: the board fills the full height on the left; hands, actions and supplies are all in the right-hand column. The board is about 40% larger at 1366x768.
+- Larger hand text (card names and player titles), with more room for full city names. Text scales up again on large screens.
+- Outbreak, Epidemic and game-end alerts stay until you click Continue (or press Enter, Space or Escape).
+- Card reveals last about twice as long, show a countdown bar, and can be clicked away at any time. Menu > Card reveals adds Slow (default) and Until clicked.
+- In 4-5 player games on smaller screens, the hands list scrolls and keeps the active player in view.
+
 # v0.9.2
 - 3D pawns for all 7 roles (assets/pawns/), lit and angled to match the cube and hospital art; used on the board and in the hand panels.
 - Pawns drawn slightly larger, with more space between pawns sharing a city.

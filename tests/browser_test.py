@@ -24,6 +24,16 @@ async def main():
     ok(await pg.evaluate("Object.keys(REPO).length>=17&&asset('tokens/cube-red')===REPO['tokens/cube-red']&&asset('tokens/hospital-blue').startsWith('https://')"),'repo graphics used by default: '+str(await pg.evaluate("Object.keys(REPO).length")))
     ok(await pg.evaluate("document.getElementById('assetStatus').textContent.includes('GitHub repo')"),'graphics status shows repo')
     await pg.close()
+    # card reveals last a few seconds, then close on their own
+    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.wait_for_timeout(300)
+    await pg.evaluate("queueFx([{kind:'infection',city:'c22'}])");await pg.wait_for_timeout(1500)
+    ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='infection'&&!!document.querySelector('#fx .fxBar')"),'infection reveal still showing after 1.5 s, with timer bar')
+    await pg.keyboard.press('Enter');await pg.wait_for_timeout(100)
+    ok(await pg.evaluate("!fxCurrent"),'Enter dismisses a reveal')
+    await pg.evaluate("$('fxSpeed').value='0';queueFx([{kind:'infection',city:'c22'}])");await pg.wait_for_timeout(7000)
+    ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='infection'"),'Until clicked keeps reveals up')
+    ok(await pg.evaluate("$('hands').closest('aside')!==null"),'hands are in the right-hand column')
+    await pg.close()
     # gameplay in 1366
     pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)))
     await pg.goto(F)
@@ -65,6 +75,9 @@ async def main():
     await pg.screenshot(path='/tmp/shot_epidemic.png')
     await pg.click('#fx');await pg.wait_for_timeout(150)
     ok(await pg.evaluate("document.querySelector('#fx .alert h3')?.textContent.includes('Outbreak')"),'outbreak alert')
+    await pg.wait_for_timeout(4000)
+    ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='outbreak'"),'outbreak alert stays until clicked')
+    ok(await pg.evaluate("!!document.querySelector('#fx .fxSkip button')"),'continue button shown')
     await pg.screenshot(path='/tmp/shot_outbreak.png')
     await pg.click('#fx');await pg.wait_for_timeout(100)
     # play through infections
