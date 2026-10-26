@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.2',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.3',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 const RATE_POS=[622,676,728,783,835,888,940].map(x=>[x,55]);
 const OUT_POS=[[1390,342],[1449,387],[1390,431],[1449,476],[1391,522],[1450,567],[1391,611],[1450,657],[1391,707]];
@@ -56,12 +56,13 @@ function choose(title,options,labels){return new Promise(res=>{let d=$('choiceDi
 async function ask(q){return (await choose(q,['yes','no'],['Yes — agreed','No']))==='yes'}
 
 /* ---------- layout ---------- */
-function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pad=6,gap=6,head=34,foot=16,side=W>=1600?330:W>=1200?300:W>=950?262:224;
- let hands=$('hands');hands.style.height='auto';$('playArea').style.gridTemplateRows='max-content 1fr';let est=null;
- for(let pass=0;pass<2;pass++){let handsH=est??76;let maxBoardH=Math.max(150,H-2*pad-head-foot-2*gap-handsH-gap),maxBoardW=Math.max(150,W-2*pad-side-gap);let boardW=Math.min(maxBoardW,maxBoardH*1521/1080);hands.style.width=boardW+'px';let ch=[...hands.children],nat=ch.length?ch[ch.length-1].getBoundingClientRect().bottom-ch[0].getBoundingClientRect().top:40;est=Math.min(Math.ceil(nat),Math.floor(H*0.34))}
- let handsH=est,maxBoardH=Math.max(150,H-2*pad-head-foot-2*gap-handsH-gap),maxBoardW=Math.max(150,W-2*pad-side-gap);let boardW=Math.min(maxBoardW,maxBoardH*1521/1080),boardH=boardW*1080/1521;
- let appW=2*pad+boardW+gap+side,appH=2*pad+head+foot+2*gap+handsH+gap+boardH;hands.style.width='';hands.style.height='';$('playArea').style.gridTemplateRows='';
- let s=$('app').style;for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--sideW':side,'--handsH':handsH,'--appW':appW,'--appH':appH}))s.setProperty(k,v+'px')}
+function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pad=6,gap=6,head=34,foot=16,minSide=W>=1600?380:W>=1200?330:290,maxSide=560;
+ let boardH=Math.max(200,H-2*pad-head-foot-2*gap),boardW=boardH*1521/1080;
+ if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*1080/1521}
+ let side=Math.min(maxSide,Math.max(minSide,W-2*pad-gap-boardW));
+ let appW=2*pad+boardW+gap+side,appH=H;
+ document.querySelector('aside').classList.toggle('roomy',H>=950&&side>=440);
+ let st=$('app').style;for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--sideW':side,'--appW':appW,'--appH':appH}))st.setProperty(k,v+'px')}
 
 /* ---------- legality ---------- */
 function possible(cmd){try{transact(state,cmd);return true}catch(e){return !!e.needChoice}}
@@ -91,24 +92,28 @@ function cardFace(k,landscape){let box=el('div',{className:'bigCard'+(landscape?
  if(C[k])src=asset((landscape?'cards/infection/':'cards/player/')+slug(C[k].name));else if(EVENTS[k])src=asset('cards/events/'+slug(EVENTS[k]));else if(String(k).startsWith('epidemic'))src=asset('cards/epidemic');
  if(src){el('img',{src,alt:cardName(k)},box);return box}
  let color=C[k]?C[k].color:EVENTS[k]?'event':'epidemic';el('div',{className:'band '+color},box);el('div',{className:'kind',textContent:landscape?'Infection':C[k]?'City · '+C[k].color:EVENTS[k]?'Event':'Epidemic'},box);el('div',{className:'nm',textContent:cardName(k)},box);if(EVENTS[k])el('div',{className:'kind',textContent:EVENT_TEXT[k],style:'text-transform:none;letter-spacing:0;font-size:10px'},box);return box}
-function queueFx(list){let speed=+$('fxSpeed').value;for(let f of list||[]){if(f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'){fxQueue.push(f);continue}if(speed>0)fxQueue.push(f)}if(!fxCurrent)nextFx()}
-function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';fxCurrent=fxQueue.shift()||null;if(!fxCurrent)return;let f=fxCurrent,speed=+$('fxSpeed').value||0.6,dur=1400,b=el('div',{className:'fxBox'},box);
- if(f.kind==='playerDraw'){let row=el('div',{className:'fxRow'},b);for(let k of f.cards)row.appendChild(cardFace(k));el('div',{className:'fxCaption',textContent:state.players[f.seat].name+' draws'},b);dur=1800;playSound('card-draw')}
- else if(f.kind==='infection'){b.appendChild(cardFace(f.city,true));el('div',{className:'fxCaption',textContent:'Infect '+C[f.city].name},b);dur=1400;playSound('card-draw')}
- else if(f.kind==='research'){el('div',{className:'fxCaption',textContent:f.color[0].toUpperCase()+f.color.slice(1)+' disease researched'},b);dur=1600}
+function queueFx(list){let speed=+$('fxSpeed').value;for(let f of list||[]){if(f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'){fxQueue.push(f);continue}if(speed>=0)fxQueue.push(f)}if(!fxCurrent)nextFx()}
+function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';fxCurrent=fxQueue.shift()||null;if(!fxCurrent)return;let f=fxCurrent,speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
+ if(f.kind==='playerDraw'){let row=el('div',{className:'fxRow'},b);for(let k of f.cards)row.appendChild(cardFace(k));el('div',{className:'fxCaption',textContent:state.players[f.seat].name+' draws'},b);dur=3500;playSound('card-draw')}
+ else if(f.kind==='infection'){b.appendChild(cardFace(f.city,true));el('div',{className:'fxCaption',textContent:'Infect '+C[f.city].name},b);dur=3000;playSound('card-draw')}
+ else if(f.kind==='research'){el('div',{className:'fxCaption',textContent:f.color[0].toUpperCase()+f.color.slice(1)+' disease researched'},b);dur=3000}
  else if(f.kind==='epidemic'){let a=el('div',{className:'alert'},b);let ban=asset('alerts/epidemic');if(ban)el('img',{className:'banner',src:ban},a);el('h3',{textContent:'Epidemic'},a);let row=el('div',{className:'fxRow',style:'justify-content:center;margin:8px 0'},a);row.appendChild(cardFace('epidemic_0'));row.appendChild(cardFace(f.city,true));el('p',{textContent:'Infection rate is now '+f.rate+'. '+C[f.city].name+' receives 3 cubes; the discard pile is shuffled onto the deck.'},a);dur=2800;playSound('epidemic')}
  else if(f.kind==='outbreak'){let a=el('div',{className:'alert outbreak'},b);let ban=asset('alerts/outbreak');if(ban)el('img',{className:'banner',src:ban},a);let h=el('h3',{},a);el('img',{className:'tok',src:tokenImg('outbreak')},h);h.append('Outbreak');el('p',{textContent:C[f.city].name+' · '+f.color+' disease'},a);el('p',{textContent:'Outbreaks: '+f.count+' / 8'},a);dur=2800;playSound('outbreak')}
  else if(f.kind==='end'){let a=el('div',{className:'alert'+(state.status==='won'?' win':'')},b);el('h3',{textContent:state.status==='won'?'Victory':'Defeat'},a);el('p',{textContent:f.text},a);dur=6000}
- el('div',{className:'fxSkip',textContent:'Click to continue'+(fxQueue.length?' · '+fxQueue.length+' more':'')},b);box.className='on';box.onclick=()=>nextFx();fxTimer=setTimeout(nextFx,dur*(f.kind==='end'?1:speed))}
+ let sticky=f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||speed===0,ms=dur*(speed>0?speed:1);
+ let sk=el('div',{className:'fxSkip'},b);let btn=el('button',{textContent:fxQueue.length?'Continue ('+fxQueue.length+' more)':'Continue'},sk);btn.onclick=e=>{e.stopPropagation();nextFx()};
+ if(!sticky){let bar=el('div',{className:'fxBar',title:'Closes automatically; click to continue now'},sk);el('i',{style:'animation-duration:'+ms+'ms'},bar);fxTimer=setTimeout(nextFx,ms)}
+ box.className='on';box.onclick=()=>nextFx();setTimeout(()=>btn.focus({preventScroll:true}),0)}
+document.addEventListener('keydown',e=>{if(fxCurrent&&(e.key==='Enter'||e.key===' '||e.key==='Escape')&&!document.querySelector('dialog[open]')){e.preventDefault();nextFx()}});
 
 /* ---------- hands ---------- */
-function drawHands(){let box=$('hands'),n=state.players.length;box.replaceChildren();box.style.gridTemplateColumns='repeat('+(n<=3?n:Math.ceil(n/2))+',minmax(0,1fr))';
- state.players.forEach((p,i)=>{let h=el('div',{className:'hand'+(state.active===i&&state.phase!=='setup'?' active':'')+(p.hand.length>HAND_LIMIT?' over':'')},box);let t=el('div',{className:'handTitle'},h);pawnIcon(p.role,t,12);el('span',{textContent:p.name+' · '+roleName(p.role)+' · '+(p.city?C[p.city].name:'choose start')+' · '+p.hand.length+'/'+HAND_LIMIT,title:ROLE_TEXT[p.role]},t);
+function drawHands(){let box=$('hands'),n=state.players.length;box.replaceChildren();
+ state.players.forEach((p,i)=>{let h=el('div',{className:'hand'+(state.active===i&&state.phase!=='setup'?' active':'')+(p.hand.length>HAND_LIMIT?' over':'')},box);let t=el('div',{className:'handTitle'},h);pawnIcon(p.role,t,14);el('span',{textContent:p.name+' · '+roleName(p.role)+' · '+(p.city?C[p.city].name:'choose start')+' · '+p.hand.length+'/'+HAND_LIMIT,title:ROLE_TEXT[p.role]},t);
   let cards=el('div',{className:'handCards'},h);for(let k of p.hand){let b=el('button',{className:'card '+(C[k]?.color||'event')+(selectedCards.includes(k)&&i===state.active?' selected':''),textContent:cardName(k),title:C[k]?cardName(k)+' — '+C[k].color:EVENTS[k]+': '+EVENT_TEXT[k]},cards);
    if(p.hand.length>HAND_LIMIT&&!['epidemic','setup','ended'].includes(state.phase)&&!EVENTS[k]){b.textContent='✕ '+cardName(k);b.title='Discard to reach the hand limit';b.onclick=()=>perform({type:'discard',seat:i,card:k})}
    else if(EVENTS[k]){b.onclick=()=>openEvent(i,k);b.disabled=['setup','ended'].includes(state.phase)}
    else b.onclick=()=>{if(i!==state.active||!['purify','ship','research'].includes(mode))return;if(mode==='research'){if(C[k].color!==sel.color)return;selectedCards=selectedCards.includes(k)?selectedCards.filter(c=>c!==k):[...selectedCards,k]}else selectedCards=[k];render()}}
-  if(p.hand.length>HAND_LIMIT&&!['epidemic','setup','ended'].includes(state.phase))el('span',{className:'detail',textContent:' Over the limit: click ✕ to discard, or play an Event.'},cards)})}
+  if(p.hand.length>HAND_LIMIT&&!['epidemic','setup','ended'].includes(state.phase))el('span',{className:'detail',textContent:' Over the limit: click ✕ to discard, or play an Event.'},cards)});let act=box.children[state.active];if(act&&box.scrollHeight>box.clientHeight)requestAnimationFrame(()=>{let r=act.offsetTop-box.offsetTop;if(r<box.scrollTop||r+act.offsetHeight>box.scrollTop+box.clientHeight)box.scrollTop=r-4})}
 
 /* ---------- action panel ---------- */
 function drawSetup(){let box=$('startFields');box.replaceChildren();state.players.forEach((p,i)=>{let items=p.hand.filter(k=>C[k]);let opts=(items.length?items:Object.keys(C)).map(k=>[k,C[k].name]);if(!opts.some(([v])=>v===sel['start'+i]))sel['start'+i]=opts[0][0];field(p.name+' ('+roleName(p.role)+') starts in','start'+i,opts,sel['start'+i],v=>sel['start'+i]=v,box)});let fp=$('firstPlayer'),cur=fp.value;fp.replaceChildren();state.players.forEach((p,i)=>el('option',{value:i,textContent:playerLabel(state,i)},fp));fp.value=cur&&+cur<state.players.length?cur:'0'}
