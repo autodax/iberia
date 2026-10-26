@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.3',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.4',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 const RATE_POS=[622,676,728,783,835,888,940].map(x=>[x,55]);
 const OUT_POS=[[1390,342],[1449,387],[1390,431],[1449,476],[1391,522],[1450,567],[1391,611],[1450,657],[1391,707]];
@@ -7,6 +7,7 @@ const RESEARCH_POS={red:[832,958],blue:[913,958],black:[973,958],yellow:[1048,95
 const PAWN={sailor:'#2f6fb3',agronomist:'#3f8f3a',railwayman:'#8a5a2b',politician:'#6b3fa0',nurse:'#e07aa6',scientist:'#ece4cf',rural_doctor:'#e07b1a'};
 const DISEASE={red:'#c0303a',blue:'#2f6fb3',yellow:'#d1a514',black:'#1d1d1d'};
 const HOSP={red:'#b8333b',blue:'#2f67a8',yellow:'#d4a91c',black:'#2a2a2a'};
+const REVEALS=new Set(['start','draw','infect','epidemic','peek']);
 let state=initial('iberia-test-1',4,['sailor','agronomist']),history=[],commands=[],mode='',legal={},selectedCards=[],busy=false;
 let sel={to:null,to2:'',color:'red',region:'r34',direction:'give',other:null,passenger:false,extra:'',swapTake:null};
 const TYPES=['carriage','train','ship','build','treat','hospital','purify','agronomist','research','share','pgive','pswap','peek'];
@@ -84,7 +85,7 @@ function choicesFor(type){if(!canAct())return [];let p=state.players[state.activ
 function recompute(){for(let t of TYPES)legal[t]=choicesFor(t);if(mode&&!legal[mode]?.length)mode='';selectedCards=selectedCards.filter(k=>state.players[state.active].hand.includes(k))}
 
 /* ---------- perform with choices + reveals ---------- */
-async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);history.push(CP(state));if(history.length>80)history.shift();state=n;commands.push(resolved);selectedCards=[];recompute();render();autosave();notice(state.status==='playing'?'Done.':state.status);queueFx(state.fx);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
+async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);let before=state;state=n;commands.push(resolved);if(REVEALS.has(resolved.type)||state.status!=='playing')history=[];else{let fresh=state.log.slice(before.log.length);history.push({state:before,commands:commands.length-1,label:fresh[fresh.length-1]||resolved.type});if(history.length>60)history.shift()}selectedCards=[];recompute();render();autosave();notice(state.status==='playing'?'Done.':state.status);queueFx(state.fx);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
 
 /* ---------- reveal & alert overlay ---------- */
 let fxQueue=[],fxTimer=null,fxCurrent=null;
@@ -117,7 +118,7 @@ function drawHands(){let box=$('hands'),n=state.players.length;box.replaceChildr
 
 /* ---------- action panel ---------- */
 function drawSetup(){let box=$('startFields');box.replaceChildren();state.players.forEach((p,i)=>{let items=p.hand.filter(k=>C[k]);let opts=(items.length?items:Object.keys(C)).map(k=>[k,C[k].name]);if(!opts.some(([v])=>v===sel['start'+i]))sel['start'+i]=opts[0][0];field(p.name+' ('+roleName(p.role)+') starts in','start'+i,opts,sel['start'+i],v=>sel['start'+i]=v,box)});let fp=$('firstPlayer'),cur=fp.value;fp.replaceChildren();state.players.forEach((p,i)=>el('option',{value:i,textContent:playerLabel(state,i)},fp));fp.value=cur&&+cur<state.players.length?cur:'0'}
-function drawAction(){let box=$('actionButtons');box.replaceChildren();$('actionForm').replaceChildren();$('confirm').hidden=true;$('setupPanel').hidden=state.phase!=='setup';$('actionArea').hidden=state.phase==='setup';$('actionHeading').hidden=state.phase==='ended';$('actionHint').textContent='';
+function drawAction(){let box=$('actionButtons');box.replaceChildren();{let u=$('undo'),h=history[history.length-1];u.hidden=!h||state.status!=='playing';if(h)u.title='Undo: '+h.label+' (Ctrl+Z)'}$('actionForm').replaceChildren();$('confirm').hidden=true;$('setupPanel').hidden=state.phase!=='setup';$('actionArea').hidden=state.phase==='setup';$('actionHeading').hidden=state.phase==='ended';$('actionHint').textContent='';
  if(state.phase==='setup'){drawSetup();return}
  for(let t of TYPES)if(legal[t]?.length)el('button',{className:'action'+(mode===t?' chosen':''),textContent:LABEL[t],onclick:()=>{mode=t;selectedCards=[];sel.to2='';sel.extra='';render()}},box);
  if(state.status!=='playing'){$('actionHint').textContent=state.status==='won'?'Victory — all four diseases researched.':'Defeat — '+state.status.replace('lost: ','');return}
@@ -235,7 +236,9 @@ $('saveButton').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(
 function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';fxQueue=[];nextFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
 $('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('menu').close()}$('loadFile').value=''};
 $('resumeButton').onclick=()=>{try{let raw=localStorage.getItem(SAVE_KEY);requireRule(raw,'No local autosave found');restore(JSON.parse(raw))}catch(e){notice(e.message,true)}};
-$('undoButton').onclick=()=>{if(!history.length){notice('No undo history in this session.');return}state=history.pop();commands.pop();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Debug undo — previously revealed cards cannot be forgotten.')};
+function undo(){if(busy||!history.length||state.status!=='playing')return;let h=history.pop();state=h.state;commands.length=h.commands;mode='';selectedCards=[];fxQueue=[];nextFx();recompute();render();autosave();notice('Undone: '+h.label)}
+$('undo').onclick=undo;
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'&&!document.querySelector('dialog[open]')&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||'')){e.preventDefault();undo()}});
 $('assetButton').onclick=()=>$('assetFiles').click();$('assetFiles').onchange=()=>loadAssets([...$('assetFiles').files]);$('assetClear').onclick=()=>{loadAssets([]);$('assetStatus').textContent=REPO_STATUS};
 $('showRegions').onchange=paint;$('showNames').onchange=paint;window.addEventListener('resize',fitLayout);
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
