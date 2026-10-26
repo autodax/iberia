@@ -4,7 +4,6 @@ All sounds in `assets/sounds/` come from Kenney (https://kenney.nl/assets), rele
 
 | File | Used for | Kenney pack | Original file |
 |--|--|--|--|
-| click.mp3 | Buttons | Impact Sounds | impactWood_light_000.ogg |
 | move.mp3 | Pawn moves | Impact Sounds | impactWood_medium_001.ogg |
 | draw.mp3 | Player and infection card draws | Casino Audio | card-slide-1.ogg |
 | cube.mp3 | A disease cube landing | Casino Audio | chip-lay-1.ogg |
