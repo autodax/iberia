@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.4',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.5',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 const RATE_POS=[622,676,728,783,835,888,940].map(x=>[x,55]);
 const OUT_POS=[[1390,342],[1449,387],[1390,431],[1449,476],[1391,522],[1450,567],[1391,611],[1450,657],[1391,707]];
@@ -108,6 +108,9 @@ function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();bo
 document.addEventListener('keydown',e=>{if(fxCurrent&&(e.key==='Enter'||e.key===' '||e.key==='Escape')&&!document.querySelector('dialog[open]')){e.preventDefault();nextFx()}});
 
 /* ---------- hands ---------- */
+function drawSupply(){for(let im of document.querySelectorAll('#resources img[data-tok]')){let src=tokenImg(im.dataset.tok);if(src&&im.getAttribute('src')!==src)im.src=src;im.hidden=!src}
+ let cs=$('cubeSupply');cs.replaceChildren();el('span',{className:'lbl',textContent:'Cubes left'},cs);for(let k of COLORS){let t=el('span',{className:'t',title:state.supply[k]+' '+k+' cubes left'},cs);let src=asset('tokens/cube-'+k);if(src)el('img',{src,alt:k},t);else el('i',{style:'display:inline-block;width:12px;height:12px;border-radius:2px;background:'+DISEASE[k]},t);t.append(String(state.supply[k]))}
+ let rs=$('researchStatus');rs.replaceChildren();el('span',{className:'lbl',textContent:'Researched'},rs);for(let k of COLORS){let done=state.research.includes(k),src=asset('tokens/research-'+k),t=el('span',{className:'t',title:k+(done?' researched':' not researched yet')},rs);if(src)el('img',{src,alt:k,className:done?'':'off'},t);else{t.textContent=k;if(!done)t.style.opacity=.4}}}
 function drawHands(){let box=$('hands'),n=state.players.length;box.replaceChildren();
  state.players.forEach((p,i)=>{let h=el('div',{className:'hand'+(state.active===i&&state.phase!=='setup'?' active':'')+(p.hand.length>HAND_LIMIT?' over':'')},box);let t=el('div',{className:'handTitle'},h);pawnIcon(p.role,t,14);el('span',{textContent:p.name+' · '+roleName(p.role)+' · '+(p.city?C[p.city].name:'choose start')+' · '+p.hand.length+'/'+HAND_LIMIT,title:ROLE_TEXT[p.role]},t);
   let cards=el('div',{className:'handCards'},h);for(let k of p.hand){let b=el('button',{className:'card '+(C[k]?.color||'event')+(selectedCards.includes(k)&&i===state.active?' selected':''),textContent:cardName(k),title:C[k]?cardName(k)+' — '+C[k].color:EVENTS[k]+': '+EVENT_TEXT[k]},cards);
@@ -182,7 +185,7 @@ function paint(){for(let k of ['areas','tracks','pieces'])$(k).replaceChildren()
 /* ---------- render ---------- */
 function render(){let p=state.players[state.active];$('turnStatus').textContent=state.phase==='setup'?'Choose starting cities':state.status!=='playing'?(state.status==='won'?'Victory':'Defeat — '+state.status.replace('lost: ','')):'Turn '+state.turn+' · '+playerLabel(state,state.active)+' · '+state.actions+' action'+(state.actions===1?'':'s');
  $('phaseLabel').textContent=state.phase;$('footer').textContent='Player deck '+state.playerDeck.length+' · infection deck '+state.infectionDeck.length+' · Events in game: '+state.eventsInGame.map(k=>EVENTS[k]).join(', ')+' · seed '+state.seed+' · v'+UI_VERSION;
- $('outbreaks').textContent=state.outbreaks+'/8';$('rate').textContent=RATE[state.rateIndex];$('railsSupply').textContent=state.railSupply;$('waterSupply').textContent=state.waterSupply;$('cubeSupply').textContent='Cubes left — '+COLORS.map(k=>k+' '+state.supply[k]).join(' · ');$('researchStatus').textContent='Researched: '+(state.research.join(', ')||'none');
+ $('outbreaks').textContent=state.outbreaks+'/8';$('rate').textContent=RATE[state.rateIndex];$('railsSupply').textContent=state.railSupply;$('waterSupply').textContent=state.waterSupply;drawSupply();
  let flags=[];if(state.goodSeason)flags.push('Good Season pending: next infection step draws 1 bottom card');if(state.phase==='infection'&&state.infectionFromBottom)flags.push('Good Season: drawing from the bottom');if(state.doubleRailUsed)flags.push('Railwayman double build used this turn');$('flags').textContent=flags.join(' · ');
  let np=$('nextPhase');np.hidden=['setup','ended'].includes(state.phase);np.disabled=fullHands(state).length>0&&state.phase!=='epidemic';np.textContent=state.phase==='actions'?'End actions & draw 2':state.phase==='epidemic'?'Resolve next Epidemic':'Infect next city · '+state.infectionRemaining+' left';
  drawAction();drawHands();paint();fitLayout()}
@@ -236,6 +239,7 @@ $('saveButton').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(
 function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';fxQueue=[];nextFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
 $('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('menu').close()}$('loadFile').value=''};
 $('resumeButton').onclick=()=>{try{let raw=localStorage.getItem(SAVE_KEY);requireRule(raw,'No local autosave found');restore(JSON.parse(raw))}catch(e){notice(e.message,true)}};
+{let base=/github\.io$/.test(location.hostname)?'':'https://autodax.github.io/iberia/';$('rulesLink').href=base+'docs/Iberia_rulebook.pdf';$('guideLink').href=base+'docs/Guide.pdf'}
 function undo(){if(busy||!history.length||state.status!=='playing')return;let h=history.pop();state=h.state;commands.length=h.commands;mode='';selectedCards=[];fxQueue=[];nextFx();recompute();render();autosave();notice('Undone: '+h.label)}
 $('undo').onclick=undo;
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'&&!document.querySelector('dialog[open]')&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||'')){e.preventDefault();undo()}});
