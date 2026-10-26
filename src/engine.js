@@ -1,5 +1,5 @@
 // Iberia prototype rules engine v0.9 — standard base game (7 roles, 15 Events, 2–5 players)
-const VERSION='0.9.4';
+const VERSION='0.9.5';
 const COLORS=['blue','red','yellow','black'],RATE=[2,2,2,3,3,4,4];
 const C=Object.fromEntries(MAP.cities.map(c=>[c.id,c])),R=Object.fromEntries(MAP.regions.map(r=>[r.id,r]));
 const edgeKey=(a,b)=>[a,b].sort().join('|'),EDGES=new Map(MAP.connections.map(e=>[edgeKey(e.a,e.b),e]));

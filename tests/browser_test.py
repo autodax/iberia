@@ -34,6 +34,11 @@ async def main():
     ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='infection'"),'Until clicked keeps reveals up')
     ok(await pg.evaluate("$('hands').closest('aside')!==null"),'hands are in the right-hand column')
     await pg.close()
+    # supply icons and rules links
+    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.wait_for_timeout(400)
+    ok(await pg.evaluate("[...document.querySelectorAll('#resources img')].filter(i=>!i.hidden&&i.getAttribute('src')).length>=12"),'supply icons shown (4 counters, 4 cubes, 4 research)')
+    ok(await pg.evaluate("$('rulesLink').target==='_blank'&&$('rulesLink').href.endsWith('docs/Iberia_rulebook.pdf')&&$('guideLink').href.endsWith('docs/Guide.pdf')"),'Rules and Guide open in a new window')
+    await pg.close()
     # undo
     pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F);await pg.wait_for_timeout(300)
     await pg.click('#begin');await pg.wait_for_timeout(200)

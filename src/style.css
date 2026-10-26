@@ -98,3 +98,8 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 #undo{padding:3px 12px;font-size:13px;white-space:nowrap}
 #undo::before{content:'\21B6  '}
 aside.roomy #undo{font-size:14px}
+a.btn{display:inline-block;text-decoration:none;border:1px solid var(--tanBorder);background:var(--tan);color:var(--ink);border-radius:6px;padding:4px 10px;font-size:14px;line-height:normal}a.btn:hover{background:var(--tanHover)}
+.res{display:flex;align-items:center;gap:5px;white-space:nowrap}.res img{width:22px;height:22px;object-fit:contain;flex:none}.res img.wide{width:28px}
+.tokRow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}.tokRow .lbl{margin-right:2px}.tokRow span.t{display:inline-flex;align-items:center;gap:3px;font-weight:600;color:var(--ink)}.tokRow img{width:18px;height:18px;object-fit:contain}
+#researchStatus img{width:22px;height:22px}#researchStatus .off{opacity:.28;filter:grayscale(1)}
+aside.roomy .res img{width:26px;height:26px}aside.roomy .res img.wide{width:34px}aside.roomy .tokRow img{width:22px;height:22px}aside.roomy #researchStatus img{width:26px;height:26px}
