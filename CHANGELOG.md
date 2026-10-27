@@ -1,3 +1,8 @@
+# v0.9.16
+
+- New Infected cities list in the right panel, between the actions and the supply. It shows every city with cubes, most cubes first, with a cube icon for each cube and a pawn icon for each player holding that city's card.
+- The list fills the open space and scrolls inside itself on small screens, so the page still fits without scrolling. Cubes appear in the list as they land on the board.
+
 # v0.9.15
 
 - Pieces no longer cover printed city names. Each city's name area was measured, and cubes, hospitals, water and prevention tokens, and railroads are placed in the nearest clear spot.
