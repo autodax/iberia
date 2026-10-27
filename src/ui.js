@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.17',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.18',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // The board picture (assets/board.jpeg, 3910x2760) is placed into map coordinates (cities use a 1521x1080 frame)
 // by the transform on #boardImage, measured by matching it to the previous board. The frame is cropped to the picture.
@@ -27,8 +27,7 @@ function pawnSpot(cid,n){let L=layoutBase(),key='p:'+cid+':'+n;if(L.cache[key])r
 function pawnsAt(cid){return state.players.filter(q=>q.city===cid).length}
 function tokenSpot(x,y,w,h,extra){let cands=[[0,0]];for(let r of [14,26,38,50])for(let a=0;a<8;a++)cands.push([Math.round(r*Math.cos(a*Math.PI/4)),Math.round(r*Math.sin(a*Math.PI/4))]);let b=pick(cands.map(([dx,dy])=>[x+dx-w/2,y+dy-h/2]),w,h,extra);return [b.x+w/2,b.y+h/2]}
 function railSpot(x1,y1,x2,y2,extra){let L=layoutBase(),best=null,len=Math.hypot(x2-x1,y2-y1),ux=(x2-x1)/len,uy=(y2-y1)/len;[.5,.42,.58,.35,.65,.28,.72].forEach((t,i)=>{let mx=x1+(x2-x1)*t,my=y1+(y2-y1)*t,s=i*2;for(let d=-22;d<=22;d+=5.5){let px=mx+ux*d,py=my+uy*d,r=[px-6,py-6,px+6,py+6];s+=hit(r,L.labels)*3+hit(r,L.dots)+hit(r,extra)}if(!best||s<best.s)best={mx,my,s}});return [best.mx,best.my]}
-const FOUNDED={c0: -150, c1: 830, c2: -150, c3: -25, c4: -16, c5: -150, c6: -650, c7: -15, c8: -25, c9: -1000, c10: -57, c11: 716, c12: -500, c13: -29, c14: -26, c15: 1300, c16: 1181, c17: -74, c18: 581, c19: 884, c20: 1072, c21: -133, c22: 875, c23: -200, c24: 839, c25: -77, c26: -18, c27: -15, c28: -450, c29: 1171, c30: 950, c31: -138, c32: -123, c33: 1375, c34: -324, c35: -227, c36: -192, c37: 1255, c38: 875, c39: -169, c40: -650, c41: -850, c42: -750, c43: -550, c44: -1104, c45: -750, c46: 955, c47: 1160};
-const FOUNDED_CARD=new Set(["c12", "c13", "c14", "c2", "c20", "c21", "c3", "c31", "c34", "c43", "c44", "c45", "c9"]);
+const FOUNDED={c0:1208,c1:850,c2:-150,c3:-25,c4:-16,c5:-136,c6:-250,c7:-45,c8:-34,c9:-1000,c10:-59,c11:750,c12:-500,c13:-29,c14:-26,c15:1300,c16:1180,c17:-74,c18:1181,c19:884,c20:1072,c21:-133,c22:871,c23:-350,c24:1278,c25:-79,c26:-24,c27:-15,c28:-450,c29:1171,c30:784,c31:-138,c32:-123,c33:1100,c34:-324,c35:-227,c36:-300,c37:1255,c38:875,c39:-169,c40:-231,c41:-950,c42:-850,c43:-550,c44:-1104,c45:-750,c46:995,c47:1160};
 function fmtYear(y){return y<0?'–'+(-y):String(y)}
 function oldestCard(p){let cs=p.hand.filter(k=>C[k]);if(!cs.length)return null;return cs.reduce((a,b)=>FOUNDED[b]<FOUNDED[a]?b:a)}
 function suggestFirst(){let best=null;state.players.forEach((p,i)=>{let k=oldestCard(p);if(k&&(best===null||FOUNDED[k]<best.y))best={i,k,y:FOUNDED[k]}});return best}
