@@ -1,5 +1,5 @@
 // Iberia prototype rules engine v0.9 — standard base game (7 roles, 15 Events, 2–5 players)
-const VERSION='0.9.18';
+const VERSION='0.9.19';
 const COLORS=['blue','red','yellow','black'],RATE=[2,2,2,3,3,4,4];
 const C=Object.fromEntries(MAP.cities.map(c=>[c.id,c])),R=Object.fromEntries(MAP.regions.map(r=>[r.id,r]));
 const edgeKey=(a,b)=>[a,b].sort().join('|'),EDGES=new Map(MAP.connections.map(e=>[edgeKey(e.a,e.b),e]));
@@ -88,15 +88,15 @@ function relocate(s,seat,to,ctx){let q=s.players[seat];q.city=to;if(q.role==='nu
 // Record a prevented cube on the alert that caused it (shown in the popup, then animated on the board).
 function noteBlocked(s,b){let f=s.fx&&s.fx[s.fx.length-1];if(!f)return;let list=f.blocked=f.blocked||[],e=list.find(x=>x.city===b.city&&x.by===b.by&&x.region===b.region);if(e){e.n++;e.left=b.left}else list.push({...b,n:1})}
 function protectedByNurse(s,id){return !!(s.prevention&&R[s.prevention].adjacent_cities.includes(id))}
-function addCube(s,id,color,ctx,erupted,queue){
+function addCube(s,id,color,ctx,erupted,queue,from){
  if(erupted.has(id))return false;
  if(protectedByNurse(s,id)){s.log.push('Prevention token protects '+C[id].name);noteBlocked(s,{city:id,by:'nurse',region:s.prevention});return false}
  let water=C[id].region_ids.filter(r=>s.water[r]>0);
  if(water.length){let r=choice(ctx,water,'Choose which purification token protects '+C[id].name,water.map(x=>regionLabel(x)+' (×'+s.water[x]+')'));s.water[r]--;s.waterSupply++;s.log.push('Purification in '+regionLabel(r)+' protects '+C[id].name);noteBlocked(s,{city:id,by:'water',region:r,left:s.water[r]});return false}
- if(s.cubes[id][color]===3){erupted.add(id);s.outbreaks++;s.log.push('Outbreak '+s.outbreaks+': '+C[id].name);pushFx(s,{kind:'outbreak',city:id,color,count:s.outbreaks});if(s.outbreaks>=8){lose(s,'8 outbreaks');return true}queue.push(...ADJ[id].filter(n=>!erupted.has(n)));return true}
+ if(s.cubes[id][color]===3){erupted.add(id);s.outbreaks++;s.log.push('Outbreak '+s.outbreaks+': '+C[id].name);let ofx={kind:'outbreak',city:id,color,count:s.outbreaks,from:from||null,chainIndex:erupted.size};pushFx(s,ofx);(erupted.fx=erupted.fx||[]).push(ofx);if(s.outbreaks>=8){lose(s,'8 outbreaks');return true}queue.push(...ADJ[id].filter(n=>!erupted.has(n)).map(n=>[n,id]));return true}
  if(s.supply[color]===0){lose(s,'no '+color+' cubes left');return false}
  s.cubes[id][color]++;s.supply[color]--;return false}
-function resolveInfection(s,id,amount,ctx){let color=C[id].color,erupted=new Set(),queue=[];s.log.push('Infect '+C[id].name+' ×'+amount);for(let j=0;j<amount&&s.status==='playing';j++){if(addCube(s,id,color,ctx,erupted,queue))break}while(queue.length&&s.status==='playing')addCube(s,queue.shift(),color,ctx,erupted,queue)}
+function resolveInfection(s,id,amount,ctx){let color=C[id].color,erupted=new Set(),queue=[];s.log.push('Infect '+C[id].name+' ×'+amount);for(let j=0;j<amount&&s.status==='playing';j++){if(addCube(s,id,color,ctx,erupted,queue))break}while(queue.length&&s.status==='playing'){let [n,f]=queue.shift();addCube(s,n,color,ctx,erupted,queue,f)}for(let f of erupted.fx||[]){f.chainTotal=erupted.fx.length;f.chain=erupted.fx.map(x=>x.city)}}
 function beginInfectionStep(s){s.phase='infection';s.infectionDrawn=0;if(s.goodSeason){s.goodSeason=false;s.infectionRemaining=1;s.infectionFromBottom=true;s.log.push('Good Season: one Infection card from the bottom')}else{s.infectionRemaining=RATE[s.rateIndex];s.infectionFromBottom=false}}
 function epidemic(s,ctx){let card=s.pendingEpidemics.shift();requireRule(card,'No epidemic pending');s.removed.push(card);s.rateIndex=Math.min(6,s.rateIndex+1);let id=s.infectionDeck.pop();s.log.push('Epidemic: infection rate '+RATE[s.rateIndex]+'; bottom card '+C[id].name);pushFx(s,{kind:'epidemic',city:id,rate:RATE[s.rateIndex]});resolveInfection(s,id,3,ctx);s.infectionDiscard.push(id);if(s.status!=='playing')return;s.infectionDeck=[...shuffle(s,s.infectionDiscard),...s.infectionDeck];s.infectionDiscard=[];if(s.pendingEpidemics.length)s.phase='epidemic';else beginInfectionStep(s)}
 function endTurn(s){s.active=(s.active+1)%s.players.length;s.turn++;s.actions=4;s.phase='actions';s.doubleRailUsed=false;s.infectionFromBottom=false;s.log.push('Turn '+s.turn+': '+playerLabel(s,s.active))}

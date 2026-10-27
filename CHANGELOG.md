@@ -1,3 +1,12 @@
+# v0.9.19
+
+- Chain reaction alert: when one outbreak sets off others, each one is shown with a red Chain reaction banner, which city spread it, and the full chain with the current outbreak highlighted.
+- Turn change: a "Player N's turn" alert with the pawn appears when the active player changes, the active hand glows, and the action panel heading shows whose turn it is and how many actions are left.
+- Travel destination dropdowns list cities from most to fewest cubes (ties keep the usual order) and show each city's cube count.
+- The infected cities list is grouped by color, most cubes first within each color.
+- Wider color edge on cards in each hand.
+- Slower cube drop animation.
+
 # v0.9.18
 
 - Founding dates updated to the values confirmed from the physical City cards; the date list is now in date order with the research notes removed.

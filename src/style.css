@@ -23,7 +23,7 @@ aside.roomy{font-size:15px}aside.roomy .handTitle{font-size:16.5px;line-height:2
 .handTitle{display:flex;align-items:center;gap:6px;font-size:14px;line-height:19px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;color:var(--ink)}
 .handTitle svg{flex:none}
 .handCards{display:flex;flex-wrap:wrap;gap:4px}
-.card{font-size:13.5px;line-height:18px;padding:2px 7px;height:24px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#f3e6c8;border:1px solid #8b7a5a;border-left:5px solid #98a6b0;border-radius:4px;color:#2b2b22}
+.card{font-size:13.5px;line-height:18px;padding:2px 7px;height:24px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#f3e6c8;border:1px solid #8b7a5a;border-left:9px solid #98a6b0;border-radius:4px;color:#2b2b22}
 .card.blue,.miniCard.blue{border-left-color:#2f6fb3}.card.red,.miniCard.red{border-left-color:#c0303a}.card.yellow,.miniCard.yellow{border-left-color:#d1a514}.card.black,.miniCard.black{border-left-color:#1d1d1d}
 .card.event,.miniCard.event{border-left-color:#4f8a4a;font-style:normal;background:#eef0d8}
 .selected{outline:2px solid var(--cyan);outline-offset:0}
@@ -127,3 +127,17 @@ header .sndBtn.off .cross{display:inline}
 .blocked .brow{display:flex;align-items:center;gap:8px;margin:3px 0}
 .blocked .brow img{width:26px;height:26px;flex:none}
 .blocked .brow.nurse img{width:24px;height:24px}
+
+.clGroup{display:flex;align-items:baseline;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--ink);margin-top:3px;padding:1px 6px;border-left:4px solid #98a6b0;border-bottom:1px solid var(--tanBorder)}
+.clGroup.blue{border-left-color:#2f6fb3}.clGroup.red{border-left-color:#c0303a}.clGroup.yellow{border-left-color:#d1a514}.clGroup.black{border-left-color:#1d1d1d}.clGroup .detail{font-weight:400}
+#actionHeading{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:3px 8px 3px 6px;border-left:6px solid var(--pc,#4c6b5c);background:var(--parchLight);border-radius:4px}
+#actionHeading .tp svg{display:block}#actionHeading .sub{font-size:13px;font-weight:400;color:var(--inkSoft)}
+#actionHeading.justActive,.hand.justActive{animation:turnPulse 1.6s ease-out 2}
+@keyframes turnPulse{0%{box-shadow:0 0 0 0 rgba(22,180,200,.9)}60%{box-shadow:0 0 0 10px rgba(22,180,200,0)}100%{box-shadow:0 0 0 0 rgba(22,180,200,0)}}
+.hand.active{box-shadow:0 0 0 3px var(--cyan) inset,0 0 10px rgba(22,180,200,.45)}
+.alert.turnAlert{border-left:10px solid var(--pc)}.alert.turnAlert h3{display:flex;align-items:center;justify-content:center;gap:10px;font-size:26px}.alert.turnAlert .tp svg{display:block}
+.alert.chain{border:3px solid #9c1f14;box-shadow:0 0 0 4px rgba(156,31,20,.25);animation:chainShake .5s ease-in-out 2}
+.chainTag{display:inline-block;background:#9c1f14;color:#f6e8cd;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:13px;padding:3px 12px;border-radius:3px;margin:4px 0}
+.chainPath{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;margin:6px 0;font-size:13.5px}.chainPath .step{padding:2px 7px;border:1px solid #8b7a5a;border-radius:3px;background:#f3e6c8}.chainPath .step.done{opacity:.6}.chainPath .step.now{background:#9c1f14;color:#f6e8cd;border-color:#9c1f14;font-weight:700}.chainPath .arr{color:#9c1f14;font-weight:700}
+@keyframes chainShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media(prefers-reduced-motion:reduce){.alert.chain,#actionHeading.justActive,.hand.justActive{animation:none}}
