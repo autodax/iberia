@@ -11,7 +11,7 @@ async def main():
       await pg.goto(F);await pg.wait_for_timeout(300)
       sc=await pg.evaluate("[document.documentElement.scrollHeight<=innerHeight+1,document.documentElement.scrollWidth<=innerWidth+1]")
       ok(all(sc),f'{W}x{H} no page scroll at setup')
-      await pg.click('#begin');await pg.wait_for_timeout(200)
+      await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate('resetFx()')
       ok(await pg.evaluate("state.phase==='actions'"),f'{W}x{H} game begins')
       bb=await pg.evaluate("(()=>{let a=document.getElementById('app').getBoundingClientRect();return [a.right<=innerWidth+1,a.bottom<=innerHeight+1]})()")
       ok(all(bb),f'{W}x{H} app fits')
@@ -35,7 +35,7 @@ async def main():
     ok(await pg.evaluate("$('hands').closest('aside')!==null"),'hands are in the right-hand column')
     await pg.close()
     # cubes appear after the alert closes, flying in
-    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F);await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(200)
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F);await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate('resetFx()')
     await pg.evaluate("(()=>{let s=CP(state);s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;state=s;recompute();render()})()")
     cid=await pg.evaluate("state.infectionDeck[0]");shown=f"COLORS.reduce((a,k)=>a+(cubeView||state.cubes)['{cid}'][k],0)";real=f"COLORS.reduce((a,k)=>a+state.cubes['{cid}'][k],0)"
     b0=await pg.evaluate(real);await pg.evaluate("perform({type:'infect'})");await pg.wait_for_timeout(400)
@@ -52,7 +52,7 @@ async def main():
     await pg.close()
     # undo
     pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F);await pg.wait_for_timeout(300)
-    await pg.click('#begin');await pg.wait_for_timeout(200)
+    await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate('resetFx()')
     ok(await pg.evaluate("$('undo').hidden"),'undo hidden at start of turn (start reveals hands)')
     c0=await pg.evaluate("state.players[state.active].city")
     await pg.click('text=Carriage / boat');await pg.click('#confirm');await pg.wait_for_timeout(200)
@@ -86,7 +86,7 @@ async def main():
     await pg.click('#newGame');await pg.wait_for_selector('#choiceDialog[open]');await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(200)
     ok(await pg.evaluate("state.players.length===4&&state.players.map(p=>p.role).includes('nurse')"),'4-player game with nurse')
     ok(await pg.evaluate("document.querySelectorAll('.hand').length===4"),'four hands shown')
-    await pg.click('#begin');await pg.wait_for_timeout(200)
+    await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate('resetFx()')
     # nurse choice dialog might appear
     if await pg.evaluate("document.getElementById('choiceDialog').open"):
       await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(200)
@@ -106,6 +106,7 @@ async def main():
     await pg.click('#nextPhase');await pg.wait_for_timeout(200)
     for _ in range(4):
       if await pg.evaluate("document.getElementById('choiceDialog').open"):await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(100)
+    await pg.evaluate("while(fxCurrent&&fxCurrent.kind==='turn')nextFx()")
     ok(await pg.evaluate("document.getElementById('fx').classList.contains('on')&&document.querySelectorAll('#fx .bigCard').length>=1"),'draw reveal shown')
     await pg.screenshot(path='/tmp/shot_reveal.png')
     await pg.click('#fx');await pg.wait_for_timeout(100)
@@ -115,7 +116,7 @@ async def main():
       await pg.click('#fx');await pg.wait_for_timeout(80)
     ok(await pg.evaluate("!!document.querySelector('#fx .alert h3')&&document.querySelector('#fx .alert h3').textContent==='Epidemic'"),'epidemic alert')
     await pg.screenshot(path='/tmp/shot_epidemic.png')
-    await pg.click('#fx');await pg.wait_for_timeout(150)
+    await pg.click('#fx');await pg.wait_for_timeout(400)
     ok(await pg.evaluate("document.querySelector('#fx .alert h3')?.textContent.includes('Outbreak')"),'outbreak alert')
     await pg.wait_for_timeout(4000)
     ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='outbreak'"),'outbreak alert stays until clicked')
@@ -212,6 +213,15 @@ async def main():
     await pg.evaluate("$('fxSpeed').value='-1';resetFx();let c=MAP.cities[12].id;queueFx([{kind:'infection',city:c,pre:CP(state.cubes),after:CP(state.cubes),blocked:[{city:c,by:'nurse',region:C[c].region_ids[0],n:1}]}])");await pg.wait_for_timeout(200)
     ok(await pg.evaluate("!!document.querySelector('#fx.on .blocked .brow.nurse')"),'prevented infection shown even with reveals Off')
     await pg.evaluate("nextFx();$('fxSpeed').value='2'")
+    # v0.9.19 checks
+    ok(await pg.evaluate("let ids=[...MAP.cities.map(c=>c.id)];let o=byCubes(ids);o.every((k,i)=>i===0||cubeTotal(o[i-1])>=cubeTotal(k))"),'travel destinations sorted by cubes')
+    ok(await pg.evaluate("let g=[...document.querySelectorAll('#cityList .clGroup')].map(x=>x.classList[1]);g.length>0&&g.every((c,i)=>i===0||COLORS.indexOf(g[i-1])<COLORS.indexOf(c))"),'infected list grouped by color')
+    if await pg.evaluate("state.phase==='setup'"):await pg.click('#begin');await pg.wait_for_timeout(300);await pg.evaluate('resetFx()')
+    await pg.evaluate("""(()=>{resetFx();let s=state,id=s.infectionDeck[0],col=C[id].color,put=k=>{s.supply[col]-=3-s.cubes[k][col];s.cubes[k][col]=3};for(let w in s.water)s.water[w]=0;s.prevention=null;put(id);let n=ADJ[id][0];put(n);s.phase='infection';s.infectionRemaining=1;s.actions=0;render()})()""")
+    await pg.evaluate("perform({type:'infect'})");await pg.wait_for_timeout(300)
+    ok(await pg.evaluate("for(let i=0;i<5&&!document.querySelector('#fx .alert.chain');i++)nextFx();!!document.querySelector('#fx .alert.chain .chainPath .step.now')"),'chain reaction alert')
+    ok(await pg.evaluate("for(let i=0;i<8&&!document.querySelector('#fx .turnAlert');i++)nextFx();!!document.querySelector('#fx .turnAlert')&&/turn/.test($('actionHeading').textContent)"),'turn change alert and heading')
+    await pg.evaluate("resetFx()")
     # founding dates
     ok(await pg.evaluate("Object.keys(FOUNDED).length===48&&FOUNDED.c44===-1104&&FOUNDED.c20===1072"),'founding dates for all 48 cities')
     # infected city list
