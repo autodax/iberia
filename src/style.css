@@ -94,6 +94,15 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 @media(max-width:1100px){header strong{font-size:13px}.handTitle{font-size:12.5px}.card{font-size:12.5px}}
 
 #setupPanel,#actionArea,#nextPhase,#message,#resources{flex:none}
+#cityList{flex:1 1 0;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--tanBorder);padding-top:6px}
+.clHead{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.clHead h2{margin:0}
+.clGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:3px 5px;align-content:start}
+.clRow{display:flex;align-items:center;gap:4px;min-width:0;height:24px;padding:1px 5px;background:#f3e6c8;border:1px solid #8b7a5a;border-left:5px solid #98a6b0;border-radius:4px;font-size:12.5px;color:#2b2b22}
+.clRow.blue{border-left-color:#2f6fb3}.clRow.red{border-left-color:#c0303a}.clRow.yellow{border-left-color:#d1a514}.clRow.black{border-left-color:#1d1d1d}.clRow.hot{background:#f1d9bd}
+.clName{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clCubes,.clPawns{display:inline-flex;align-items:center;flex:none}.clCubes img{width:15px;height:15px;margin-left:-3px}.clCubes img:first-child{margin-left:0}.clCubes i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-left:1px}
+.clPawns svg{display:block}.clPawn{margin-left:1px}
+aside.roomy .clRow{font-size:14px;height:28px}aside.roomy .clCubes img{width:18px;height:18px}aside.roomy .clGrid{grid-template-columns:repeat(auto-fill,minmax(175px,1fr))}
 .actHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}.actHead h2{margin:0}
 #undo{padding:3px 12px;font-size:13px;white-space:nowrap}
 #undo::before{content:'\21B6  '}
