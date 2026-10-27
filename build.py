@@ -15,7 +15,7 @@ EMBED={ekey(p):uri(p,160 if 'railroad' in p else 128) for p in sorted(glob.glob(
 for p in sorted(glob.glob('assets/sounds/*.mp3')):EMBED[ekey(p)]='data:audio/mpeg;base64,'+base64.b64encode(open(p,'rb').read()).decode()
 T=lambda k:EMBED['tokens/'+k]
 TOKENS={'water':T('purification'),'prevention':T('prevention'),'infection':T('infection-rate'),'outbreak':T('outbreak'),'rail':T('railroad')}
-board='data:image/jpeg;base64,'+base64.b64encode(open('assets/img0.jpeg','rb').read()).decode()
+board='data:image/jpeg;base64,'+base64.b64encode(open('assets/board.jpeg','rb').read()).decode()
 eng=d('src/engine.js').replace("if(typeof module!=='undefined')","if(false)")
 mp=d('src/map.js').replace('if(typeof module!=="undefined")','if(false)')
 REPO_FILES=sorted(os.path.relpath(p,'assets').replace(os.sep,'/') for p in glob.glob('assets/**/*',recursive=True) if os.path.isfile(p))
