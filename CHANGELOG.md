@@ -1,3 +1,9 @@
+# v0.9.15
+
+- Pieces no longer cover printed city names. Each city's name area was measured, and cubes, hospitals, water and prevention tokens, and railroads are placed in the nearest clear spot.
+- Pawns stay on their city but stand slightly lower when the name is printed directly above it.
+- Cubes also avoid pawns and neighbouring city circles.
+
 # v0.9.14
 - New high-resolution board photo: assets/board.jpeg (3910 x 2760) replaces img0.jpeg, which is no longer used. It is built into index.html at full size, and loaded from the repo by default.
 - The photo was placed by matching it to the previous board (median error under 1 px, including a 0.06 degree rotation). Cities, routes, regions, rate track and research circles line up; the outbreak track positions were re-measured on the new photo (3-6 px further right).
