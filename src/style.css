@@ -35,7 +35,7 @@ h2{font-size:15px;margin:0 0 6px;color:var(--ink)}
 #actionButtons{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:5px}
 .action{font-size:13px;padding:6px 4px}
 .action.chosen{background:var(--accent);color:var(--parchLight);border-color:var(--greenDeep)}
-#actionForm{display:grid;gap:6px;margin-top:8px}
+#actionForm{display:grid;gap:12px;margin-top:8px}#actionForm label{font-size:13px}#actionForm select{font-size:15px;padding:7px 8px;min-height:36px;margin-bottom:4px}aside.roomy #actionForm select{font-size:16px;min-height:40px}
 label{display:block;font-size:12px}label select,label input:not([type=checkbox]){display:block;width:100%;margin-top:3px}
 .check{display:flex;align-items:center;gap:6px}.check input{margin:0}
 .detail{font-size:11px;line-height:1.4;color:var(--inkSoft);margin:0}
@@ -90,7 +90,7 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 .alert img.tok{width:46px;height:46px;vertical-align:middle;margin-right:6px}
 .alert.win{border-color:var(--accent)}.alert.win h3{color:var(--accent)}
 @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
-@media(max-height:760px){.action{padding:5px 4px}aside{padding:8px;gap:5px}#actionForm{gap:5px}button{padding:5px 8px}}
+@media(max-height:760px){.action{padding:5px 4px}aside{padding:8px;gap:5px}#actionForm{gap:9px}button{padding:5px 8px}}
 @media(max-width:1100px){header strong{font-size:13px}.handTitle{font-size:12.5px}.card{font-size:12.5px}}
 
 #setupPanel,#actionArea,#nextPhase,#message,#resources{flex:none}

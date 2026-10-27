@@ -212,6 +212,8 @@ async def main():
     await pg.evaluate("$('fxSpeed').value='-1';resetFx();let c=MAP.cities[12].id;queueFx([{kind:'infection',city:c,pre:CP(state.cubes),after:CP(state.cubes),blocked:[{city:c,by:'nurse',region:C[c].region_ids[0],n:1}]}])");await pg.wait_for_timeout(200)
     ok(await pg.evaluate("!!document.querySelector('#fx.on .blocked .brow.nurse')"),'prevented infection shown even with reveals Off')
     await pg.evaluate("nextFx();$('fxSpeed').value='2'")
+    # founding dates
+    ok(await pg.evaluate("Object.keys(FOUNDED).length===48&&FOUNDED.c44===-1104&&FOUNDED.c20===1072"),'founding dates for all 48 cities')
     # infected city list
     await pg.evaluate("resetFx();let c=MAP.cities[3].id;for(let k of COLORS)state.cubes[c][k]=0;state.cubes[c].red=2;state.cubes[c].blue=1;if(!state.players[0].hand.includes(c))state.players[0].hand.push(c);render()")
     ok(await pg.evaluate("let c=MAP.cities[3],rows=[...document.querySelectorAll('#cityList .clRow')],r=rows.find(x=>x.querySelector('.clName').textContent===c.name);!!r&&r.querySelectorAll('.clCubes img,.clCubes i').length===3&&r.querySelectorAll('.clPawn').length>=1&&rows.length===MAP.cities.filter(x=>COLORS.some(k=>state.cubes[x.id][k])).length"),'infected city list shows cubes and card holders')
