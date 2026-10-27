@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.11',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.12',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // Where the board picture sits in map coordinates (cities are in a 1521x1080 frame). Measured for the
 // current assets/img0.jpeg by matching it to the previous board; the frame is cropped to the picture.
@@ -48,7 +48,7 @@ function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'
 function soundUrl(name){return soundUrls(name)[0]||null}
 function saveSound(){try{localStorage.setItem(SND_KEY,JSON.stringify(sndPrefs))}catch(e){}}
 function syncSoundUI(){let b=$('muteButton');if(b){b.classList.toggle('off',!sndPrefs.on);b.title=sndPrefs.on?'Sound on (click to mute)':'Sound off (click to turn on)';b.setAttribute('aria-pressed',String(sndPrefs.on))}if($('sound'))$('sound').checked=sndPrefs.on;if($('volume'))$('volume').value=Math.round(sndPrefs.vol*100)}
-function setSound(on){sndPrefs.on=on;saveSound();syncSoundUI();if(on){unlockSound();playSound('cube')}}
+function setSound(on){sndPrefs.on=on;saveSound();syncSoundUI();saveSettings();if(on){unlockSound();playSound('cube')}}
 function unlockSound(){try{if(!sndCtx){let A=window.AudioContext||window.webkitAudioContext;if(A)sndCtx=new A()}if(sndCtx&&sndCtx.state==='suspended')sndCtx.resume()}catch(e){}}
 function decodeUrl(url){if(!sndBuf[url])sndBuf[url]=fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((ok,no)=>sndCtx.decodeAudioData(a,ok,no))).catch(()=>null);return sndBuf[url]}
 // try the local folder, then the repo, then the built-in copy
@@ -62,7 +62,13 @@ function playSound(name,delay=0){if(!sndPrefs.on)return;let url=soundUrl(name);i
 function el(tag,props={},parent){let n=Object.assign(document.createElement(tag),props);if(parent)parent.appendChild(n);return n}
 function svg(tag,attrs,parent){let n=document.createElementNS(NS,tag);for(let [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(parent)parent.appendChild(n);return n}
 function notice(t,error=false){$('message').textContent=t;$('message').className=error?'error':''}
-function envelope(){return {app:'iberia-prototype',version:VERSION,uiVersion:UI_VERSION,mapSignature:MAP_SIGNATURE,state,commands}}
+// Menu settings travel with the save (and with the autosave), and are also remembered between visits.
+const SET_KEY='iberia-settings';
+function getSettings(){return {fxSpeed:$('fxSpeed').value,showRegions:$('showRegions').checked,showNames:$('showNames').checked,sound:sndPrefs.on,volume:sndPrefs.vol}}
+function applySettings(o,withSound){if(!o||typeof o!=='object')return;if(o.fxSpeed!=null&&[...$('fxSpeed').options].some(x=>x.value===String(o.fxSpeed)))$('fxSpeed').value=String(o.fxSpeed);if(typeof o.showRegions==='boolean')$('showRegions').checked=o.showRegions;if(typeof o.showNames==='boolean')$('showNames').checked=o.showNames;
+ if(!withSound)return;if(typeof o.volume==='number'&&o.volume>=0&&o.volume<=1)sndPrefs.vol=o.volume;if(typeof o.sound==='boolean')sndPrefs.on=o.sound;saveSound();syncSoundUI()}
+function saveSettings(){try{localStorage.setItem(SET_KEY,JSON.stringify(getSettings()))}catch(e){}if(typeof autosave==='function'&&state)autosave()}
+function envelope(){return {app:'iberia-prototype',version:VERSION,uiVersion:UI_VERSION,mapSignature:MAP_SIGNATURE,settings:getSettings(),state,commands}}
 function autosave(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(envelope()))}catch(e){}}
 function uniq(a){return [...new Set(a)]}
 function cityItems(filter){return MAP.cities.filter(filter||(()=>true)).slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>[c.id,c.name])}
@@ -293,7 +299,7 @@ $('playerCount').onchange=drawRoleFields;
 $('randomRoles').onclick=()=>{let pool=Object.keys(ROLES);for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}roleChoice=pool.slice(0,5);drawRoleFields()};
 $('newGame').onclick=async()=>{if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;let seed=$('seed').value.trim()||newSeed();state=initial(seed,+$('difficulty').value,roleChoice.slice(0,n));$('seed').value='';history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.')}catch(e){notice(e.message,true)}};
 $('saveButton').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(envelope(),null,2)],{type:'application/json'})),a=el('a',{href:u,download:'iberia-save-v09-turn'+state.turn+'.json'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
-function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';resetFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
+function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;if(o.settings)applySettings(o.settings,true);commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';resetFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
 $('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('menu').close()}$('loadFile').value=''};
 $('resumeButton').onclick=()=>{try{let raw=localStorage.getItem(SAVE_KEY);requireRule(raw,'No local autosave found');restore(JSON.parse(raw))}catch(e){notice(e.message,true)}};
 {let base=/github\.io$/.test(location.hostname)?'':'https://autodax.github.io/iberia/';$('rulesLink').href=base+'docs/Iberia_rulebook.pdf';$('guideLink').href=base+'docs/Guide.pdf'}
@@ -301,6 +307,6 @@ function undo(){if(busy||!history.length||state.status!=='playing')return;let h=
 $('undo').onclick=undo;
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'&&!document.querySelector('dialog[open]')&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||'')){e.preventDefault();undo()}});
 $('assetButton').onclick=()=>$('assetFiles').click();$('assetFiles').onchange=()=>loadAssets([...$('assetFiles').files]);$('assetClear').onclick=()=>{loadAssets([]);$('assetStatus').textContent=REPO_STATUS};
-$('showRegions').onchange=paint;$('showNames').onchange=paint;window.addEventListener('resize',fitLayout);
-$('muteButton').onclick=e=>{e.stopPropagation();setSound(!sndPrefs.on)};$('sound').onchange=()=>setSound($('sound').checked);$('volume').oninput=()=>{sndPrefs.vol=+$('volume').value/100;saveSound()};$('volume').onchange=()=>playSound('cube');syncSoundUI();
+$('showRegions').onchange=()=>{paint();saveSettings()};$('showNames').onchange=()=>{paint();saveSettings()};$('fxSpeed').addEventListener('change',saveSettings);try{applySettings(JSON.parse(localStorage.getItem(SET_KEY)||'null'))}catch(e){}window.addEventListener('resize',fitLayout);
+$('muteButton').onclick=e=>{e.stopPropagation();setSound(!sndPrefs.on)};$('sound').onchange=()=>setSound($('sound').checked);$('volume').oninput=()=>{sndPrefs.vol=+$('volume').value/100;saveSound()};$('volume').addEventListener('change',saveSettings);$('volume').onchange=()=>playSound('cube');syncSoundUI();
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
