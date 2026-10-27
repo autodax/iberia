@@ -1,3 +1,7 @@
+# v0.9.18
+
+- Founding dates updated to the values confirmed from the physical City cards; the date list is now in date order with the research notes removed.
+
 # v0.9.17
 
 - Founding dates for all 48 cities. 13 are read from cards pictured in the rulebook and 35 were researched, mostly from Wikipedia (see docs/FOUNDING_DATES.md).
