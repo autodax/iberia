@@ -141,3 +141,19 @@ header .sndBtn.off .cross{display:inline}
 .chainPath{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;margin:6px 0;font-size:13.5px}.chainPath .step{padding:2px 7px;border:1px solid #8b7a5a;border-radius:3px;background:#f3e6c8}.chainPath .step.done{opacity:.6}.chainPath .step.now{background:#9c1f14;color:#f6e8cd;border-color:#9c1f14;font-weight:700}.chainPath .arr{color:#9c1f14;font-weight:700}
 @keyframes chainShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 @media(prefers-reduced-motion:reduce){.alert.chain,#actionHeading.justActive,.hand.justActive{animation:none}}
+.cardPicker{gap:7px;margin:2px 0 10px}.cardPicker .label{margin-bottom:1px}
+.cardPicker .miniCard{font-size:13.5px;line-height:18px;padding:5px 10px;min-height:30px;border-left-width:8px;cursor:pointer}
+.cardPicker .miniCard.selected{outline:3px solid var(--cyan);background:#fff4d6;font-weight:600}
+.cardPicker .miniCard.selected::before{content:'✓ ';color:var(--greenDeep)}
+aside.roomy .cardPicker .miniCard{font-size:14.5px;min-height:32px}
+.cube-black{filter:url(#cubeBlackFx)}
+.cube-red{filter:saturate(.75) brightness(.86)}
+.logList{display:flex;flex-direction:column;gap:1px;font-size:13.5px;margin-bottom:10px}.logL.l0{font-weight:700;margin-top:8px;padding:2px 6px;background:var(--parchLight);border-left:5px solid var(--accent);border-radius:3px}.logL.l0:first-child{margin-top:0}.logL.l1{padding-left:22px}.logL.l2{padding-left:44px;color:var(--warn)}.logL.l1::before,.logL.l2::before{content:'· ';color:var(--inkSoft)}
+
+#choiceDialog.mapPick{position:fixed;left:16px;bottom:16px;top:auto;right:auto;margin:0;max-width:360px;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+#choiceDialog.mapPick #choiceOptions{display:flex;flex-wrap:wrap;gap:6px}
+#choiceDialog .mapHint{flex-basis:100%;margin:6px 0 0;font-size:13px;color:var(--inkSoft)}
+#choiceOptions button.hot{outline:3px solid #00c8d8}
+#choiceDialog.mapPick{left:auto;right:16px;top:250px;bottom:auto;width:340px;max-width:340px;padding:12px 14px}
+#choiceDialog.mapPick h2{font-size:16px;margin:0 0 8px}
+#choiceDialog.mapPick #choiceOptions button{font-size:13px;padding:5px 8px;text-align:left}
