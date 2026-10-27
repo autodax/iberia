@@ -1,3 +1,7 @@
+# v0.9.12
+- Card reveals default to Fast.
+- Menu settings (reveal speed, show regions, show city names, sound on/off and volume) are saved with the game: in Export save files and in the autosave, and loading or resuming a game brings them back. They are also remembered between visits.
+
 # v0.9.11
 - Every game is now shuffled differently. The page and Menu → New game used a fixed shuffle seed ("iberia-test-1"), so the same hands, starting cities and Events came up each time. A random seed is now chosen for each game.
 - The seed box in Menu → New game is optional: leave it blank for a random game, or type a seed to replay a deal. The current seed is shown in the footer.

@@ -26,8 +26,8 @@ async def main():
     await pg.close()
     # card reveals last a few seconds, then close on their own
     pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.wait_for_timeout(300)
-    await pg.evaluate("queueFx([{kind:'infection',city:'c22'}])");await pg.wait_for_timeout(1500)
-    ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='infection'&&!!document.querySelector('#fx .fxBar')"),'infection reveal still showing after 1.5 s, with timer bar')
+    await pg.evaluate("queueFx([{kind:'infection',city:'c22'}])");await pg.wait_for_timeout(900)
+    ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='infection'&&!!document.querySelector('#fx .fxBar')"),'infection reveal still showing after 0.9 s at Fast, with timer bar')
     await pg.keyboard.press('Enter');await pg.wait_for_timeout(100)
     ok(await pg.evaluate("!fxCurrent"),'Enter dismisses a reveal')
     await pg.evaluate("$('fxSpeed').value='0';queueFx([{kind:'infection',city:'c22'}])");await pg.wait_for_timeout(7000)
@@ -177,6 +177,18 @@ async def main():
     await pg.evaluate("$('volume').value='30';$('volume').dispatchEvent(new Event('input'))")
     await pg.reload();await pg.wait_for_timeout(800)
     ok(await pg.evaluate("sndPrefs.on&&Math.abs(sndPrefs.vol-.3)<.01&&$('volume').value==='30'"),'sound setting and volume remembered')
+    # settings saved with the game
+    await pg.evaluate("localStorage.removeItem('iberia-settings')");await pg.reload();await pg.wait_for_timeout(300)
+    ok(await pg.evaluate("$('fxSpeed').value==='0.5'"),'default reveal speed is Fast')
+    await pg.evaluate("$('fxSpeed').value='0';$('fxSpeed').dispatchEvent(new Event('change'));$('showNames').checked=true;$('showNames').dispatchEvent(new Event('change'))")
+    env=await pg.evaluate("envelope().settings")
+    ok(env['fxSpeed']=='0' and env['showNames'] is True,'settings included in the save '+str(env))
+    ok(await pg.evaluate("JSON.parse(localStorage.getItem(SAVE_KEY)).settings.fxSpeed==='0'"),'settings included in the autosave')
+    await pg.reload();await pg.wait_for_timeout(300)
+    ok(await pg.evaluate("$('fxSpeed').value==='0'&&$('showNames').checked"),'settings remembered after reload')
+    await pg.evaluate("let e=envelope();e.settings={fxSpeed:'2',showRegions:true,showNames:false,sound:true,volume:.4};restore(e)")
+    ok(await pg.evaluate("$('fxSpeed').value==='2'&&$('showRegions').checked&&!$('showNames').checked&&Math.abs(sndPrefs.vol-.4)<.01"),'loading a save restores its settings')
+    await pg.evaluate("$('fxSpeed').value='0.5';$('showRegions').checked=false;saveSettings()")
     # random seeds
     seeds=set()
     for _ in range(3):
