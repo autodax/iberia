@@ -97,7 +97,7 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 #cityList{flex:1 1 0;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--tanBorder);padding-top:6px}
 .clHead{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.clHead h2{margin:0}
 .clGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:3px 5px;align-content:start}
-.clRow{display:flex;align-items:center;gap:4px;min-width:0;height:24px;padding:1px 5px;background:#f3e6c8;border:1px solid #8b7a5a;border-left:5px solid #98a6b0;border-radius:4px;font-size:12.5px;color:#2b2b22}
+.clRow{display:flex;align-items:center;gap:4px;min-width:0;height:24px;padding:1px 5px;background:#f3e6c8;border:1px solid #8b7a5a;border-left:9px solid #98a6b0;border-radius:4px;font-size:12.5px;color:#2b2b22}
 .clRow.blue{border-left-color:#2f6fb3}.clRow.red{border-left-color:#c0303a}.clRow.yellow{border-left-color:#d1a514}.clRow.black{border-left-color:#1d1d1d}.clRow.hot{background:#f1d9bd}
 .clName{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .clCubes,.clPawns{display:inline-flex;align-items:center;flex:none}.clCubes img{width:15px;height:15px;margin-left:-3px}.clCubes img:first-child{margin-left:0}.clCubes i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-left:1px}
@@ -157,3 +157,21 @@ aside.roomy .cardPicker .miniCard{font-size:14.5px;min-height:32px}
 #choiceDialog.mapPick{left:auto;right:16px;top:250px;bottom:auto;width:340px;max-width:340px;padding:12px 14px}
 #choiceDialog.mapPick h2{font-size:16px;margin:0 0 8px}
 #choiceDialog.mapPick #choiceOptions button{font-size:13px;padding:5px 8px;text-align:left}
+
+/* v0.9.21 button choices instead of dropdowns */
+.field{display:block}.field>.label{font-size:13px;margin-bottom:4px}
+.choiceGroup{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 6px}
+.choiceGroup.many{max-height:132px;overflow-y:auto;padding:2px;border:1px solid var(--tanBorder);border-radius:5px;background:rgba(246,232,205,.5)}
+.choiceGroup .chip{font-size:13px;padding:4px 9px;border-radius:5px;line-height:1.25;text-align:left}
+.choiceGroup .chip:hover{background:var(--tanHover)}
+.choiceGroup .chip.on{background:var(--greenDeep);color:var(--parchLight);border-color:var(--greenDeep);font-weight:600}
+aside.roomy .choiceGroup .chip{font-size:14.5px;padding:5px 10px}
+dialog .choiceGroup .chip{font-size:12.5px;padding:3px 8px}
+#setupPanel .choiceGroup.many{max-height:110px}
+label .choiceGroup{margin-top:3px}
+.researchMark{pointer-events:none}
+#hands{flex:0 0 auto}
+.choiceGroup.many{max-height:100px}
+.choiceGroup .chip.city{border-left:7px solid #98a6b0}.chip.city.blue{border-left-color:#2f6fb3}.chip.city.red{border-left-color:#c0303a}.chip.city.yellow{border-left-color:#d1a514}.chip.city.black{border-left-color:#1d1d1d}
+.choiceGroup .chip.city.on{border-left-width:7px}
+#actionForm{gap:8px}

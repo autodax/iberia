@@ -1,3 +1,11 @@
+# v0.9.21
+
+- Black cubes: removed the white outline; the soft highlight stays.
+- Research markers now sit on the microscope silhouettes below the disease circles, sized to fit, with no background circle.
+- Infected cities list: wider color edge on each city, matching the cards in hand.
+- Buttons instead of dropdown menus everywhere (actions, starting cities, first player, event cards, roles, players, epidemics, reveal speed). City buttons carry their color edge; long lists scroll inside the panel so the page still fits.
+- Fewer clicks: once nothing is left to choose, the action happens straight away. For example, one click on a destination moves the pawn, one click on a card discards it for Ship or Purify water, and actions with only one possible outcome (such as Build hospital) happen when chosen. Undo is available. Clicking a ringed city on the map for a train trip also moves at once.
+
 # v0.9.20
 
 - Outbreak fix: during a chain reaction the outbreak counter and track marker now advance one outbreak at a time instead of jumping to the final total, cubes fly from the city that is spreading them, and chained outbreaks resolve in rulebook order (each outbreak places all its cubes before the next one starts).
