@@ -1,12 +1,13 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.12',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.13',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // Where the board picture sits in map coordinates (cities are in a 1521x1080 frame). Measured for the
 // current assets/img0.jpeg by matching it to the previous board; the frame is cropped to the picture.
 const BOARD_FIT=[10.8,6.3,1499.7,1064.8];
-const RATE_POS=[622,676,728,783,835,888,940].map(x=>[x,55]);
-const OUT_POS=[[1390,342],[1449,387],[1390,431],[1449,476],[1391,522],[1450,567],[1391,611],[1450,657],[1391,707]];
-const RESEARCH_POS={red:[832,958],blue:[913,958],black:[973,958],yellow:[1048,958]};
+// Track and research positions measured on the current board (centres of the printed symbols).
+const RATE_POS=[[623.5,59.5],[675.5,59.5],[728.5,59.5],[780.5,59.5],[832.5,59.5],[885.5,59.5],[938.5,59]];
+const OUT_POS=[[1390.5,342],[1449.5,387.5],[1392,432],[1451,477],[1393.5,522.5],[1452.5,567.5],[1393.5,613.5],[1452.5,658.5],[1393.5,704.5]];
+const RESEARCH_POS={red:[825,959.5],blue:[899.5,959],black:[974.5,959.5],yellow:[1048.5,959.5]};
 const PAWN={sailor:'#2f6fb3',agronomist:'#3f8f3a',railwayman:'#8a5a2b',politician:'#6b3fa0',nurse:'#e07aa6',scientist:'#ece4cf',rural_doctor:'#e07b1a'};
 const DISEASE={red:'#c0303a',blue:'#2f6fb3',yellow:'#d1a514',black:'#1d1d1d'};
 const HOSP={red:'#b8333b',blue:'#2f67a8',yellow:'#d4a91c',black:'#2a2a2a'};

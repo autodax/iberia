@@ -1,3 +1,6 @@
+# v0.9.13
+- Infection-rate marker, research markers and outbreak marker re-measured on the current board, so each sits centered on its printed symbol. The rate spaces were about 4 px low; the red and blue research circles were 8-13 px off; the lower outbreak spaces about 2 px.
+
 # v0.9.12
 - Card reveals default to Fast.
 - Menu settings (reveal speed, show regions, show city names, sound on/off and volume) are saved with the game: in Export save files and in the autosave, and loading or resuming a game brings them back. They are also remembered between visits.
