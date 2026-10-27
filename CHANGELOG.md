@@ -1,3 +1,12 @@
+# v0.9.20
+
+- Outbreak fix: during a chain reaction the outbreak counter and track marker now advance one outbreak at a time instead of jumping to the final total, cubes fly from the city that is spreading them, and chained outbreaks resolve in rulebook order (each outbreak places all its cubes before the next one starts).
+- Card selection before an action (Ship, Purify water, Research) is less crowded: larger cards with more spacing, and selected cards are outlined and checked.
+- Black cubes have highlights and edges so they stand out on the board; red cubes are less bright.
+- The log is indented: turn headers, then the events in each turn, with outbreaks and prevented infections indented under the infection that caused them.
+- Move by clicking the map: with no action chosen, cities the active pawn can reach are ringed; clicking one moves by carriage or boat at once (Undo is available), or opens Train or Ship with that city selected.
+- Nurse prevention token (and other region or city choices) can be chosen by clicking a highlighted region on the map; the choice panel moves to the side so the board stays visible.
+
 # v0.9.19
 
 - Chain reaction alert: when one outbreak sets off others, each one is shown with a red Chain reaction banner, which city spread it, and the full chain with the current outbreak highlighted.
