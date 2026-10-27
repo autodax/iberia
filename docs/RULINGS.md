@@ -5,9 +5,9 @@ Sources: docs/Iberia_rulebook.pdf and docs/Guide.pdf in this repo.
 - Purify Water places up to 2 tokens, both may go in the same region.
 - Good Season applies to the current infection step if no infection card has been drawn yet.
 - Railwayman may build two adjacent railroads with one action, once per turn. Train/ship passengers must consent.
-- Starting player is picked manually (rulebook: the player whose city card has the earliest founding date goes first).
+- Starting player: the game preselects the player whose City card has the earliest founding date (rulebook). Ties and overrides stay a manual choice. Dates are in docs/FOUNDING_DATES.md.
 - Hospitals: one per color; building another moves it.
 - Blue and black arrows on the board are decorative and ignored.
-- Founding dates: the rulebook only shows dates for the few cards pictured in it, so the first player stays a manual choice until all 48 dates are added.
+- Founding dates: 13 come from cards pictured in the rulebook; the other 35 were researched (mostly Wikipedia) and may differ from the printed cards.
 - Checked against Guide.pdf in v0.9.1: both ways of purifying water, the Agronomist's extra token, the Scientist's any-color purify, one cube per Treat even after research, any start city when a hand has no City card, losing when fewer than 2 Player cards remain, and the hand limit applying only after Epidemics.
 - Undo: allowed for any action, Event or discard that reveals no hidden cards. Drawing Player cards, Epidemics, infections, the Scientist's peek and Begin game clear the undo history, and so does the end of the game.

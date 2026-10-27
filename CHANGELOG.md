@@ -1,3 +1,10 @@
+# v0.9.17
+
+- Founding dates for all 48 cities. 13 are read from cards pictured in the rulebook and 35 were researched, mostly from Wikipedia (see docs/FOUNDING_DATES.md).
+- The first player is now preselected: whoever holds the oldest city goes first, as the rulebook says. Each option shows that player's oldest city and date; ties and overrides stay a manual choice.
+- City card tooltips show the founding date.
+- The city dropdown in the action panel is larger, with more space before the button below it.
+
 # v0.9.16
 
 - New Infected cities list in the right panel, between the actions and the supply. It shows every city with cubes, most cubes first, with a cube icon for each cube and a pawn icon for each player holding that city's card.
