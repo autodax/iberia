@@ -1,3 +1,7 @@
+# v0.9.14
+- New high-resolution board photo: assets/board.jpeg (3910 x 2760) replaces img0.jpeg, which is no longer used. It is built into index.html at full size, and loaded from the repo by default.
+- The photo was placed by matching it to the previous board (median error under 1 px, including a 0.06 degree rotation). Cities, routes, regions, rate track and research circles line up; the outbreak track positions were re-measured on the new photo (3-6 px further right).
+
 # v0.9.13
 - Infection-rate marker, research markers and outbreak marker re-measured on the current board, so each sits centered on its printed symbol. The rate spaces were about 4 px low; the red and blue research circles were 8-13 px off; the lower outbreak spaces about 2 px.
 

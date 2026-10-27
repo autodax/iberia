@@ -1,12 +1,12 @@
 // Iberia prototype UI v0.9
-const UI_VERSION='0.9.13',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.9.14',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
-// Where the board picture sits in map coordinates (cities are in a 1521x1080 frame). Measured for the
-// current assets/img0.jpeg by matching it to the previous board; the frame is cropped to the picture.
-const BOARD_FIT=[10.8,6.3,1499.7,1064.8];
+// The board picture (assets/board.jpeg, 3910x2760) is placed into map coordinates (cities use a 1521x1080 frame)
+// by the transform on #boardImage, measured by matching it to the previous board. The frame is cropped to the picture.
+const BOARD_FIT=[7.9,8.3,1511.9,1066.5];
 // Track and research positions measured on the current board (centres of the printed symbols).
 const RATE_POS=[[623.5,59.5],[675.5,59.5],[728.5,59.5],[780.5,59.5],[832.5,59.5],[885.5,59.5],[938.5,59]];
-const OUT_POS=[[1390.5,342],[1449.5,387.5],[1392,432],[1451,477],[1393.5,522.5],[1452.5,567.5],[1393.5,613.5],[1452.5,658.5],[1393.5,704.5]];
+const OUT_POS=[[1396,341],[1455.5,386.5],[1396,432.5],[1457,477.5],[1396.5,522.5],[1457.5,568.5],[1396.5,614],[1457.5,659.5],[1397.5,706.5]];
 const RESEARCH_POS={red:[825,959.5],blue:[899.5,959],black:[974.5,959.5],yellow:[1048.5,959.5]};
 const PAWN={sailor:'#2f6fb3',agronomist:'#3f8f3a',railwayman:'#8a5a2b',politician:'#6b3fa0',nurse:'#e07aa6',scientist:'#ece4cf',rural_doctor:'#e07b1a'};
 const DISEASE={red:'#c0303a',blue:'#2f6fb3',yellow:'#d1a514',black:'#1d1d1d'};
@@ -22,8 +22,8 @@ const LABEL={carriage:'Carriage / boat',train:'Train',ship:'Ship',build:'Build r
 let ASSETS={},REPO={},REPO_STATUS='Loading graphics from the GitHub repo…';
 const REPO_NAME='autodax/iberia',REPO_BRANCH='main';
 // Repo graphics are the default: every file under assets/ in the GitHub repo is used by name.
-// Top-level files map to tokens/<name> (img0/board -> board/iberia); subfolders keep their path (pawns/pawn-nurse.png -> pawns/pawn-nurse).
-function repoKey(rel){let k=norm(rel);if(!k.includes('/'))k=(k==='img0'||k==='board'||k==='iberia')?'board/iberia':'tokens/'+k;return k}
+// Top-level files map to tokens/<name> (board -> board/iberia); subfolders keep their path (pawns/pawn-nurse.png -> pawns/pawn-nurse).
+function repoKey(rel){let k=norm(rel);if(!k.includes('/'))k=(k==='board'||k==='iberia')?'board/iberia':'tokens/'+k;return k}
 function repoBase(){return location.protocol.startsWith('http')&&/github\.io$/.test(location.hostname)?'assets/':'https://raw.githubusercontent.com/'+REPO_NAME+'/'+REPO_BRANCH+'/assets/'}
 async function loadRepoAssets(){let files=null;
  try{let r=await fetch('https://api.github.com/repos/'+REPO_NAME+'/git/trees/'+REPO_BRANCH+'?recursive=1',{cache:'no-store'});if(r.ok){let j=await r.json();files=j.tree.filter(t=>t.type==='blob'&&t.path.startsWith('assets/')).map(t=>t.path.slice(7))}}catch(e){}
