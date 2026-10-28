@@ -80,8 +80,8 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 .bigCard.art{background:#1c241f;border-color:#2b2b22}
 .bigCard.landscape{width:220px;height:150px}
 /* real card pictures are shown larger so the text on them can be read */
-.bigCard.art{width:clamp(112px,20vh,180px);height:auto;aspect-ratio:584/836}
-.bigCard.art.landscape{width:clamp(165px,30vh,262px);aspect-ratio:724/510}
+.bigCard.art{width:calc(clamp(112px,20vh,180px)*var(--cs,1));height:auto;aspect-ratio:584/836}
+.bigCard.art.landscape{width:calc(clamp(165px,30vh,262px)*var(--cs,1));aspect-ratio:724/510}
 .bigCard img{width:100%;height:100%;object-fit:cover}
 .bigCard .band{height:34px}.bigCard .nm{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font:700 18px Georgia,serif}
 .bigCard .kind{font-size:11px;text-transform:uppercase;letter-spacing:.08em;text-align:center;padding:5px;color:#6a5a3c}
@@ -198,7 +198,7 @@ header #onlineButton.live{background:var(--accent);color:var(--parchLight);borde
 
 #cardPreview{position:fixed;right:384px;top:50%;transform:translateY(-50%);z-index:60;pointer-events:none;filter:drop-shadow(0 8px 22px rgba(0,0,0,.55));text-align:center}
 #cardPreview.pinned{pointer-events:auto}
-#cardPreview .bigCard.art{width:clamp(115px,24vh,200px)}
+#cardPreview .bigCard.art{width:calc(clamp(115px,24vh,200px)*var(--cs,1))}
 #cardPreview .prevText{max-width:180px;font-size:12px;margin-top:6px;padding:6px 10px;background:var(--parchLight);border-radius:6px;font-size:13px;color:var(--ink);text-align:left}
 .roleLink{cursor:help}
 .deckArt{pointer-events:none}
@@ -210,11 +210,13 @@ header #onlineButton.live{background:var(--accent);color:var(--parchLight);borde
 .choiceGroup .chip[data-v="red"] .chipCube,.choiceGroup .chip[data-v="blue"] .chipCube,.choiceGroup .chip[data-v="yellow"] .chipCube,.choiceGroup .chip[data-v="black"] .chipCube{width:20px;height:20px}
 #pieces image.treatable{cursor:pointer;pointer-events:all}
 
-#cubeSupply,#researchStatus{justify-content:flex-end}
-#cubeSupply .lbl,#researchStatus .lbl{margin-right:auto}
+#cubeSupply,#researchStatus{display:grid;grid-template-columns:104px repeat(4,62px);justify-content:start;align-items:center;gap:2px 0}
+#cubeSupply .lbl,#researchStatus .lbl{margin-right:0}
+#cubeSupply span.t,#researchStatus span.t{justify-self:start}
 #pieces image.treatable:hover{opacity:.75}
 
 #cityList .cube-red,#cubeSupply .cube-red,.chipCube.cube-red{filter:saturate(.9) brightness(1.15)}
+#cardSizeVal{margin-left:6px;font-size:12px}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <filter id="cubeBlackFx" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
@@ -242,7 +244,7 @@ header #onlineButton.live{background:var(--accent);color:var(--parchLight);borde
 <div class="dialogButtons"><button id="saveButton">Export save</button><button id="loadButton">Load save</button><button id="resumeButton">Resume local autosave</button></div><input id="loadFile" type="file" accept=".json" hidden>
 <h3>New game</h3><div class="seatRow"><label>Players<select id="playerCount"><option>2</option><option>3</option><option>4</option><option>5</option></select></label><label>Epidemics<select id="difficulty"><option value="4">4 · Introductory</option><option value="5">5 · Standard</option><option value="6">6 · Heroic</option></select></label></div>
 <label>Shuffle seed (optional)<input id="seed" value="" placeholder="Random each game · type a seed to replay one" autocomplete="off"></label><div id="roleFields" class="rolesGrid"></div><div class="dialogButtons"><button id="randomRoles">Random roles</button><button id="newGame" class="primary" style="width:auto">Start new game</button></div>
-<h3>Alerts and card reveals</h3><label>Reveal speed<select id="fxSpeed"><option value="0">Until clicked</option><option value="2">Slow</option><option value="1">Normal</option><option value="0.5" selected>Fast</option><option value="-1">Off (alerts still shown)</option></select></label><label class="check"><input id="sound" type="checkbox">Play sounds</label><label>Volume<input id="volume" type="range" min="0" max="100" step="5" value="70"></label>
+<h3>Alerts and card reveals</h3><label>Reveal speed<select id="fxSpeed"><option value="0">Until clicked</option><option value="2">Slow</option><option value="1">Normal</option><option value="0.5" selected>Fast</option><option value="-1">Off (alerts still shown)</option></select></label><label class="check"><input id="sound" type="checkbox">Play sounds</label><label>Volume<input id="volume" type="range" min="0" max="100" step="5" value="70"></label><label title="Size of the cards that pop up when you hover or draw">Card size<input id="cardSize" type="range" min="50" max="150" step="5" value="100"><span id="cardSizeVal">100%</span></label>
 <h3>Graphics</h3><p>Graphics load from the <code>assets</code> folder of the GitHub repo by default. Optionally choose a local folder: files stay on your computer and matching names override the repo graphics for this session.</p><div class="dialogButtons"><button id="assetButton">Choose local asset folder</button><button id="assetClear">Use repo graphics</button></div><input id="assetFiles" type="file" webkitdirectory directory multiple hidden><p id="assetStatus" class="detail">Loading graphics from the GitHub repo…</p>
 <h3>Display</h3><label class="check"><input id="showRegions" type="checkbox">Show region labels</label><label class="check"><input id="showNames" type="checkbox">Show city names</label>
 <p class="notice">Standard base game — all 7 roles and 15 Events, 2–5 seats. Play from one browser, or use the Online button to play with others over the internet. Not yet included: the five custom roles, optional challenges and founding-date automation.</p></dialog>
@@ -1623,4 +1625,9 @@ $('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room? Everyo
  let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
 
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
+
+// Card size slider (Menu): scales the hover previews and the drawn-card popups; remembered on this device
+{let K='iberia-card-size',v=100;try{v=+localStorage.getItem(K)||100}catch(e){}
+ let apply=x=>{x=Math.max(50,Math.min(150,x));document.documentElement.style.setProperty('--cs',String(x/100));let i=$('cardSize');if(i)i.value=x;let t=$('cardSizeVal');if(t)t.textContent=x+'%';return x};
+ apply(v);$('cardSize').oninput=()=>{v=apply(+$('cardSize').value);try{localStorage.setItem(K,String(v))}catch(e){}}}
 </script></body></html>

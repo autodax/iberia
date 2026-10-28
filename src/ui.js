@@ -584,3 +584,8 @@ $('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room? Everyo
  let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
 
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
+
+// Card size slider (Menu): scales the hover previews and the drawn-card popups; remembered on this device
+{let K='iberia-card-size',v=100;try{v=+localStorage.getItem(K)||100}catch(e){}
+ let apply=x=>{x=Math.max(50,Math.min(150,x));document.documentElement.style.setProperty('--cs',String(x/100));let i=$('cardSize');if(i)i.value=x;let t=$('cardSizeVal');if(t)t.textContent=x+'%';return x};
+ apply(v);$('cardSize').oninput=()=>{v=apply(+$('cardSize').value);try{localStorage.setItem(K,String(v))}catch(e){}}}
