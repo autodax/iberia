@@ -77,7 +77,10 @@ function soundUrl(name){return soundUrls(name)[0]||null}
 function saveSound(){try{localStorage.setItem(SND_KEY,JSON.stringify(sndPrefs))}catch(e){}}
 function syncSoundUI(){let b=$('muteButton');if(b){b.classList.toggle('off',!sndPrefs.on);b.title=sndPrefs.on?'Sound on (click to mute)':'Sound off (click to turn on)';b.setAttribute('aria-pressed',String(sndPrefs.on))}if($('sound'))$('sound').checked=sndPrefs.on;if($('volume'))$('volume').value=Math.round(sndPrefs.vol*100)}
 function setSound(on){sndPrefs.on=on;saveSound();syncSoundUI();saveSettings();if(on){unlockSound();playSound('cube')}}
-function unlockSound(){try{if(!sndCtx){let A=window.AudioContext||window.webkitAudioContext;if(A)sndCtx=new A()}if(sndCtx&&sndCtx.state!=='running'){sndCtx.resume();if(!sndCtx.iosKick){sndCtx.iosKick=true;let b=sndCtx.createBuffer(1,1,22050),n=sndCtx.createBufferSource();n.buffer=b;n.connect(sndCtx.destination);n.start(0)}}}catch(e){}}
+let sndKeep=null;
+// iPad/iPhone: the ringer switch mutes Web Audio unless the page is also "playing media", so loop a silent clip
+function keepAudioAlive(){try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}try{if(!sndKeep){sndKeep=new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==');sndKeep.loop=true;sndKeep.volume=.01;sndKeep.setAttribute('playsinline','')}if(sndKeep.paused)sndKeep.play().catch(()=>{})}catch(e){}}
+function unlockSound(){keepAudioAlive();try{if(!sndCtx){let A=window.AudioContext||window.webkitAudioContext;if(A)sndCtx=new A()}if(sndCtx&&sndCtx.state!=='running'){sndCtx.resume();if(!sndCtx.iosKick){sndCtx.iosKick=true;let b=sndCtx.createBuffer(1,1,22050),n=sndCtx.createBufferSource();n.buffer=b;n.connect(sndCtx.destination);n.start(0)}}}catch(e){}}
 // iPad/iPhone only allow sound after a tap: any tap re-opens it if sound is switched on
 for(let ev of ['pointerdown','touchend','click','keydown'])document.addEventListener(ev,()=>{if(sndPrefs.on)unlockSound()},{passive:true,capture:true});
 function decodeUrl(url){if(!sndBuf[url])sndBuf[url]=fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((ok,no)=>sndCtx.decodeAudioData(a,ok,no))).catch(()=>null);return sndBuf[url]}
@@ -85,7 +88,7 @@ function decodeUrl(url){if(!sndBuf[url])sndBuf[url]=fetch(url).then(r=>{if(!r.ok
 async function soundBuffer(name){if(!sndCtx)return null;for(let u of soundUrls(name)){let b=await decodeUrl(u);if(b)return b}return null}
 function playSound(name,delay=0){if(!sndPrefs.on)return;let url=soundUrl(name);if(!url)return;let now=performance.now()+delay;if(sndLast[name]&&Math.abs(now-sndLast[name])<45)return;sndLast[name]=now;
  let vol=sndPrefs.vol*(SND_VOL[name]??.7);(window.soundLog=window.soundLog||[]).push(name);unlockSound();
- if(!sndCtx){setTimeout(()=>{try{let a=new Audio(url);a.volume=Math.min(1,vol);a.play().catch(()=>{})}catch(e){}},delay);return}
+ if(!sndCtx||sndCtx.state!=='running'){setTimeout(()=>{try{let a=new Audio(url);a.volume=Math.min(1,vol);a.play().catch(()=>{})}catch(e){}},delay);return}
  soundBuffer(name).then(b=>{if(!b||!sndCtx)return;let s=sndCtx.createBufferSource(),g=sndCtx.createGain();s.buffer=b;s.playbackRate.value=name==='cube'?0.94+Math.random()*.12:1;g.gain.value=vol;s.connect(g).connect(sndCtx.destination);s.start(sndCtx.currentTime+Math.max(0,delay)/1000)})}
 
 /* ---------- helpers ---------- */

@@ -80,8 +80,8 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 .bigCard.art{background:#1c241f;border-color:#2b2b22}
 .bigCard.landscape{width:220px;height:150px}
 /* real card pictures are shown larger so the text on them can be read */
-.bigCard.art{width:clamp(150px,27vh,240px);height:auto;aspect-ratio:584/836}
-.bigCard.art.landscape{width:clamp(220px,40vh,350px);aspect-ratio:724/510}
+.bigCard.art{width:clamp(112px,20vh,180px);height:auto;aspect-ratio:584/836}
+.bigCard.art.landscape{width:clamp(165px,30vh,262px);aspect-ratio:724/510}
 .bigCard img{width:100%;height:100%;object-fit:cover}
 .bigCard .band{height:34px}.bigCard .nm{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font:700 18px Georgia,serif}
 .bigCard .kind{font-size:11px;text-transform:uppercase;letter-spacing:.08em;text-align:center;padding:5px;color:#6a5a3c}
@@ -198,8 +198,8 @@ header #onlineButton.live{background:var(--accent);color:var(--parchLight);borde
 
 #cardPreview{position:fixed;right:384px;top:50%;transform:translateY(-50%);z-index:60;pointer-events:none;filter:drop-shadow(0 8px 22px rgba(0,0,0,.55));text-align:center}
 #cardPreview.pinned{pointer-events:auto}
-#cardPreview .bigCard.art{width:clamp(154px,32vh,266px)}
-#cardPreview .prevText{max-width:240px;font-size:12px;margin-top:6px;padding:6px 10px;background:var(--parchLight);border-radius:6px;font-size:13px;color:var(--ink);text-align:left}
+#cardPreview .bigCard.art{width:clamp(115px,24vh,200px)}
+#cardPreview .prevText{max-width:180px;font-size:12px;margin-top:6px;padding:6px 10px;background:var(--parchLight);border-radius:6px;font-size:13px;color:var(--ink);text-align:left}
 .roleLink{cursor:help}
 .deckArt{pointer-events:none}
 
@@ -1116,7 +1116,10 @@ function soundUrl(name){return soundUrls(name)[0]||null}
 function saveSound(){try{localStorage.setItem(SND_KEY,JSON.stringify(sndPrefs))}catch(e){}}
 function syncSoundUI(){let b=$('muteButton');if(b){b.classList.toggle('off',!sndPrefs.on);b.title=sndPrefs.on?'Sound on (click to mute)':'Sound off (click to turn on)';b.setAttribute('aria-pressed',String(sndPrefs.on))}if($('sound'))$('sound').checked=sndPrefs.on;if($('volume'))$('volume').value=Math.round(sndPrefs.vol*100)}
 function setSound(on){sndPrefs.on=on;saveSound();syncSoundUI();saveSettings();if(on){unlockSound();playSound('cube')}}
-function unlockSound(){try{if(!sndCtx){let A=window.AudioContext||window.webkitAudioContext;if(A)sndCtx=new A()}if(sndCtx&&sndCtx.state!=='running'){sndCtx.resume();if(!sndCtx.iosKick){sndCtx.iosKick=true;let b=sndCtx.createBuffer(1,1,22050),n=sndCtx.createBufferSource();n.buffer=b;n.connect(sndCtx.destination);n.start(0)}}}catch(e){}}
+let sndKeep=null;
+// iPad/iPhone: the ringer switch mutes Web Audio unless the page is also "playing media", so loop a silent clip
+function keepAudioAlive(){try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}try{if(!sndKeep){sndKeep=new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==');sndKeep.loop=true;sndKeep.volume=.01;sndKeep.setAttribute('playsinline','')}if(sndKeep.paused)sndKeep.play().catch(()=>{})}catch(e){}}
+function unlockSound(){keepAudioAlive();try{if(!sndCtx){let A=window.AudioContext||window.webkitAudioContext;if(A)sndCtx=new A()}if(sndCtx&&sndCtx.state!=='running'){sndCtx.resume();if(!sndCtx.iosKick){sndCtx.iosKick=true;let b=sndCtx.createBuffer(1,1,22050),n=sndCtx.createBufferSource();n.buffer=b;n.connect(sndCtx.destination);n.start(0)}}}catch(e){}}
 // iPad/iPhone only allow sound after a tap: any tap re-opens it if sound is switched on
 for(let ev of ['pointerdown','touchend','click','keydown'])document.addEventListener(ev,()=>{if(sndPrefs.on)unlockSound()},{passive:true,capture:true});
 function decodeUrl(url){if(!sndBuf[url])sndBuf[url]=fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((ok,no)=>sndCtx.decodeAudioData(a,ok,no))).catch(()=>null);return sndBuf[url]}
@@ -1124,7 +1127,7 @@ function decodeUrl(url){if(!sndBuf[url])sndBuf[url]=fetch(url).then(r=>{if(!r.ok
 async function soundBuffer(name){if(!sndCtx)return null;for(let u of soundUrls(name)){let b=await decodeUrl(u);if(b)return b}return null}
 function playSound(name,delay=0){if(!sndPrefs.on)return;let url=soundUrl(name);if(!url)return;let now=performance.now()+delay;if(sndLast[name]&&Math.abs(now-sndLast[name])<45)return;sndLast[name]=now;
  let vol=sndPrefs.vol*(SND_VOL[name]??.7);(window.soundLog=window.soundLog||[]).push(name);unlockSound();
- if(!sndCtx){setTimeout(()=>{try{let a=new Audio(url);a.volume=Math.min(1,vol);a.play().catch(()=>{})}catch(e){}},delay);return}
+ if(!sndCtx||sndCtx.state!=='running'){setTimeout(()=>{try{let a=new Audio(url);a.volume=Math.min(1,vol);a.play().catch(()=>{})}catch(e){}},delay);return}
  soundBuffer(name).then(b=>{if(!b||!sndCtx)return;let s=sndCtx.createBufferSource(),g=sndCtx.createGain();s.buffer=b;s.playbackRate.value=name==='cube'?0.94+Math.random()*.12:1;g.gain.value=vol;s.connect(g).connect(sndCtx.destination);s.start(sndCtx.currentTime+Math.max(0,delay)/1000)})}
 
 /* ---------- helpers ---------- */
