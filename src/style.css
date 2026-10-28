@@ -175,3 +175,20 @@ label .choiceGroup{margin-top:3px}
 .choiceGroup .chip.city{border-left:7px solid #98a6b0}.chip.city.blue{border-left-color:#2f6fb3}.chip.city.red{border-left-color:#c0303a}.chip.city.yellow{border-left-color:#d1a514}.chip.city.black{border-left-color:#1d1d1d}
 .choiceGroup .chip.city.on{border-left-width:7px}
 #actionForm{gap:8px}
+
+/* online play */
+header #onlineButton.live{background:var(--accent);color:var(--parchLight);border-color:var(--greenDeep)}
+.onCodeRow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 4px}
+.onCodeBig{font:800 30px Georgia,serif;letter-spacing:.12em;color:var(--accent);user-select:all}
+#onSettings{margin:6px 0}
+.onSeat{display:grid;grid-template-columns:minmax(120px,1fr) 1.4fr;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--tanBorder)}
+.onRole{display:flex;align-items:center;gap:7px;font-size:13px}
+.onRole svg{flex:none}
+.onBy{display:flex;align-items:center;gap:7px;font-size:13px;flex-wrap:wrap}
+.onSeat select{width:100%;max-width:100%}
+.onPerson{display:flex;align-items:center;gap:7px;font-size:13px;padding:2px 0}
+.dot{width:9px;height:9px;border-radius:50%;background:#b8a886;border:1px solid var(--tanBorder);flex:none}
+.dot.on{background:#3f8f3a;border-color:var(--greenDeep)}
+#onMsg{min-height:1.4em}
+#onMsg.error,#onStatus.error{color:var(--warn)}
+@media (max-width:520px){.onSeat{grid-template-columns:1fr}}

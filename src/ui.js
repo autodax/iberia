@@ -1,5 +1,5 @@
-// Iberia prototype UI v0.9
-const UI_VERSION='0.9.21',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+// Iberia prototype UI v0.10
+const UI_VERSION='0.10.0',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // The board picture (assets/board.jpeg, 3910x2760) is placed into map coordinates (cities use a 1521x1080 frame)
 // by the transform on #boardImage, measured by matching it to the previous board. The frame is cropped to the picture.
@@ -94,7 +94,7 @@ function applySettings(o,withSound){if(!o||typeof o!=='object')return;if(o.fxSpe
  if(!withSound)return;if(typeof o.volume==='number'&&o.volume>=0&&o.volume<=1)sndPrefs.vol=o.volume;if(typeof o.sound==='boolean')sndPrefs.on=o.sound;saveSound();syncSoundUI()}
 function saveSettings(){try{localStorage.setItem(SET_KEY,JSON.stringify(getSettings()))}catch(e){}if(typeof autosave==='function'&&state)autosave()}
 function envelope(){return {app:'iberia-prototype',version:VERSION,uiVersion:UI_VERSION,mapSignature:MAP_SIGNATURE,settings:getSettings(),state,commands}}
-function autosave(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(envelope()))}catch(e){}}
+function autosave(){if(typeof Net!=='undefined'&&Net.active)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify(envelope()))}catch(e){}}
 function uniq(a){return [...new Set(a)]}
 function cubeTotal(k){return COLORS.reduce((a,c)=>a+(state.cubes[k]?.[c]||0),0)}
 function byCubes(ids){return ids.map((k,i)=>[k,i]).sort((a,b)=>cubeTotal(b[0])-cubeTotal(a[0])||a[1]-b[1]).map(x=>x[0])}
@@ -134,7 +134,9 @@ let mapPick=null;
 // with no action chosen, clicking a reachable city moves there: carriage/boat at once (undoable); train or ship opens that action
 function quickMoves(){let m=new Map();if(mode||!canAct()||state.phase!=='actions')return m;for(let [t,label] of [['carriage','move here by carriage or boat (1 action)'],['train','move here by train'],['ship','move here by ship']])for(let c of legal[t]||[])if(c.to&&!m.has(c.to))m.set(c.to,{type:t,label});return m}
 async function quickMove(to){let q=quickMoves().get(to);if(!q)return;if(q.type==='carriage'){let c=(legal.carriage||[]).find(x=>x.to===to);await perform({...c});return}mode=q.type;sel.to=to;sel.to2='';delete sel.passenger;selectedCards=[];render();autoGo()}
-function choose(title,options,labels){return new Promise(res=>{let d=$('choiceDialog');$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();
+let chooseQueue=Promise.resolve();
+function choose(title,options,labels){let p=chooseQueue.then(()=>chooseNow(title,options,labels));chooseQueue=p.catch(()=>{});return p}
+function chooseNow(title,options,labels){return new Promise(res=>{let d=$('choiceDialog');$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();
  let kind=options.length&&options.every(o=>typeof o==='string'&&R[o])?'region':options.length&&options.every(o=>typeof o==='string'&&C[o])?'city':null;
  let finish=v=>{d.close();d.classList.remove('mapPick');if(mapPick){mapPick=null;paint()}res(v)};
  options.forEach((o,i)=>{let b=el('button',{textContent:labels?.[i]??o,onclick:()=>finish(o)},box);if(kind){b.onmouseenter=()=>{if(mapPick){mapPick.hover=o;paint()}};b.onmouseleave=()=>{if(mapPick){mapPick.hover=null;paint()}}}});
@@ -153,7 +155,7 @@ function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pa
 
 /* ---------- legality ---------- */
 function possible(cmd){try{transact(state,cmd);return true}catch(e){return !!e.needChoice}}
-function canAct(){return state.status==='playing'&&state.phase==='actions'&&state.actions>0&&!fullHands(state).length}
+function canAct(){return state.status==='playing'&&state.phase==='actions'&&state.actions>0&&!fullHands(state).length&&mine(state.active)&&!inLobby()}
 function others(){return state.players.map((_,i)=>i).filter(i=>i!==state.active)}
 function choicesFor(type){if(!canAct())return [];let p=state.players[state.active],base={type},cities=p.hand.filter(k=>C[k]);
  if(['carriage','train','build'].includes(type))return MAP.cities.map(c=>({...base,to:c.id})).filter(possible);
@@ -171,7 +173,8 @@ function choicesFor(type){if(!canAct())return [];let p=state.players[state.activ
 function recompute(){for(let t of TYPES)legal[t]=choicesFor(t);if(mode&&!legal[mode]?.length)mode='';selectedCards=selectedCards.filter(k=>state.players[state.active].hand.includes(k))}
 
 /* ---------- perform with choices + reveals ---------- */
-async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);let before=state;state=n;commands.push(resolved);if(REVEALS.has(resolved.type)||state.status!=='playing')history=[];else{let fresh=state.log.slice(before.log.length);history.push({state:before,commands:commands.length-1,label:fresh[fresh.length-1]||resolved.type});if(history.length>60)history.shift()}selectedCards=[];recompute();render();autosave();notice(state.status==='playing'?'Done.':state.status);if(MOVES.has(resolved.type))playSound('move');queueFx(state.fx);if(state.status==='playing'&&state.phase!=='setup'&&(before.active!==state.active||before.phase==='setup'))queueFx([{kind:'turn',seat:state.active,turn:state.turn}]);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
+function commit(resolved,n,remote){let before=state;state=n;commands.push(resolved);if(REVEALS.has(resolved.type)||state.status!=='playing'||Net.active)history=[];else{let fresh=state.log.slice(before.log.length);history.push({state:before,commands:commands.length-1,label:fresh[fresh.length-1]||resolved.type});if(history.length>60)history.shift()}selectedCards=[];recompute();render();autosave();notice(state.status==='playing'?(remote?state.log[state.log.length-1]:'Done.'):state.status);if(MOVES.has(resolved.type))playSound('move');queueFx(state.fx);if(state.status==='playing'&&state.phase!=='setup'&&(before.active!==state.active||before.phase==='setup'))queueFx([{kind:'turn',seat:state.active,turn:state.turn}]);}
+async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);if(Net.active){let r=await Net.submit(resolved);if(!r.ok){notice(r.error,true);return false}return true}commit(resolved,n,false);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
 
 /* ---------- reveal & alert overlay ---------- */
 let fxQueue=[],fxTimer=null,fxCurrent=null;const MOVES=new Set(['carriage','train','ship','start']);
@@ -244,10 +247,10 @@ function drawSupply(){for(let im of document.querySelectorAll('#resources img[da
  let cs=$('cubeSupply');cs.replaceChildren();el('span',{className:'lbl',textContent:'Cubes left'},cs);for(let k of COLORS){let t=el('span',{className:'t',title:state.supply[k]+' '+k+' cubes left'},cs);let src=asset('tokens/cube-'+k);if(src)el('img',{src,alt:k,className:'cube-'+k},t);else el('i',{style:'display:inline-block;width:12px;height:12px;border-radius:2px;background:'+DISEASE[k]},t);t.append(String(state.supply[k]))}
  let rs=$('researchStatus');rs.replaceChildren();el('span',{className:'lbl',textContent:'Researched'},rs);for(let k of COLORS){let done=state.research.includes(k),src=asset('tokens/research-'+k),t=el('span',{className:'t',title:k+(done?' researched':' not researched yet')},rs);if(src)el('img',{src,alt:k,className:done?'':'off'},t);else{t.textContent=k;if(!done)t.style.opacity=.4}}}
 function drawHands(){let box=$('hands'),n=state.players.length;box.replaceChildren();
- state.players.forEach((p,i)=>{let h=el('div',{className:'hand'+(state.active===i&&state.phase!=='setup'?' active':'')+(p.hand.length>HAND_LIMIT?' over':'')},box);let t=el('div',{className:'handTitle'},h);pawnIcon(p.role,t,14);el('span',{textContent:p.name+' · '+roleName(p.role)+' · '+(p.city?C[p.city].name:'choose start')+' · '+p.hand.length+'/'+HAND_LIMIT,title:ROLE_TEXT[p.role]},t);
+ state.players.forEach((p,i)=>{let h=el('div',{className:'hand'+(state.active===i&&state.phase!=='setup'?' active':'')+(p.hand.length>HAND_LIMIT?' over':'')},box);let t=el('div',{className:'handTitle'},h);pawnIcon(p.role,t,14);el('span',{textContent:p.name+' · '+roleName(p.role)+' · '+(p.city?C[p.city].name:'choose start')+' · '+p.hand.length+'/'+HAND_LIMIT+seatTag(i),title:ROLE_TEXT[p.role]},t);
   let cards=el('div',{className:'handCards'},h);for(let k of p.hand){let b=el('button',{className:'card '+(C[k]?.color||'event')+(selectedCards.includes(k)&&i===state.active?' selected':''),textContent:cardName(k),title:C[k]?cardName(k)+' — '+C[k].color+' · founded '+fmtYear(FOUNDED[k]):EVENTS[k]+': '+EVENT_TEXT[k]},cards);
-   if(p.hand.length>HAND_LIMIT&&!['epidemic','setup','ended'].includes(state.phase)&&!EVENTS[k]){b.textContent='✕ '+cardName(k);b.title='Discard to reach the hand limit';b.onclick=()=>perform({type:'discard',seat:i,card:k})}
-   else if(EVENTS[k]){b.onclick=()=>openEvent(i,k);b.disabled=['setup','ended'].includes(state.phase)}
+   if(p.hand.length>HAND_LIMIT&&!['epidemic','setup','ended'].includes(state.phase)&&!EVENTS[k]){b.textContent='✕ '+cardName(k);b.title='Discard to reach the hand limit';b.onclick=()=>perform({type:'discard',seat:i,card:k});b.disabled=!mine(i)}
+   else if(EVENTS[k]){b.onclick=()=>openEvent(i,k);b.disabled=['setup','ended'].includes(state.phase)||!mine(i)}
    else b.onclick=()=>{if(i!==state.active||!['purify','ship','research'].includes(mode))return;if(mode==='research'){if(C[k].color!==sel.color)return;selectedCards=selectedCards.includes(k)?selectedCards.filter(c=>c!==k):[...selectedCards,k]}else selectedCards=[k];render()}}
   if(p.hand.length>HAND_LIMIT&&!['epidemic','setup','ended'].includes(state.phase))el('span',{className:'detail',textContent:' Over the limit: click ✕ to discard, or play an Event.'},cards)});let act=box.children[state.active];if(act&&box.scrollHeight>box.clientHeight)requestAnimationFrame(()=>{let r=act.offsetTop-box.offsetTop;if(r<box.scrollTop||r+act.offsetHeight>box.scrollTop+box.clientHeight)box.scrollTop=r-4})}
 
@@ -255,7 +258,7 @@ function drawHands(){let box=$('hands'),n=state.players.length;box.replaceChildr
 function drawSetup(){let box=$('startFields');box.replaceChildren();state.players.forEach((p,i)=>{let items=p.hand.filter(k=>C[k]);let opts=(items.length?items:Object.keys(C)).map(k=>[k,C[k].name]);if(!opts.some(([v])=>v===sel['start'+i]))sel['start'+i]=opts[0][0];field(p.name+' ('+roleName(p.role)+') starts in','start'+i,opts,sel['start'+i],v=>sel['start'+i]=v,box)});let fp=$('firstPlayer'),sug=suggestFirst(),key=state.seed+':'+state.players.map(q=>q.hand.join()).join('|');fp.replaceChildren();state.players.forEach((p,i)=>{let k=oldestCard(p);el('option',{value:i,textContent:playerLabel(state,i)+(k?' · '+C[k].name+' '+fmtYear(FOUNDED[k]):'')},fp)});if(fp.dataset.key!==key){fp.dataset.key=key;fp.value=sug?String(sug.i):'0'}else if(+fp.dataset.v<state.players.length)fp.value=fp.dataset.v;fp.onchange=()=>fp.dataset.v=fp.value;fp.dataset.v=fp.value;buttonize(fp);
  let ties=sug?state.players.filter(q=>{let k=oldestCard(q);return k&&FOUNDED[k]===sug.y}).length:0;
  $('firstHint').textContent=sug?'Oldest city in hand goes first (rulebook): '+C[sug.k].name+', founded '+fmtYear(sug.y)+(ties>1?'. Tied with another player, so choose between them.':'.')+' You can still change the first player.':'No City cards in hand, so choose the first player.'}
-function drawAction(){let box=$('actionButtons');box.replaceChildren();{let u=$('undo'),h=history[history.length-1];u.hidden=!h||state.status!=='playing';if(h)u.title='Undo: '+h.label+' (Ctrl+Z)'}$('actionForm').replaceChildren();$('confirm').hidden=true;$('setupPanel').hidden=state.phase!=='setup';$('actionArea').hidden=state.phase==='setup';$('actionHeading').hidden=state.phase==='ended';{let ah=$('actionHeading'),q=state.players[state.active];ah.replaceChildren();if(q&&state.phase!=='setup'){ah.style.setProperty('--pc',PAWN[q.role]||'#4c6b5c');pawnIcon(q.role,el('span',{className:'tp'},ah),15);el('span',{className:'who',textContent:playerLabel(state,state.active).split(' (')[0]+'’s turn'},ah);el('span',{className:'sub',textContent:state.phase==='actions'?state.actions+' of 4 actions left':state.phase==='draw'?'draw 2 Player cards':state.phase==='infection'?'infection step':state.phase==='discard'?'discard down to the hand limit':''},ah)}else ah.textContent='Available actions'}$('actionHint').textContent='';
+function drawAction(){let box=$('actionButtons');box.replaceChildren();{let u=$('undo'),h=history[history.length-1];u.hidden=!h||state.status!=='playing';if(h)u.title='Undo: '+h.label+' (Ctrl+Z)'}$('actionForm').replaceChildren();$('confirm').hidden=true;$('setupPanel').hidden=state.phase!=='setup'||(Net.active&&!Net.isHost)||inLobby();$('actionArea').hidden=state.phase==='setup';$('actionHeading').hidden=state.phase==='ended';{let ah=$('actionHeading'),q=state.players[state.active];ah.replaceChildren();if(q&&state.phase!=='setup'){ah.style.setProperty('--pc',PAWN[q.role]||'#4c6b5c');pawnIcon(q.role,el('span',{className:'tp'},ah),15);el('span',{className:'who',textContent:playerLabel(state,state.active).split(' (')[0]+'’s turn'},ah);el('span',{className:'sub',textContent:state.phase==='actions'?state.actions+' of 4 actions left':state.phase==='draw'?'draw 2 Player cards':state.phase==='infection'?'infection step':state.phase==='discard'?'discard down to the hand limit':''},ah)}else ah.textContent='Available actions'}$('actionHint').textContent='';
  if(state.phase==='setup'){drawSetup();return}
  for(let t of TYPES)if(legal[t]?.length)el('button',{className:'action'+(mode===t?' chosen':''),textContent:LABEL[t],onclick:()=>{mode=t;selectedCards=[];sel.to2='';sel.extra='';delete sel.passenger;sel.to2Chosen=sel.extraChosen=sel.otherChosen=sel.dirChosen=false;render();if(legal[t]?.length===1||t==='hospital')autoGo()}},box);
  if(state.status!=='playing'){$('actionHint').textContent=state.status==='won'?'Victory — all four diseases researched.':'Defeat — '+state.status.replace('lost: ','');return}
@@ -290,8 +293,8 @@ async function makeCmd(){let p=state.players[state.active],cmd={type:mode};
  if(mode==='research')cmd.cards=selectedCards.slice();
  if(mode==='pswap'){cmd.card=selectedCards[0];cmd.take=sel.swapTake}
  if(mode==='peek')cmd.order=sel.peek.slice();
- if(mode==='share'||mode==='pgive'){cmd.other=+sel.other;if(mode==='share')cmd.direction=sel.direction;cmd.consent=await ask(playerLabel(state,cmd.other)+': do you agree to this card transfer?');if(!cmd.consent)return null}
- if(['ship','train'].includes(mode)&&sel.passenger!=null&&sel.passenger!==false&&sel.passenger!==''){cmd.passenger=+sel.passenger;cmd.consent=await ask(playerLabel(state,cmd.passenger)+': do you agree to travel as a passenger?');if(!cmd.consent)return null}
+ if(mode==='share'||mode==='pgive'){cmd.other=+sel.other;if(mode==='share')cmd.direction=sel.direction;cmd.consent=await askSeat(cmd.other,playerLabel(state,cmd.other)+': do you agree to this card transfer?');if(!cmd.consent)return null}
+ if(['ship','train'].includes(mode)&&sel.passenger!=null&&sel.passenger!==false&&sel.passenger!==''){cmd.passenger=+sel.passenger;cmd.consent=await askSeat(cmd.passenger,playerLabel(state,cmd.passenger)+': do you agree to travel as a passenger?');if(!cmd.consent)return null}
  return cmd}
 
 /* ---------- board ---------- */
@@ -330,12 +333,12 @@ function paint(){drawCityList();for(let k of ['areas','tracks','pieces'])$(k).re
 // keep the side panel from overflowing: shrink a long button list (it scrolls) rather than push the page
 function fitChoices(){let a=document.querySelector('aside');if(!a)return;let f=$('actionForm');f.style.maxHeight='';f.style.overflowY='';for(let g of document.querySelectorAll('#actionForm .choiceGroup.many,#startFields .choiceGroup.many')){g.style.maxHeight='';let over=a.scrollHeight-a.clientHeight;if(over>0)g.style.maxHeight=Math.max(60,g.clientHeight-over-2)+'px'}
  let over=a.scrollHeight-a.clientHeight;if(over>0&&f.clientHeight>80){f.style.maxHeight=Math.max(80,f.clientHeight-over-2)+'px';f.style.overflowY='auto'}}
-function render(){syncChips();requestAnimationFrame(fitChoices);let p=state.players[state.active];$('turnStatus').textContent=state.phase==='setup'?'Choose starting cities':state.status!=='playing'?(state.status==='won'?'Victory':'Defeat — '+state.status.replace('lost: ','')):'Turn '+state.turn+' · '+playerLabel(state,state.active)+' · '+state.actions+' action'+(state.actions===1?'':'s');
+function render(){syncChips();requestAnimationFrame(fitChoices);let p=state.players[state.active];$('turnStatus').textContent=inLobby()?'Online lobby: waiting to start':state.phase==='setup'?(Net.active&&!Net.isHost?'Waiting for the host to choose starting cities':'Choose starting cities'):state.status!=='playing'?(state.status==='won'?'Victory':'Defeat — '+state.status.replace('lost: ','')):'Turn '+state.turn+' · '+playerLabel(state,state.active)+' · '+state.actions+' action'+(state.actions===1?'':'s');
  $('phaseLabel').textContent=state.phase;$('footer').textContent='Player deck '+state.playerDeck.length+' · infection deck '+state.infectionDeck.length+' · Events in game: '+state.eventsInGame.map(k=>EVENTS[k]).join(', ')+' · seed '+state.seed+' · v'+UI_VERSION;
  $('outbreaks').textContent=shownOut()+'/8';$('rate').textContent=RATE[shownRate()];$('railsSupply').textContent=state.railSupply;$('waterSupply').textContent=state.waterSupply;drawSupply();
  let flags=[];if(state.goodSeason)flags.push('Good Season pending: next infection step draws 1 bottom card');if(state.phase==='infection'&&state.infectionFromBottom)flags.push('Good Season: drawing from the bottom');if(state.doubleRailUsed)flags.push('Railwayman double build used this turn');$('flags').textContent=flags.join(' · ');
- let np=$('nextPhase');np.hidden=['setup','ended'].includes(state.phase);np.disabled=fullHands(state).length>0&&state.phase!=='epidemic';np.textContent=state.phase==='actions'?'End actions & draw 2':state.phase==='epidemic'?'Resolve next Epidemic':'Infect next city · '+state.infectionRemaining+' left';
- drawAction();drawHands();paint();fitLayout()}
+ let np=$('nextPhase');np.hidden=['setup','ended'].includes(state.phase)||!mine(state.active);np.disabled=fullHands(state).length>0&&state.phase!=='epidemic';np.textContent=state.phase==='actions'?'End actions & draw 2':state.phase==='epidemic'?'Resolve next Epidemic':'Infect next city · '+state.infectionRemaining+' left';
+ drawAction();onlineHint();drawHands();paint();fitLayout()}
 
 /* ---------- events ---------- */
 function eventForm(card,box,seat,onChange){let m={},n=state.players.length,refresh=()=>{box.replaceChildren();build()};
@@ -366,7 +369,7 @@ function eventForm(card,box,seat,onChange){let m={},n=state.players.length,refre
   if(card==='travel_day_night')Object.assign(a,{seat:m.seat,to:m.to});
   if(card==='when_plans_were_good'){a.event=m.event;a.inner=m.inner?m.inner.args:{}}
   return a},consentNeeded(a){a=a||this.args;let c=card==='when_plans_were_good'?a.event:card,x=card==='when_plans_were_good'?a.inner:a;if(c==='mail_correspondence')return 'Do '+state.players[x.seatA].name+' and '+state.players[x.seatB].name+' agree to swap these cards?';if(c==='telegraph_message')return state.players[x.to]?.name+': do you accept these cards?';if(c==='ships_arrive')return 'Do the moved players agree to travel to '+C[x.city]?.name+'?';if(c==='travel_day_night'&&x.seat!==seat)return state.players[x.seat].name+': do you agree to move to '+C[x.to]?.name+'?';return null}}}
-function openEvent(seat,card){if(['setup','ended'].includes(state.phase)||busy)return;let box=$('eventForm');box.replaceChildren();$('eventTitle').textContent=state.players[seat].name+': '+EVENTS[card];let f=eventForm(card,box,seat);
+function openEvent(seat,card){if(['setup','ended'].includes(state.phase)||busy||!mine(seat))return;let box=$('eventForm');box.replaceChildren();$('eventTitle').textContent=state.players[seat].name+': '+EVENTS[card];let f=eventForm(card,box,seat);
  $('eventConfirm').onclick=async()=>{let args=f.args,q=f.consentNeeded(args);if(q){let ok=await ask(q);if(!ok){notice('Not agreed — Event not played.');return}if(card==='when_plans_were_good')args.inner.consent=true;else args.consent=true}$('eventDialog').close();if(!await perform({type:'event',seat,card,args}))showDialog('eventDialog')};showDialog('eventDialog')}
 
 /* ---------- wiring ---------- */
@@ -382,9 +385,9 @@ function drawRoleFields(){let n=+$('playerCount').value,box=$('roleFields');box.
 $('playerCount').onchange=drawRoleFields;
 for(let id of ['playerCount','difficulty','fxSpeed'])buttonize($(id));
 $('randomRoles').onclick=()=>{let pool=Object.keys(ROLES);for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}roleChoice=pool.slice(0,5);drawRoleFields()};
-$('newGame').onclick=async()=>{if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;let seed=$('seed').value.trim()||newSeed();state=initial(seed,+$('difficulty').value,roleChoice.slice(0,n));$('seed').value='';history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.')}catch(e){notice(e.message,true)}};
+$('newGame').onclick=async()=>{if(Net.active){notice('You are in an online room. Use the Online button to leave it or go back to the lobby.',true);$('menu').close();return}if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;let seed=$('seed').value.trim()||newSeed();state=initial(seed,+$('difficulty').value,roleChoice.slice(0,n));$('seed').value='';history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.')}catch(e){notice(e.message,true)}};
 $('saveButton').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(envelope(),null,2)],{type:'application/json'})),a=el('a',{href:u,download:'iberia-save-v09-turn'+state.turn+'.json'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
-function restore(o){requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;if(o.settings)applySettings(o.settings,true);commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';resetFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
+function restore(o){requireRule(!Net.active,'You are in an online room. Leave it before loading a save.');requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;if(o.settings)applySettings(o.settings,true);commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';resetFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
 $('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('menu').close()}$('loadFile').value=''};
 $('resumeButton').onclick=()=>{try{let raw=localStorage.getItem(SAVE_KEY);requireRule(raw,'No local autosave found');restore(JSON.parse(raw))}catch(e){notice(e.message,true)}};
 {let base=/github\.io$/.test(location.hostname)?'':'https://autodax.github.io/iberia/';$('rulesLink').href=base+'docs/Iberia_rulebook.pdf';$('guideLink').href=base+'docs/Guide.pdf'}
@@ -394,4 +397,121 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&
 $('assetButton').onclick=()=>$('assetFiles').click();$('assetFiles').onchange=()=>loadAssets([...$('assetFiles').files]);$('assetClear').onclick=()=>{loadAssets([]);$('assetStatus').textContent=REPO_STATUS};
 $('showRegions').onchange=()=>{paint();saveSettings()};$('showNames').onchange=()=>{paint();saveSettings()};$('fxSpeed').addEventListener('change',saveSettings);try{applySettings(JSON.parse(localStorage.getItem(SET_KEY)||'null'))}catch(e){}window.addEventListener('resize',fitLayout);
 $('muteButton').onclick=e=>{e.stopPropagation();setSound(!sndPrefs.on)};$('sound').onchange=()=>setSound($('sound').checked);$('volume').oninput=()=>{sndPrefs.vol=+$('volume').value/100;saveSound()};$('volume').addEventListener('change',saveSettings);$('volume').onchange=()=>playSound('cube');syncSoundUI();
+/* ---------- online play (v0.10) ---------- */
+// Everything network-related lives in net.js. This section connects it to the page: which seats are yours,
+// the Online dialog (host, join, seats, people), and the hooks net.js uses to run commands on this page.
+function safeStore(k){try{return window[k]}catch(e){return null}}
+function netSum(){return hash(JSON.stringify({...state,fx:undefined})).toString(16)}
+function startGameLocal(seed,difficulty,roles){state=initial(seed,difficulty,roles);history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();notice('Choose starting cities.')}
+const Net=createNet({
+  transport:peerJsTransport(),
+  version:{ui:UI_VERSION,engine:VERSION,map:MAP_SIGNATURE},
+  storage:safeStore('localStorage'),tokenStore:safeStore('sessionStorage'),newSeed,
+  hooks:{
+    getState:()=>state,
+    loadState:s=>{invariant(s);state=s;history=[];commands=[];mode='';selectedCards=[];resetFx();recompute();render()},
+    apply:cmd=>{let n;try{n=transact(state,cmd)}catch(e){return {ok:false,error:e.needChoice?'Incomplete choices':e.message}}try{commit(cmd,n,true)}catch(e){console.error(e)}return {ok:true,sum:netSum()}},
+    checksum:netSum,
+    onStart:g=>startGameLocal(g.seed,g.difficulty,g.roles),
+    ask:q=>ask(q)
+  }
+});
+function mine(seat){return !Net.active||Net.mine(seat)}
+function inLobby(){return !!(Net.active&&Net.lobby&&Net.lobby.phase==='lobby')}
+function askSeat(seat,q){return Net.active&&!mine(seat)?Net.askSeat(seat,q):ask(q)}
+function seatTag(i){if(!Net.active)return '';let o=Net.owner(i);return ' · '+(o?o.name:'host')+(mine(i)?' (you)':'')}
+function onlineHint(){let h=$('actionHint');if(inLobby()){h.textContent='Start the game from the Online dialog.';return}if(!Net.active||state.status!=='playing'||state.phase==='setup'||mine(state.active))return;let o=Net.owner(state.active);h.textContent='Waiting for '+state.players[state.active].name+(o?' ('+o.name+')':'')+' to play.'}
+
+const NAME_KEY='iberia-online-name';
+let onlinePrev={phase:'',status:'',people:'',seats:'',active:false};
+function showOnlineMsg(t,bad){let m=$('onMsg');m.textContent=t||'';m.className='detail'+(bad?' error':'')}
+function roomLink(){return location.origin+location.pathname+'?room='+Net.code}
+function drawOnline(){
+  let L=Net.lobby,active=Net.active;
+  $('onlineStart').hidden=active;$('onlineRoom').hidden=!active;
+  $('onlineButton').textContent=active?'Room '+Net.code:'Online';
+  $('onlineButton').classList.toggle('live',active&&Net.status==='connected');
+  if(!active){let sv=Net.savedHost();$('onResume').hidden=!sv;if(sv)$('onResumeText').textContent='You were hosting room '+sv.code+(sv.phase==='playing'?' with a game in progress':'')+'. Resume it and your guests can rejoin with the same code.';return}
+  $('onStatus').textContent=Net.status==='connecting'?'Connecting…':Net.status==='reconnecting'?'Connection lost. Trying to reconnect…':Net.status==='closed'?(Net.error||'Disconnected.'):(Net.isHost?'You are the host. Keep this page open while you play.':'Connected to the host.');
+  $('onStatus').className='detail'+(Net.status==='closed'||Net.status==='reconnecting'?' error':'');
+  $('onCodeBig').textContent=Net.code;$('onShare').hidden=!Net.isHost;
+  if(!L)return;
+  let playing=L.phase==='playing',box=$('onSeats');box.replaceChildren();
+  // settings: host, before the game starts
+  let sb=$('onSettings');sb.replaceChildren();sb.hidden=!(Net.isHost&&!playing);
+  if(!sb.hidden){
+    let row=el('div',{className:'seatRow'},sb);
+    let l1=el('label',{textContent:'Players'},row),s1=el('select',{},l1);for(let n=2;n<=5;n++)el('option',{value:n,textContent:n,selected:n===L.settings.players},s1);s1.onchange=()=>Net.setSettings({players:+s1.value});
+    let l2=el('label',{textContent:'Epidemics'},row),s2=el('select',{},l2);for(let [v,t] of [[4,'4 · Introductory'],[5,'5 · Standard'],[6,'6 · Heroic']])el('option',{value:v,textContent:t,selected:v===L.settings.difficulty},s2);s2.onchange=()=>Net.setSettings({difficulty:+s2.value});
+  }
+  L.seats.forEach((owner,i)=>{
+    let role=playing&&state.players[i]?state.players[i].role:L.settings.roles[i];
+    let r=el('div',{className:'onSeat'},box);
+    let who=el('div',{className:'onRole'},r);pawnIcon(role,who,12);
+    if(Net.isHost&&!playing){
+      let sel=el('select',{title:'Role for seat '+(i+1)},who);for(let [v,t] of Object.entries(ROLES))el('option',{value:v,textContent:t,selected:v===role},sel);
+      sel.onchange=()=>{let roles=L.settings.roles.slice(),j=roles.indexOf(sel.value);if(j>=0&&j!==i)roles[j]=roles[i];roles[i]=sel.value;Net.setSettings({roles})}
+    }else el('span',{textContent:roleName(role)},who);
+    let by=el('div',{className:'onBy'},r);
+    if(Net.isHost){
+      let sel=el('select',{title:'Who plays this seat'},by);el('option',{value:'',textContent:'Unassigned (host plays it)'},sel);
+      for(let p of L.people)el('option',{value:p.id,textContent:p.name+(p.connected?'':' (away)'),selected:p.id===owner},sel);
+      sel.onchange=()=>Net.assign(i,sel.value||null);
+    }else{
+      let o=L.people.find(p=>p.id===owner);
+      if(owner===Net.myId){el('span',{textContent:'You'},by);el('button',{textContent:'Give up',onclick:()=>Net.release(i)},by)}
+      else if(o)el('span',{textContent:o.name},by);
+      else{el('span',{className:'detail',textContent:'Open'},by);el('button',{textContent:'Take this seat',onclick:()=>Net.claim(i)},by)}
+    }
+  });
+  let pb=$('onPeople');pb.replaceChildren();
+  for(let p of L.people){let r=el('div',{className:'onPerson'},pb);el('span',{className:'dot'+(p.connected?' on':''),title:p.connected?'Connected':'Away'},r);el('span',{textContent:p.name+(p.host?' (host)':'')+(p.id===Net.myId?' (you)':'')},r)}
+  $('onStartGame').hidden=!(Net.isHost&&!playing);$('onBack').hidden=!(Net.isHost&&playing);
+  $('onWait').hidden=!(!Net.isHost&&!playing);
+  $('onUnclaimed').hidden=!(Net.isHost&&!playing&&L.seats.some(o=>o==null));
+}
+Net.onChange(()=>{
+  let L=Net.lobby;
+  // join and leave notices
+  let key=L?L.people.map(p=>p.id+':'+p.name+':'+(p.connected?1:0)).join('|'):'';
+  if(Net.active&&L&&onlinePrev.people&&key!==onlinePrev.people){
+    let was=new Map(onlinePrev.people.split('|').filter(Boolean).map(x=>{let a=x.split(':');return [a[0],a]}));
+    for(let p of L.people){let w=was.get(p.id);if(p.id===Net.myId)continue;if(!w)notice(p.name+' joined the room.');else if(w[2]==='1'&&!p.connected)notice(p.name+' lost connection.');else if(w[2]==='0'&&p.connected)notice(p.name+' is back.')}
+    for(let [id,w] of was)if(!L.people.some(p=>p.id===id))notice(w[1]+' left the room.');
+  }
+  onlinePrev.people=key;
+  if(Net.notice){notice(Net.notice,true);Net.notice=''}
+  if(Net.status!==onlinePrev.status){
+    if(Net.status==='reconnecting')notice('Connection to the host lost. Trying to reconnect…',true);
+    else if(Net.status==='connected'&&onlinePrev.status==='reconnecting')notice('Reconnected.');
+    else if(Net.status==='closed')notice(Net.error||'Disconnected from the room.',true);
+    onlinePrev.status=Net.status;
+  }
+  // the game began: close the dialog for everyone who was waiting in the lobby
+  let phase=L?L.phase:'';
+  if(onlinePrev.phase==='lobby'&&phase==='playing'){$('onlineDialog').close();notice(Net.isHost?'Choose starting cities, then Begin game.':'The host is choosing starting cities.')}
+  let wasActive=onlinePrev.active;onlinePrev.active=Net.active;
+  if(phase!==onlinePrev.phase||wasActive!==Net.active){onlinePrev.phase=phase;recompute();render()}
+  onlinePrev.phase=phase;
+  // seats changed: redraw the board so the right player gets the controls
+  let seatKey=L?L.seats.join(','):'';
+  if(seatKey!==onlinePrev.seats){onlinePrev.seats=seatKey;if(Net.active&&phase==='playing'){recompute();render()}}
+  drawOnline();
+});
+$('onlineButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;drawOnline();showOnlineMsg('');showDialog('onlineDialog')};
+$('onlineDialog').querySelector('.close').onclick=()=>$('onlineDialog').close();
+$('onlineDialog').addEventListener('click',e=>{if(e.target===$('onlineDialog'))$('onlineDialog').close()});
+function onlineName(){let n=$('onName').value.trim();try{localStorage.setItem(NAME_KEY,n)}catch(e){}return n}
+async function onlineDo(btn,f){btn.disabled=true;showOnlineMsg('Connecting…');try{await f();showOnlineMsg('')}catch(e){showOnlineMsg(e.message||String(e),true)}btn.disabled=false;drawOnline()}
+$('onHost').onclick=()=>onlineDo($('onHost'),async()=>{if(!await ask('Hosting starts a shared game from the lobby. The board on this page will be replaced when you start. Continue?'))throw Error('');await Net.host(onlineName())});
+$('onJoin').onclick=()=>onlineDo($('onJoin'),async()=>{await Net.join($('onCode').value,onlineName())});
+$('onCode').addEventListener('keydown',e=>{if(e.key==='Enter')$('onJoin').click()});
+$('onResumeBtn').onclick=()=>onlineDo($('onResumeBtn'),async()=>{await Net.resumeHost(onlineName()||'Host')});
+$('onName').addEventListener('change',()=>{let n=onlineName();if(Net.active)Net.rename(n)});
+$('onCopy').onclick=async()=>{try{await navigator.clipboard.writeText(roomLink());showOnlineMsg('Link copied. Send it to the other players.')}catch(e){showOnlineMsg('Copy this link: '+roomLink())}};
+$('onStartGame').onclick=()=>{let r=Net.start();if(!r.ok)showOnlineMsg(r.error,true)};
+$('onBack').onclick=async()=>{if(await ask('Take everyone back to the lobby to start a new game? The current game ends.')){let r=Net.backToLobby();if(!r.ok)showOnlineMsg(r.error,true)}};
+$('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room? Everyone is disconnected. The board stays on this page as a game you can keep playing here.':'Leave this room? The board stays on this page as a local game.'))return;Net.leave();$('onlineDialog').close();render();notice('You left the online room.')};
+{let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
+
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');

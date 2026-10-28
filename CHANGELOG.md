@@ -1,3 +1,14 @@
+# v0.10.0
+
+- Online play. Menu bar → Online: one player hosts and shares a five-character room code (or an invite link); everyone else joins from their own browser. The game runs directly between browsers, with no game server and no account.
+- Lobby: the host picks players, epidemics and roles, and seats are claimed by guests or assigned by the host. Seats nobody takes are played by the host.
+- Only the player who controls a seat can act for it: the active player's actions, that seat's discards, and that seat's Events. Everyone sees the whole board and every card reveal. Card transfers and passenger rides ask the other seat's player to agree.
+- Host-authoritative and in sync: the host checks and orders every move. Because the engine is deterministic, only moves are sent. A checksum after each move catches any difference, and a player who falls out of step gets a fresh copy of the game automatically.
+- Reconnecting: a player who refreshes or loses connection keeps their seat. If the host refreshes, "Resume hosting" in the Online dialog reopens the same room and game with the same code. If a player drops out, the host can act for their seat.
+- Online games do not touch your local autosave. Leaving a room keeps the board as a local game. Undo and loading saves are off while in a room.
+- The PeerJS connection library is built into the page (src/vendor/peerjs.min.js, MIT licence), so nothing is downloaded when you open Online.
+- New: src/net.js, tests/net.test.js (host and guests over a fake network), tests/browser_online_test.py (two browser tabs).
+
 # v0.9.21
 
 - Black cubes: removed the white outline; the soft highlight stays.
