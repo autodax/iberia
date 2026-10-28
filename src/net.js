@@ -56,7 +56,13 @@ function createNet(cfg){
   function now(){return Date.now()}
   function every(ms,f){if(!beat)return;timers.push(setInterval(f,ms))}
   function clearTimers(){for(const t of timers)clearInterval(t);timers=[]}
-  function token(){let t=tokenStore&&tokenStore.getItem('iberia-online-token');if(!t){t=netRandom(16,NET_CODE_CHARS+'abcdefghijkmnpqrstuvwxyz');try{tokenStore&&tokenStore.setItem('iberia-online-token',t)}catch(e){}}return t}
+  let memToken='';   // kept in memory as well, because some browsers (private windows, some phones) refuse to save it
+  function token(){
+    let t='';try{t=(tokenStore&&tokenStore.getItem('iberia-online-token'))||''}catch(e){}
+    if(!t)t=memToken;
+    if(!t){t=netRandom(16,NET_CODE_CHARS+'abcdefghijkmnpqrstuvwxyz');try{tokenStore&&tokenStore.setItem('iberia-online-token',t)}catch(e){}}
+    memToken=t;return t;
+  }
   function resizeSeats(){const n=lobby.settings.players;while(lobby.seats.length<n)lobby.seats.push(null);lobby.seats.length=n}
 
   /* ---------- who may do what (host decides) ---------- */
@@ -178,6 +184,10 @@ function createNet(cfg){
     const v=m.ver||{},mine=cfg.version;
     if(v.ui!==mine.ui||v.engine!==mine.engine||v.map!==mine.map)return refuse(conn,'Game version mismatch: the host is on v'+mine.ui+' and you are on v'+v.ui+'. Reload the page (or clear the cache) so you both have the same version.');
     let p=[...people.values()].find(x=>x.id!==NET_HOST_ID&&x.token&&x.token===m.token);
+    if(!p){
+      const nm=netCleanName(m.name),away=[...people.values()].filter(x=>x.id!==NET_HOST_ID&&!x.connected&&x.name===nm);
+      if(away.length===1){p=away[0];p.token=String(m.token||'')}    // same name as one player who is away: treat as them coming back
+    }
     if(p){if(p.conn&&p.conn!==conn){const old=p.conn;old.onclose=null;send(old,{t:'refuse',reason:'You joined this room from another window.'});try{old.close()}catch(e){}}}
     else{
       if(people.size>=NET_MAX_PEOPLE)return refuse(conn,'This room is full.');
@@ -191,8 +201,9 @@ function createNet(cfg){
   }
   function claimSeat(pid,seat){
     if(!Number.isInteger(seat)||seat<0||seat>=lobby.seats.length)return {ok:false,error:'No such seat'};
-    if(lobby.seats[seat]!=null&&lobby.seats[seat]!==pid)return {ok:false,error:'That seat is already taken'};
-    lobby.seats[seat]=pid;broadcastLobby();return {ok:true};
+    const cur=lobby.seats[seat],curP=cur!=null?people.get(cur):null;
+    if(cur!=null&&cur!==pid&&curP&&curP.connected)return {ok:false,error:'That seat is already taken'};
+    lobby.seats[seat]=pid;broadcastLobby();return {ok:true};   // a free seat, or one whose player is away
   }
   function releaseSeat(pid,seat){
     if(!Number.isInteger(seat)||seat<0||seat>=lobby.seats.length)return {ok:false,error:'No such seat'};

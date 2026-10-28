@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.10
-const UI_VERSION='0.10.4',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.10.5',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // The board picture (assets/board.jpeg, 3910x2760) is placed into map coordinates (cities use a 1521x1080 frame)
 // by the transform on #boardImage, measured by matching it to the previous board. The frame is cropped to the picture.
@@ -427,7 +427,7 @@ function mine(seat){return !Net.active||Net.mine(seat)}
 function inLobby(){return !!(Net.active&&Net.lobby&&Net.lobby.phase==='lobby')}
 function askSeat(seat,q){return Net.active&&!mine(seat)?Net.askSeat(seat,q):ask(q)}
 function seatTag(i){if(!Net.active)return '';let o=Net.owner(i);return ' · '+(o?o.name:'host')+(mine(i)?' (you)':'')}
-function onlineHint(){let h=$('actionHint');if(inLobby()){h.textContent='Start the game from the Online dialog.';return}if(!Net.active||state.status!=='playing'||state.phase==='setup'||mine(state.active))return;let o=Net.owner(state.active);h.textContent='Waiting for '+state.players[state.active].name+(o?' ('+o.name+')':'')+' to play.'}
+function onlineHint(){let h=$('actionHint');if(inLobby()){h.textContent='Start the game from the Online dialog.';return}if(Net.active&&!Net.isHost&&state.status==='playing'&&state.players.every((_,i)=>!mine(i))){h.textContent='You are not controlling any player. Open Online and take a seat.';return}if(!Net.active||state.status!=='playing'||state.phase==='setup'||mine(state.active))return;let o=Net.owner(state.active);h.textContent='Waiting for '+state.players[state.active].name+(o?' ('+o.name+')':'')+' to play.'}
 
 const NAME_KEY='iberia-online-name';
 let onlinePrev={phase:'',status:'',people:'',seats:'',active:false};
@@ -467,6 +467,7 @@ function drawOnline(){
     }else{
       let o=L.people.find(p=>p.id===owner);
       if(owner===Net.myId){el('span',{textContent:'You'},by);el('button',{textContent:'Give up',onclick:()=>Net.release(i)},by)}
+      else if(o&&!o.connected){el('span',{className:'detail',textContent:o.name+' (away)'},by);el('button',{textContent:'Take over',onclick:()=>Net.claim(i)},by)}
       else if(o)el('span',{textContent:o.name},by);
       else{el('span',{className:'detail',textContent:'Open'},by);el('button',{textContent:'Take this seat',onclick:()=>Net.claim(i)},by)}
     }

@@ -294,14 +294,19 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     ok(r.ok&&allSame([host,guests[0]]),'play continues after the host reconnected');
   });
   await group('relay: host refresh (resume) keeps the room code',async()=>{
-    const nw=makeNetwork();const {host,guests,code}=await startRoom(nw,1,{players:2});
-    guests[0].net.claim(0);await settle();host.net.start();await tick(300);await hostStartsPlay(host);await tick(300);
+    const nw=makeNetwork();
+    // build the host so the test can switch off its link for good, as a refreshed page's old self would be
+    let h1=null;const base=nw.transport();
+    const host=makePage(nw,'host',{seed:'seedA',transport:{host:async(c,f)=>{h1=await base.host(c,f);return h1},join:c=>base.join(c)}});
+    const code=await host.net.host('Hosty');const g=makePage(nw,'g0');await g.net.join(code,'Guest0');await settle();
+    host.net.setSettings({players:2});g.net.claim(0);await settle();host.net.start();await tick(300);await hostStartsPlay(host);await tick(300);
     const saved=host.store,sumBefore=host.sum();
-    // the old host page vanishes (its relay link closes), a new page resumes the same room
-    nw.killWhere(u=>u.includes('role=host'));await tick(100);
+    h1.close();await tick(300);                      // the old host page is gone
     const host2=makePage(nw,'host2',{storage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}});
     const c2=await host2.net.resumeHost('Hosty');
     ok(c2===code&&host2.sum()===sumBefore,'same code and game');
+    for(let i=0;i<40&&!(g.net.status==='connected'&&host2.net.lobby.people.some(p=>p.id===g.net.myId&&p.connected));i++)await tick(250);
+    ok(g.net.status==='connected'&&host2.net.lobby.seats[0]===g.net.myId,'the guest comes back to the resumed room with its seat');
   });
 
   console.log(pass+' checks passed, '+fail+' failed');

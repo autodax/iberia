@@ -1,4 +1,4 @@
-# Pandemic Iberia browser prototype v0.10.4
+# Pandemic Iberia browser prototype v0.10.5
 Play the current version at https://autodax.github.io/iberia/. Every version stays playable at https://autodax.github.io/iberia/versions/ in any modern browser. Everything is inside that one file.
 
 - 2-5 players, all 7 standard roles, all 15 Events (random selection per the setup table).

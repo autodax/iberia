@@ -1,3 +1,9 @@
+# v0.10.5
+
+- Fixed: after a connection drop, a guest could come back as a second, new player while the old entry kept their seat. The host then controlled both players and the guest controlled nothing. Some browsers (private windows, some phones) cannot remember the guest's ID. The ID is now also kept in memory for the whole visit, and if it is lost anyway, a guest who rejoins with the same name as one player who is away is treated as that player.
+- A guest can now click "Take over" in the Online dialog on a seat whose player is away. A seat held by a connected player still cannot be taken.
+- A guest who controls no seat sees a message telling them to open Online and take one.
+
 # v0.10.4
 
 - The game now uses the deployed Cloudflare relay (https://iberia-relayer.sdeban.workers.dev) by default, so online play works on phone data and strict networks without any setup. The backup relay for your own computer still works: paste its address under Online > Relay server, and the invite link carries it to friends.
