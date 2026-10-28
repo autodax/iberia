@@ -1,5 +1,5 @@
 {
-  "relay_url": "",
+  "relay_url": "https://iberia-relayer.sdeban.workers.dev",
   "open_relay": true,
   "metered_app": "",
   "metered_key": "",

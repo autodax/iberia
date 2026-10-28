@@ -10,7 +10,7 @@ let pass=0,fail=0;const failures=[];
 function ok(v,m){if(v)pass++;else{fail++;failures.push(m)}}
 async function group(name,f){console.log('GROUP '+name+' @'+Math.round(process.uptime())+'s');try{await f()}catch(e){fail++;failures.push(name+': '+(e&&e.stack||e).toString().split('\n').slice(0,4).join(' | '))}}
 const tick=(ms=0)=>new Promise(r=>setTimeout(r,ms));
-async function settle(){for(let i=0;i<8;i++)await tick(0)}
+async function settle(){await tick(150)}
 
 /* ---------- the real relay, running locally (wrangler dev) ---------- */
 const RELAY=process.env.RELAY_URL||'http://127.0.0.1:8787';

@@ -1,3 +1,7 @@
+# v0.10.4
+
+- The game now uses the deployed Cloudflare relay (https://iberia-relayer.sdeban.workers.dev) by default, so online play works on phone data and strict networks without any setup. The backup relay for your own computer still works: paste its address under Online > Relay server, and the invite link carries it to friends.
+
 # v0.10.3
 
 - Online play can now go through a relay server instead of direct browser-to-browser links, so it works on phone data, school and work networks. Two interchangeable relays are included: a Cloudflare Worker in `relay/` (free, always on) and a backup for your own computer in `tools/home-relay/` (Node.js only, with a double-click launcher). Setup steps are in the README. The relay never reads game messages and stores nothing.

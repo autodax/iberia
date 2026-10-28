@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.10
-const UI_VERSION='0.10.3',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.10.4',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // The board picture (assets/board.jpeg, 3910x2760) is placed into map coordinates (cities use a 1521x1080 frame)
 // by the transform on #boardImage, measured by matching it to the previous board. The frame is cropped to the picture.
@@ -406,7 +406,7 @@ function startGameLocal(seed,difficulty,roles){state=initial(seed,difficulty,rol
 // and otherwise falls back to direct browser-to-browser links, which many networks block.
 const p2pTransport=peerJsTransport();let relayCache=null;
 let linkRelay='';   // relay address that came with an invite link (used for this visit only)
-function relayUrl(){if(linkRelay)return linkRelay;let l='';try{l=(localStorage.getItem('iberia-relay')||'').trim()}catch(e){}return l||((typeof NET_ICE!=='undefined'&&NET_ICE.relay_url)||'').trim()}
+function relayUrl(){if(linkRelay)return linkRelay;let l='';try{l=(localStorage.getItem('iberia-relay')||'').trim()}catch(e){}if(l==='direct')return '';return l||((typeof NET_ICE!=='undefined'&&NET_ICE.relay_url)||'').trim()}   // 'direct' (set by tests) skips the relay
 function builtInRelay(){return((typeof NET_ICE!=='undefined'&&NET_ICE.relay_url)||'').trim()}
 function pickTransport(){let u=relayUrl();if(!u)return p2pTransport;if(!relayCache||relayCache.u!==u)relayCache={u,t:wsTransport(u)};return relayCache.t}
 const NetTransport={host:(c,f)=>pickTransport().host(c,f),join:c=>pickTransport().join(c),diagnose:()=>pickTransport().diagnose(),forgetIce:()=>p2pTransport.forgetIce()};
