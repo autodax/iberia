@@ -220,7 +220,7 @@ async def main():
     await pg.evaluate("""(()=>{resetFx();let s=state,id=s.infectionDeck[0],col=C[id].color,put=k=>{s.supply[col]-=3-s.cubes[k][col];s.cubes[k][col]=3};for(let w in s.water)s.water[w]=0;s.prevention=null;put(id);let n=ADJ[id][0];put(n);s.phase='infection';s.infectionRemaining=1;s.actions=0;render()})()""")
     await pg.evaluate("perform({type:'infect'})");await pg.wait_for_timeout(300)
     ok(await pg.evaluate("for(let i=0;i<5&&!document.querySelector('#fx .alert.chain');i++)nextFx();!!document.querySelector('#fx .alert.chain .chainPath .step.now')"),'chain reaction alert')
-    ok(await pg.evaluate("for(let i=0;i<8&&!document.querySelector('#fx .turnAlert');i++)nextFx();!!document.querySelector('#fx .turnAlert')&&/turn/.test($('actionHeading').textContent)"),'turn change alert and heading')
+    ok(await pg.evaluate("let seen=false;for(let i=0;i<12&&(fxCurrent||fxQueue.length);i++){if(document.querySelector('#fx .turnAlert'))seen=true;nextFx()}!seen&&!document.querySelector('#fx .turnAlert')&&/turn/.test($('actionHeading').textContent)"),'turn change shows no banner, heading updated')
     await pg.evaluate("resetFx()")
     # founding dates
     ok(await pg.evaluate("Object.keys(FOUNDED).length===48&&FOUNDED.c44===-1104&&FOUNDED.c20===1072"),'founding dates for all 48 cities')

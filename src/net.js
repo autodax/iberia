@@ -265,7 +265,9 @@ function createNet(cfg){
         conn.onclose=()=>{if(guestConn===conn){guestConn=null;guestLost()}if(!settled){settled=true;reject(Error('Could not reach the host'))}};
         send(conn,{t:'hello',proto:NET_PROTO,ver:cfg.version,token:token(),name:net.name});
         setTimeout(()=>{if(!settled){settled=true;try{conn.close()}catch(e){}reject(Error('The host did not answer'))}},12000);
-      }).catch(e=>{if(!settled){settled=true;reject(first&&e&&e.code==='notfound'?Error('No room found with that code. Check the code, and that the host still has the page open.'):e)}});
+      }).catch(e=>{if(!settled){settled=true;reject(
+        first&&e&&e.code==='notfound'?Error('No room found with that code. Check the code, and that the host still has the page open.'):
+        first&&e&&e.code==='blocked'?Error('The room exists, but a connection could not be opened. Your network (or the host\'s) is probably blocking direct connections. Press "Test my connection" and see the relay settings below.'):e)}});
     });
   }
   function guestMessage(m,done){
@@ -370,8 +372,33 @@ function createNet(cfg){
 function peerJsTransport(opts){
   opts=opts||{};
   const SRC=opts.src||'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
-  const PREFIX='iberia-',CONFIG=opts.config||{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]};
-  let loading=null;
+  const PREFIX='iberia-';
+  // Direct browser-to-browser links often fail on phone data and strict routers. A relay (TURN) server carries the
+  // traffic when that happens. Settings come from src/ice.json (built into the page) or, for testing, from the
+  // "Relay settings" box in the Online dialog (kept in this browser only).
+  const ICE=(typeof NET_ICE!=='undefined'&&NET_ICE)||{};
+  const STUN=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}];
+  const OPEN_RELAY=[{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turns:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}];
+  let iceCache=null,loading=null;
+  function localIce(){try{return JSON.parse(localStorage.getItem('iberia-ice'))||{}}catch(e){return {}}}
+  async function iceServers(){
+    if(opts.config)return opts.config.iceServers;
+    if(iceCache)return iceCache;
+    const L=localIce(),app=L.metered_app||ICE.metered_app,key=L.metered_key||ICE.metered_key;
+    let list=STUN.slice();
+    if(app&&key){
+      try{
+        const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),6000);
+        const r=await fetch('https://'+encodeURIComponent(app)+'.metered.live/api/v1/turn/credentials?apiKey='+encodeURIComponent(key),{signal:ctl.signal});
+        clearTimeout(t);if(r.ok){const j=await r.json();if(Array.isArray(j))list=list.concat(j)}
+      }catch(e){}
+    }
+    if(ICE.open_relay!==false)list=list.concat(OPEN_RELAY);     // free shared relay, best effort
+    for(const x of ICE.extra||[])list.push(x);
+    return iceCache=list;
+  }
   function load(){
     if(typeof Peer!=='undefined')return Promise.resolve();
     if(!loading)loading=new Promise((ok,no)=>{
@@ -389,8 +416,18 @@ function peerJsTransport(opts){
     return c;
   }
   return {
+    forgetIce(){iceCache=null},
+    // Reports which kinds of connection this network can make: direct (host), via the internet address (srflx), via a relay.
+    async diagnose(){
+      const servers=await iceServers(),found={host:0,srflx:0,relay:0};
+      const pc=new RTCPeerConnection({iceServers:servers});pc.createDataChannel('t');
+      pc.onicecandidate=e=>{if(e.candidate){const m=/ typ (\w+)/.exec(e.candidate.candidate);if(m&&found[m[1]]!==undefined)found[m[1]]++}};
+      await pc.setLocalDescription(await pc.createOffer());
+      await new Promise(res=>{pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete')res()};setTimeout(res,8000)});
+      pc.close();return found;
+    },
     async host(code,onConnection){
-      await load();
+      await load();const CONFIG={iceServers:await iceServers()};
       return new Promise((ok,no)=>{
         const peer=new Peer(PREFIX+code,{config:CONFIG,debug:0});let opened=false;
         peer.on('open',()=>{opened=true;ok({close(){try{peer.destroy()}catch(e){}}})});
@@ -400,16 +437,16 @@ function peerJsTransport(opts){
       });
     },
     async join(code){
-      await load();
+      await load();const CONFIG={iceServers:await iceServers()};
       return new Promise((ok,no)=>{
         const peer=new Peer({config:CONFIG,debug:0});let done=false;
         const fail=e=>{if(done)return;done=true;try{peer.destroy()}catch(x){}no(e)};
         peer.on('error',e=>fail(e&&e.type==='peer-unavailable'?Object.assign(Error('No such room'),{code:'notfound'}):Object.assign(Error('Could not reach the connection service ('+(e&&e.type||'error')+').'),{code:'net'})));
         peer.on('open',()=>{
           const dc=peer.connect(PREFIX+code,{reliable:true});
-          const t=setTimeout(()=>fail(Object.assign(Error('No such room'),{code:'notfound'})),15000);
+          const t=setTimeout(()=>fail(Object.assign(Error('blocked'),{code:'blocked'})),20000);
           dc.on('open',()=>{if(done)return;done=true;clearTimeout(t);ok(wrap(dc,peer,true))});
-          dc.on('error',()=>{clearTimeout(t);fail(Object.assign(Error('No such room'),{code:'notfound'}))});
+          dc.on('error',()=>{clearTimeout(t);fail(Object.assign(Error('blocked'),{code:'blocked'}))});
         });
       });
     }

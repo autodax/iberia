@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.10
-const UI_VERSION='0.10.0',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.10.2',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // The board picture (assets/board.jpeg, 3910x2760) is placed into map coordinates (cities use a 1521x1080 frame)
 // by the transform on #boardImage, measured by matching it to the previous board. The frame is cropped to the picture.
@@ -173,11 +173,11 @@ function choicesFor(type){if(!canAct())return [];let p=state.players[state.activ
 function recompute(){for(let t of TYPES)legal[t]=choicesFor(t);if(mode&&!legal[mode]?.length)mode='';selectedCards=selectedCards.filter(k=>state.players[state.active].hand.includes(k))}
 
 /* ---------- perform with choices + reveals ---------- */
-function commit(resolved,n,remote){let before=state;state=n;commands.push(resolved);if(REVEALS.has(resolved.type)||state.status!=='playing'||Net.active)history=[];else{let fresh=state.log.slice(before.log.length);history.push({state:before,commands:commands.length-1,label:fresh[fresh.length-1]||resolved.type});if(history.length>60)history.shift()}selectedCards=[];recompute();render();autosave();notice(state.status==='playing'?(remote?state.log[state.log.length-1]:'Done.'):state.status);if(MOVES.has(resolved.type))playSound('move');queueFx(state.fx);if(state.status==='playing'&&state.phase!=='setup'&&(before.active!==state.active||before.phase==='setup'))queueFx([{kind:'turn',seat:state.active,turn:state.turn}]);}
+function commit(resolved,n,remote){let before=state;state=n;commands.push(resolved);if(REVEALS.has(resolved.type)||state.status!=='playing'||Net.active)history=[];else{let fresh=state.log.slice(before.log.length);history.push({state:before,commands:commands.length-1,label:fresh[fresh.length-1]||resolved.type});if(history.length>60)history.shift()}selectedCards=[];recompute();render();autosave();notice(state.status==='playing'?(remote?state.log[state.log.length-1]:'Done.'):state.status);if(MOVES.has(resolved.type))playSound('move');queueFx(state.fx);if(state.status==='playing'&&state.phase!=='setup'&&(before.active!==state.active||before.phase==='setup')){if(fxCurrent||fxQueue.length)turnFlash=true;else flashActive()}}
 async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);if(Net.active){let r=await Net.submit(resolved);if(!r.ok){notice(r.error,true);return false}return true}commit(resolved,n,false);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
 
 /* ---------- reveal & alert overlay ---------- */
-let fxQueue=[],fxTimer=null,fxCurrent=null;const MOVES=new Set(['carriage','train','ship','start']);
+let fxQueue=[],fxTimer=null,fxCurrent=null,turnFlash=false;const MOVES=new Set(['carriage','train','ship','start']);
 function cardFace(k,landscape){let box=el('div',{className:'bigCard'+(landscape?' landscape':'')});let src=null;
  if(C[k])src=asset((landscape?'cards/infection/':'cards/player/')+slug(C[k].name));else if(EVENTS[k])src=asset('cards/events/'+slug(EVENTS[k]));else if(String(k).startsWith('epidemic'))src=asset('cards/epidemic');
  if(src){el('img',{src,alt:cardName(k)},box);return box}
@@ -196,13 +196,13 @@ function showBlocked(list){if(+$('fxSpeed').value<0||matchMedia('(prefers-reduce
   let d=i*260;ring.animate([{r:14,opacity:1},{r:44,opacity:0}],{duration:1100,delay:d,iterations:2,fill:'both'});
   im.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)',offset:.25},{opacity:1,offset:.7},{opacity:0,transform:'translateY(-10px)'}],{duration:1900,delay:d,fill:'both'}).onfinish=()=>grp.remove();
   setTimeout(()=>playSound('blocked'),d)})}
-function queueFx(list){let speed=+$('fxSpeed').value;list=list||[];if(!trackView){let o=list.find(f=>f.kind==='outbreak'),e=list.find(f=>f.kind==='epidemic');if(o||e){trackView={o:o?o.count-1:state.outbreaks,r:e&&e.rateIndex!=null?Math.max(0,e.rateIndex-1):state.rateIndex};paint()}}if(list.length&&list[0].pre&&!cubeView&&!fxCurrent&&!fxQueue.length){cubeView=list[0].pre;paint()}for(let f of list){if(f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||f.kind==='turn'||f.blocked){fxQueue.push(f);continue}if(speed>=0)fxQueue.push(f);else if(f.after)fxQueue.push({...f,silent:true})}if(!fxCurrent)nextFx()}
+function queueFx(list){let speed=+$('fxSpeed').value;list=list||[];if(!trackView){let o=list.find(f=>f.kind==='outbreak'),e=list.find(f=>f.kind==='epidemic');if(o||e){trackView={o:o?o.count-1:state.outbreaks,r:e&&e.rateIndex!=null?Math.max(0,e.rateIndex-1):state.rateIndex};paint()}}if(list.length&&list[0].pre&&!cubeView&&!fxCurrent&&!fxQueue.length){cubeView=list[0].pre;paint()}for(let f of list){if(f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||f.blocked){fxQueue.push(f);continue}if(speed>=0)fxQueue.push(f);else if(f.after)fxQueue.push({...f,silent:true})}if(!fxCurrent)nextFx()}
 let trackView=null;
 function shownOut(){return trackView?trackView.o:state.outbreaks}function shownRate(){return trackView?trackView.r:state.rateIndex}
 function flashActive(){for(let h of document.querySelectorAll('#hands .hand.active')){h.classList.remove('justActive');void h.offsetWidth;h.classList.add('justActive')}let t=$('actionHeading');if(t){t.classList.remove('justActive');void t.offsetWidth;t.classList.add('justActive')}}
 function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';let done=fxCurrent;if(done&&done.after)applyCubes(done.after,done);if(done&&done.blocked)showBlocked(done.blocked);fxCurrent=fxQueue.shift()||null;
  while(fxCurrent&&fxCurrent.silent){applyCubes(fxCurrent.after,null);fxCurrent=fxQueue.shift()||null}
- if(!fxCurrent){if(trackView){trackView=null;paint()}settleCubes();return}let f=fxCurrent;if(trackView&&(f.kind==='outbreak'||f.kind==='epidemic')){if(f.kind==='outbreak')trackView.o=f.count;else if(f.rateIndex!=null)trackView.r=f.rateIndex;paint()}f=fxCurrent;let speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
+ if(!fxCurrent){if(trackView){trackView=null;paint()}settleCubes();if(turnFlash){turnFlash=false;flashActive()}return}let f=fxCurrent;if(trackView&&(f.kind==='outbreak'||f.kind==='epidemic')){if(f.kind==='outbreak')trackView.o=f.count;else if(f.rateIndex!=null)trackView.r=f.rateIndex;paint()}f=fxCurrent;let speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
  if(f.kind==='playerDraw'){let row=el('div',{className:'fxRow'},b);for(let k of f.cards)row.appendChild(cardFace(k));el('div',{className:'fxCaption',textContent:state.players[f.seat].name+' draws'},b);dur=3500;playSound('draw')}
  else if(f.kind==='infection'){b.appendChild(cardFace(f.city,true));el('div',{className:'fxCaption',textContent:'Infect '+C[f.city].name},b);dur=f.blocked?5000:3000;playSound('draw')}
  else if(f.kind==='research'){el('div',{className:'fxCaption',textContent:f.color[0].toUpperCase()+f.color.slice(1)+' disease researched'},b);dur=3000}
@@ -212,10 +212,9 @@ function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();bo
   let path=el('div',{className:'chainPath'},a);f.chain.forEach((k,n)=>{if(n)el('span',{className:'arr',textContent:'→'},path);el('span',{className:'step'+(n+1===f.chainIndex?' now':n+1<f.chainIndex?' done':''),textContent:C[k].name},path)});
   el('p',{textContent:'Outbreaks: '+f.count+' / 8'},a);dur=3200;playSound('outbreak');if(f.chainIndex>1)setTimeout(()=>playSound('outbreak'),260)}
  else if(f.kind==='outbreak'){let a=el('div',{className:'alert outbreak'},b);let ban=asset('alerts/outbreak');if(ban)el('img',{className:'banner',src:ban},a);let h=el('h3',{},a);el('img',{className:'tok',src:tokenImg('outbreak')},h);h.append('Outbreak');el('p',{textContent:C[f.city].name+' · '+f.color+' disease'},a);el('p',{textContent:'Outbreaks: '+f.count+' / 8'},a);dur=2800;playSound('outbreak')}
- else if(f.kind==='turn'){let q=state.players[f.seat],a=el('div',{className:'alert turnAlert',style:'--pc:'+(PAWN[q.role]||'#4c6b5c')},b);let h=el('h3',{},a);pawnIcon(q.role,el('span',{className:'tp'},h),26);h.append(playerLabel(state,f.seat).split(' (')[0]+'’s turn');el('p',{textContent:(ROLES[q.role]||q.role)+' · in '+C[q.city].name+' · 4 actions'},a);dur=2200;flashActive()}
  else if(f.kind==='end'){let a=el('div',{className:'alert'+(state.status==='won'?' win':'')},b);el('h3',{textContent:state.status==='won'?'Victory':'Defeat'},a);el('p',{textContent:f.text},a);dur=6000;playSound(state.status==='won'?'win':'lose')}
  if(f.blocked)blockedNote(f,b);
- let sticky=f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||speed===0||(f.blocked&&speed<0),ms=dur*(speed>0?Math.max(speed,f.kind==='turn'?.75:0):1);
+ let sticky=f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||speed===0||(f.blocked&&speed<0),ms=dur*(speed>0?speed:1);
  let sk=el('div',{className:'fxSkip'},b);let btn=el('button',{textContent:fxQueue.length?'Continue ('+fxQueue.length+' more)':'Continue'},sk);btn.onclick=e=>{e.stopPropagation();nextFx()};
  if(!sticky){let bar=el('div',{className:'fxBar',title:'Closes automatically; click to continue now'},sk);el('i',{style:'animation-duration:'+ms+'ms'},bar);fxTimer=setTimeout(nextFx,ms)}
  box.className='on';box.onclick=()=>nextFx();setTimeout(()=>btn.focus({preventScroll:true}),0)}
@@ -240,7 +239,7 @@ function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[
   node.animate([{transform:`translate(${ox}px,${oy}px) scale(${f.kind==='outbreak'?1.2:3})`,opacity:0},{transform:`translate(${ox}px,${oy}px) scale(${f.kind==='outbreak'?1.4:3.2})`,opacity:1,offset:.12},{transform:`translate(${mx}px,${my}px) scale(1.9)`,opacity:1,offset:.55},{transform:`translate(${tx}px,${ty}px) scale(.85)`,opacity:1,offset:.9},{transform:`translate(${tx}px,${ty}px) scale(1)`,opacity:1}],{duration:dur,delay,easing:'ease-in-out',fill:'both'});
   setTimeout(()=>{if(flyTarget!==next)return;playSound('cube');cubeView[cid][k]=Math.max(cubeView[cid][k]||0,j+1);node.remove();paint()},delay+dur)});
  flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;$('flyers').replaceChildren();cubeView=flyTarget;flyTarget=null;paint();settleCubes()},last+30)}
-function resetFx(){clearTimeout(fxTimer);trackView=null;fxQueue=[];fxCurrent=null;if(flyTimer){clearTimeout(flyTimer);flyTimer=null}flyTarget=null;$('flyers').replaceChildren();cubeView=null;$('fx').replaceChildren();$('fx').className=''}
+function resetFx(){turnFlash=false;clearTimeout(fxTimer);trackView=null;fxQueue=[];fxCurrent=null;if(flyTimer){clearTimeout(flyTimer);flyTimer=null}flyTarget=null;$('flyers').replaceChildren();cubeView=null;$('fx').replaceChildren();$('fx').className=''}
 
 /* ---------- hands ---------- */
 function drawSupply(){for(let im of document.querySelectorAll('#resources img[data-tok]')){let src=tokenImg(im.dataset.tok);if(src&&im.getAttribute('src')!==src)im.src=src;im.hidden=!src}
@@ -403,8 +402,9 @@ $('muteButton').onclick=e=>{e.stopPropagation();setSound(!sndPrefs.on)};$('sound
 function safeStore(k){try{return window[k]}catch(e){return null}}
 function netSum(){return hash(JSON.stringify({...state,fx:undefined})).toString(16)}
 function startGameLocal(seed,difficulty,roles){state=initial(seed,difficulty,roles);history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();notice('Choose starting cities.')}
+const NetTransport=peerJsTransport();
 const Net=createNet({
-  transport:peerJsTransport(),
+  transport:NetTransport,
   version:{ui:UI_VERSION,engine:VERSION,map:MAP_SIGNATURE},
   storage:safeStore('localStorage'),tokenStore:safeStore('sessionStorage'),newSeed,
   hooks:{
@@ -498,7 +498,16 @@ Net.onChange(()=>{
   if(seatKey!==onlinePrev.seats){onlinePrev.seats=seatKey;if(Net.active&&phase==='playing'){recompute();render()}}
   drawOnline();
 });
-$('onlineButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;drawOnline();showOnlineMsg('');showDialog('onlineDialog')};
+$('onlineButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;loadIceBoxes();drawOnline();showOnlineMsg('');showDialog('onlineDialog')};
+function loadIceBoxes(){try{let o=JSON.parse(localStorage.getItem('iberia-ice'))||{};$('onIceApp').value=o.metered_app||'';$('onIceKey').value=o.metered_key||''}catch(e){}}
+$('onIceSave').onclick=()=>{try{localStorage.setItem('iberia-ice',JSON.stringify({metered_app:$('onIceApp').value.trim(),metered_key:$('onIceKey').value.trim()}));NetTransport.forgetIce();showOnlineMsg('Relay settings saved. Press "Test my connection" to check them.')}catch(e){showOnlineMsg('Could not save settings in this browser.',true)}};
+function describeConnectionTest(r){
+  let counts=' (direct '+r.host+', internet address '+r.srflx+', relay '+r.relay+')';
+  if(r.relay>0)return 'Good. This network can use a relay, so connections should work even on strict networks.'+counts;
+  if(r.srflx>0)return 'Partly good. Direct connections are possible, but no relay was reachable. Players on phone data or strict networks may not be able to connect. Add relay settings below.'+counts;
+  return 'Problem. This network is blocking the way browsers find each other. Try a different network, or add relay settings below.'+counts;
+}
+$('onTest').onclick=async()=>{let b=$('onTest'),out=$('onTestResult');b.disabled=true;out.textContent='Testing. This takes up to 10 seconds…';try{out.textContent=describeConnectionTest(await NetTransport.diagnose())}catch(e){out.textContent='The test could not run in this browser: '+(e.message||e)}b.disabled=false};
 $('onlineDialog').querySelector('.close').onclick=()=>$('onlineDialog').close();
 $('onlineDialog').addEventListener('click',e=>{if(e.target===$('onlineDialog'))$('onlineDialog').close()});
 function onlineName(){let n=$('onName').value.trim();try{localStorage.setItem(NAME_KEY,n)}catch(e){}return n}

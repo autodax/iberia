@@ -135,7 +135,6 @@ header .sndBtn.off .cross{display:inline}
 #actionHeading.justActive,.hand.justActive{animation:turnPulse 1.6s ease-out 2}
 @keyframes turnPulse{0%{box-shadow:0 0 0 0 rgba(22,180,200,.9)}60%{box-shadow:0 0 0 10px rgba(22,180,200,0)}100%{box-shadow:0 0 0 0 rgba(22,180,200,0)}}
 .hand.active{box-shadow:0 0 0 3px var(--cyan) inset,0 0 10px rgba(22,180,200,.45)}
-.alert.turnAlert{border-left:10px solid var(--pc)}.alert.turnAlert h3{display:flex;align-items:center;justify-content:center;gap:10px;font-size:26px}.alert.turnAlert .tp svg{display:block}
 .alert.chain{border:3px solid #9c1f14;box-shadow:0 0 0 4px rgba(156,31,20,.25);animation:chainShake .5s ease-in-out 2}
 .chainTag{display:inline-block;background:#9c1f14;color:#f6e8cd;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:13px;padding:3px 12px;border-radius:3px;margin:4px 0}
 .chainPath{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;margin:6px 0;font-size:13.5px}.chainPath .step{padding:2px 7px;border:1px solid #8b7a5a;border-radius:3px;background:#f3e6c8}.chainPath .step.done{opacity:.6}.chainPath .step.now{background:#9c1f14;color:#f6e8cd;border-color:#9c1f14;font-weight:700}.chainPath .arr{color:#9c1f14;font-weight:700}
