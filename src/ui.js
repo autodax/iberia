@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.10
-const UI_VERSION='0.10.2',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.10.3',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // The board picture (assets/board.jpeg, 3910x2760) is placed into map coordinates (cities use a 1521x1080 frame)
 // by the transform on #boardImage, measured by matching it to the previous board. The frame is cropped to the picture.
@@ -402,7 +402,14 @@ $('muteButton').onclick=e=>{e.stopPropagation();setSound(!sndPrefs.on)};$('sound
 function safeStore(k){try{return window[k]}catch(e){return null}}
 function netSum(){return hash(JSON.stringify({...state,fx:undefined})).toString(16)}
 function startGameLocal(seed,difficulty,roles){state=initial(seed,difficulty,roles);history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();notice('Choose starting cities.')}
-const NetTransport=peerJsTransport();
+// Online play uses the relay server when an address is set (src/ice.json, or the Relay box in the Online dialog),
+// and otherwise falls back to direct browser-to-browser links, which many networks block.
+const p2pTransport=peerJsTransport();let relayCache=null;
+let linkRelay='';   // relay address that came with an invite link (used for this visit only)
+function relayUrl(){if(linkRelay)return linkRelay;let l='';try{l=(localStorage.getItem('iberia-relay')||'').trim()}catch(e){}return l||((typeof NET_ICE!=='undefined'&&NET_ICE.relay_url)||'').trim()}
+function builtInRelay(){return((typeof NET_ICE!=='undefined'&&NET_ICE.relay_url)||'').trim()}
+function pickTransport(){let u=relayUrl();if(!u)return p2pTransport;if(!relayCache||relayCache.u!==u)relayCache={u,t:wsTransport(u)};return relayCache.t}
+const NetTransport={host:(c,f)=>pickTransport().host(c,f),join:c=>pickTransport().join(c),diagnose:()=>pickTransport().diagnose(),forgetIce:()=>p2pTransport.forgetIce()};
 const Net=createNet({
   transport:NetTransport,
   version:{ui:UI_VERSION,engine:VERSION,map:MAP_SIGNATURE},
@@ -425,7 +432,7 @@ function onlineHint(){let h=$('actionHint');if(inLobby()){h.textContent='Start t
 const NAME_KEY='iberia-online-name';
 let onlinePrev={phase:'',status:'',people:'',seats:'',active:false};
 function showOnlineMsg(t,bad){let m=$('onMsg');m.textContent=t||'';m.className='detail'+(bad?' error':'')}
-function roomLink(){return location.origin+location.pathname+'?room='+Net.code}
+function roomLink(){let r=relayUrl(),extra=r&&r!==builtInRelay()?'&relay='+encodeURIComponent(r):'';return location.origin+location.pathname+'?room='+Net.code+extra}
 function drawOnline(){
   let L=Net.lobby,active=Net.active;
   $('onlineStart').hidden=active;$('onlineRoom').hidden=!active;
@@ -498,14 +505,15 @@ Net.onChange(()=>{
   if(seatKey!==onlinePrev.seats){onlinePrev.seats=seatKey;if(Net.active&&phase==='playing'){recompute();render()}}
   drawOnline();
 });
-$('onlineButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;loadIceBoxes();drawOnline();showOnlineMsg('');showDialog('onlineDialog')};
-function loadIceBoxes(){try{let o=JSON.parse(localStorage.getItem('iberia-ice'))||{};$('onIceApp').value=o.metered_app||'';$('onIceKey').value=o.metered_key||''}catch(e){}}
-$('onIceSave').onclick=()=>{try{localStorage.setItem('iberia-ice',JSON.stringify({metered_app:$('onIceApp').value.trim(),metered_key:$('onIceKey').value.trim()}));NetTransport.forgetIce();showOnlineMsg('Relay settings saved. Press "Test my connection" to check them.')}catch(e){showOnlineMsg('Could not save settings in this browser.',true)}};
+$('onlineButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;loadRelayBox();drawOnline();showOnlineMsg('');showDialog('onlineDialog')};
+function loadRelayBox(){try{$('onRelayUrl').value=localStorage.getItem('iberia-relay')||''}catch(e){}}
+$('onRelaySave').onclick=()=>{try{let v=$('onRelayUrl').value.trim();if(v&&!/^(https?|wss?):\/\/[^\s]+$/i.test(v)){showOnlineMsg('That does not look like a web address. It should start with https://',true);return}if(v)localStorage.setItem('iberia-relay',v);else localStorage.removeItem('iberia-relay');relayCache=null;showOnlineMsg(v?'Relay address saved. Press "Test my connection" to check it.':'Using the built-in relay setting.')}catch(e){showOnlineMsg('Could not save settings in this browser.',true)}};
 function describeConnectionTest(r){
+  if(r.kind==='relay')return r.ok?'Good. The relay server is reachable, so online play should work on this network.':'Problem. Could not reach the relay server from this network. Check the relay address below, or try another network.';
   let counts=' (direct '+r.host+', internet address '+r.srflx+', relay '+r.relay+')';
   if(r.relay>0)return 'Good. This network can use a relay, so connections should work even on strict networks.'+counts;
-  if(r.srflx>0)return 'Partly good. Direct connections are possible, but no relay was reachable. Players on phone data or strict networks may not be able to connect. Add relay settings below.'+counts;
-  return 'Problem. This network is blocking the way browsers find each other. Try a different network, or add relay settings below.'+counts;
+  if(r.srflx>0)return 'Partly good. No relay server is set up, so players on phone data or strict networks may not be able to connect. See the README to set one up.'+counts;
+  return 'Problem. This network is blocking the way browsers find each other, and no relay server is set up. See the README to set one up.'+counts;
 }
 $('onTest').onclick=async()=>{let b=$('onTest'),out=$('onTestResult');b.disabled=true;out.textContent='Testing. This takes up to 10 seconds…';try{out.textContent=describeConnectionTest(await NetTransport.diagnose())}catch(e){out.textContent='The test could not run in this browser: '+(e.message||e)}b.disabled=false};
 $('onlineDialog').querySelector('.close').onclick=()=>$('onlineDialog').close();
@@ -521,6 +529,7 @@ $('onCopy').onclick=async()=>{try{await navigator.clipboard.writeText(roomLink()
 $('onStartGame').onclick=()=>{let r=Net.start();if(!r.ok)showOnlineMsg(r.error,true)};
 $('onBack').onclick=async()=>{if(await ask('Take everyone back to the lobby to start a new game? The current game ends.')){let r=Net.backToLobby();if(!r.ok)showOnlineMsg(r.error,true)}};
 $('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room? Everyone is disconnected. The board stays on this page as a game you can keep playing here.':'Leave this room? The board stays on this page as a local game.'))return;Net.leave();$('onlineDialog').close();render();notice('You left the online room.')};
-{let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
+{let r=/[?&]relay=([^&]+)/.exec(location.search);if(r){try{let v=decodeURIComponent(r[1]).trim();if(/^(https?|wss?):\/\/[^\s]+$/i.test(v))linkRelay=v}catch(e){}}
+ let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
 
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');

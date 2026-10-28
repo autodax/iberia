@@ -44,7 +44,11 @@ async def main():
     async with async_playwright() as p:
       b=await p.chromium.launch(executable_path=os.environ.get('CHROMIUM') or None)
       ctx=await b.new_context(viewport={'width':1366,'height':768})
-      await ctx.add_init_script(FAKE_PEER.replace("this.opened","this._o").replace("if(!this.dead)this.emit('open',this.id)","if(!this.dead){this._o=true;this.emit('open',this.id)}"))
+      RELAY=os.environ.get('RELAY_URL')
+      if RELAY:   # real relay instead of the fake PeerJS: start it first (cd relay && npx wrangler dev --port 8787, or node tools/home-relay/relay.js)
+        await ctx.add_init_script("try{localStorage.setItem('iberia-relay','"+RELAY+"')}catch(e){}")
+      else:
+        await ctx.add_init_script(FAKE_PEER.replace("this.opened","this._o").replace("if(!this.dead)this.emit('open',this.id)","if(!this.dead){this._o=true;this.emit('open',this.id)}"))
       async def page(name):
         pg=await ctx.new_page();pg.on('pageerror',lambda e:errs.append(name+': '+str(e)));pg.on('console',lambda m:m.type=='error' and errs.append(name+': '+m.text));return pg
       A=await page('host');B=await page('guest')
@@ -65,6 +69,7 @@ async def main():
       # --- guest takes seat 2 (second role)
       await B.click('#onSeats .onSeat:nth-child(2) button:has-text("Take this seat")')
       await A.wait_for_function('Net.lobby.seats[1]!==null')
+      await B.wait_for_function('Net.mine(1)',timeout=5000)
       ok(await B.evaluate('Net.mine(1)&&!Net.mine(0)'),'Ben owns seat 2 only')
       ok(await A.evaluate('Net.mine(0)&&!Net.mine(1)'),'Ana (host) plays the unclaimed seat 1 and not Ben\'s')
       await A.screenshot(path='/tmp/online_lobby_host.png');await B.screenshot(path='/tmp/online_lobby_guest.png')
