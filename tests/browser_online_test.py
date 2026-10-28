@@ -48,6 +48,7 @@ async def main():
       if RELAY:   # real relay instead of the fake PeerJS: start it first (cd relay && npx wrangler dev --port 8787, or node tools/home-relay/relay.js)
         await ctx.add_init_script("try{localStorage.setItem('iberia-relay','"+RELAY+"')}catch(e){}")
       else:
+        await ctx.add_init_script("try{localStorage.setItem('iberia-relay','direct')}catch(e){}")
         await ctx.add_init_script(FAKE_PEER.replace("this.opened","this._o").replace("if(!this.dead)this.emit('open',this.id)","if(!this.dead){this._o=true;this.emit('open',this.id)}"))
       async def page(name):
         pg=await ctx.new_page();pg.on('pageerror',lambda e:errs.append(name+': '+str(e)));pg.on('console',lambda m:m.type=='error' and errs.append(name+': '+m.text));return pg
