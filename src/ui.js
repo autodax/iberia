@@ -405,7 +405,9 @@ function startGameLocal(seed,difficulty,roles){state=initial(seed,difficulty,rol
 // Online play uses the relay server when an address is set (src/ice.json, or the Relay box in the Online dialog),
 // and otherwise falls back to direct browser-to-browser links, which many networks block.
 const p2pTransport=peerJsTransport();let relayCache=null;
-function relayUrl(){let l='';try{l=(localStorage.getItem('iberia-relay')||'').trim()}catch(e){}return l||((typeof NET_ICE!=='undefined'&&NET_ICE.relay_url)||'').trim()}
+let linkRelay='';   // relay address that came with an invite link (used for this visit only)
+function relayUrl(){if(linkRelay)return linkRelay;let l='';try{l=(localStorage.getItem('iberia-relay')||'').trim()}catch(e){}return l||((typeof NET_ICE!=='undefined'&&NET_ICE.relay_url)||'').trim()}
+function builtInRelay(){return((typeof NET_ICE!=='undefined'&&NET_ICE.relay_url)||'').trim()}
 function pickTransport(){let u=relayUrl();if(!u)return p2pTransport;if(!relayCache||relayCache.u!==u)relayCache={u,t:wsTransport(u)};return relayCache.t}
 const NetTransport={host:(c,f)=>pickTransport().host(c,f),join:c=>pickTransport().join(c),diagnose:()=>pickTransport().diagnose(),forgetIce:()=>p2pTransport.forgetIce()};
 const Net=createNet({
@@ -430,7 +432,7 @@ function onlineHint(){let h=$('actionHint');if(inLobby()){h.textContent='Start t
 const NAME_KEY='iberia-online-name';
 let onlinePrev={phase:'',status:'',people:'',seats:'',active:false};
 function showOnlineMsg(t,bad){let m=$('onMsg');m.textContent=t||'';m.className='detail'+(bad?' error':'')}
-function roomLink(){return location.origin+location.pathname+'?room='+Net.code}
+function roomLink(){let r=relayUrl(),extra=r&&r!==builtInRelay()?'&relay='+encodeURIComponent(r):'';return location.origin+location.pathname+'?room='+Net.code+extra}
 function drawOnline(){
   let L=Net.lobby,active=Net.active;
   $('onlineStart').hidden=active;$('onlineRoom').hidden=!active;
@@ -527,6 +529,7 @@ $('onCopy').onclick=async()=>{try{await navigator.clipboard.writeText(roomLink()
 $('onStartGame').onclick=()=>{let r=Net.start();if(!r.ok)showOnlineMsg(r.error,true)};
 $('onBack').onclick=async()=>{if(await ask('Take everyone back to the lobby to start a new game? The current game ends.')){let r=Net.backToLobby();if(!r.ok)showOnlineMsg(r.error,true)}};
 $('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room? Everyone is disconnected. The board stays on this page as a game you can keep playing here.':'Leave this room? The board stays on this page as a local game.'))return;Net.leave();$('onlineDialog').close();render();notice('You left the online room.')};
-{let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
+{let r=/[?&]relay=([^&]+)/.exec(location.search);if(r){try{let v=decodeURIComponent(r[1]).trim();if(/^(https?|wss?):\/\/[^\s]+$/i.test(v))linkRelay=v}catch(e){}}
+ let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
 
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');

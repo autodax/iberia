@@ -8,7 +8,7 @@ const {C,transact,initial,hash,fullHands,CP}=E;
 
 let pass=0,fail=0;const failures=[];
 function ok(v,m){if(v)pass++;else{fail++;failures.push(m)}}
-async function group(name,f){try{await f()}catch(e){fail++;failures.push(name+': '+(e&&e.stack||e).toString().split('\n').slice(0,4).join(' | '))}}
+async function group(name,f){console.log('GROUP '+name+' @'+Math.round(process.uptime())+'s');try{await f()}catch(e){fail++;failures.push(name+': '+(e&&e.stack||e).toString().split('\n').slice(0,4).join(' | '))}}
 const tick=(ms=0)=>new Promise(r=>setTimeout(r,ms));
 async function settle(){for(let i=0;i<8;i++)await tick(0)}
 
@@ -284,6 +284,8 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     guests[0].net.claim(0);await settle();host.net.start();await tick(300);await hostStartsPlay(host);await tick(300);
     const seqBefore=host.net.seq;
     nw.killWhere(u=>u.includes('role=host'));
+    for(let i=0;i<20&&guests[0].net.status==='connected';i++)await tick(100);   // wait for the drop to be noticed first
+    ok(guests[0].net.status!=='connected','guest notices the host link dropped');
     for(let i=0;i<60&&!(guests[0].net.status==='connected'&&host.net.lobby.people.every(p=>p.connected)&&host.net.lobby.people.length===2);i++)await tick(250);
     ok(guests[0].net.status==='connected','guest reconnected');ok(host.net.lobby.people.every(p=>p.connected),'host sees the guest again');
     ok(host.net.seq===seqBefore&&allSame([host,guests[0]]),'game intact');
@@ -304,4 +306,5 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
 
   console.log(pass+' checks passed, '+fail+' failed');
   if(fail){console.log(failures.map(f=>' - '+f).join('\n'));process.exit(1)}
+  process.exit(0);
 })();

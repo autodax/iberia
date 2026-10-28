@@ -488,8 +488,8 @@ function wsTransport(baseUrl,opts){
         }
         function connect(){
           try{ws=openSocket(code,'host')}catch(e){if(!settled){settled=true;no(e)}return}
-          const mine=ws;let gotReady=false;
-          const timer=setTimeout(()=>{if(!gotReady){try{mine.close()}catch(e){}}},CONNECT_MS);
+          const mine=ws;let gotReady=false,over=false;
+          const timer=setTimeout(()=>{if(!gotReady){try{mine.close()}catch(e){}lost()}},CONNECT_MS);
           mine.onmessage=ev=>{
             const raw=typeof ev.data==='string'?ev.data:String(ev.data);if(raw==='pong')return;
             let m;try{m=JSON.parse(raw)}catch(e){return}
@@ -499,8 +499,10 @@ function wsTransport(baseUrl,opts){
             if(m.t==='close'){const c=conns.get(m.g);if(c){conns.delete(m.g);fire(c)}return}
             if(typeof m.g==='string'&&typeof m.d==='string'){const c=conns.get(m.g);if(c&&c.onmessage)c.onmessage(m.d)}
           };
-          mine.onerror=()=>{};
-          mine.onclose=()=>{
+          mine.onerror=()=>lost();
+          mine.onclose=()=>lost();
+          function lost(){
+            if(over)return;over=true;
             clearTimeout(timer);
             if(mine!==ws)return;
             const old=[...conns.values()];conns.clear();for(const c of old)fire(c);   // the relay link dropped: guests rejoin by themselves
@@ -508,7 +510,7 @@ function wsTransport(baseUrl,opts){
             if(!settled){settled=true;clearInterval(ping);no(netErr(noRelay));return}
             if(++tries>RETRIES){closed=true;clearInterval(ping);return}
             setTimeout(()=>{if(!closed)connect()},RETRY_MS);
-          };
+          }
         }
         connect();
       });
@@ -530,8 +532,8 @@ function wsTransport(baseUrl,opts){
           }
           if(c.onmessage)c.onmessage(raw);
         };
-        ws.onerror=()=>{};
-        ws.onclose=()=>{clearTimeout(timer);clearInterval(ping);if(!settled){settled=true;no(netErr(noRelay))}else fire(c)};
+        const ended=()=>{clearTimeout(timer);clearInterval(ping);if(!settled){settled=true;no(netErr(noRelay))}else fire(c)};
+        ws.onerror=ended;ws.onclose=ended;
       });
     }
   };

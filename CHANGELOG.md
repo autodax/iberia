@@ -1,10 +1,11 @@
 # v0.10.3
 
-- Online play can now go through a relay server on Cloudflare (new `relay/` folder) instead of direct browser-to-browser links, so it works on phone data, school and work networks. Setup steps are in the README. The relay never reads game messages and stores nothing.
-- Relay server box in the Online dialog (replaces the Metered settings). "Test my connection" now checks that the relay can be reached.
-- If the host's connection to the relay drops, it reconnects on its own and the guests rejoin with their seats.
-- Direct links remain as a fallback when no relay address is set.
-- New: tests/relay.test.js plays full games through the real relay.
+- Online play can now go through a relay server instead of direct browser-to-browser links, so it works on phone data, school and work networks. Two interchangeable relays are included: a Cloudflare Worker in `relay/` (free, always on) and a backup for your own computer in `tools/home-relay/` (Node.js only, with a double-click launcher). Setup steps are in the README. The relay never reads game messages and stores nothing.
+- New "Relay server (advanced)" box in the Online dialog (replaces the Metered settings), and "Test my connection" now checks that the relay can be reached.
+- Invite links carry a non-default relay address, so friends can join through your home relay by just clicking the link.
+- If the host's connection to the relay drops, it reconnects by itself and the guests rejoin with their seats.
+- Direct browser-to-browser links remain as a fallback when no relay address is set.
+- New: tests/relay.test.js plays full games through a real relay, and tests/browser_online_test.py can run through one (set RELAY_URL).
 
 # v0.10.2
 
