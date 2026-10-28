@@ -1,6 +1,7 @@
 {
+  "relay_url": "",
+  "open_relay": true,
   "metered_app": "",
   "metered_key": "",
-  "open_relay": true,
   "extra": []
 }

@@ -453,4 +453,88 @@ function peerJsTransport(opts){
   };
 }
 
-if(typeof module!=='undefined')module.exports={createNet,peerJsTransport,netNormalizeCode,NET_PROTO};
+/* ---------- Relay transport (WebSocket through the Cloudflare relay in relay/) ----------
+   Every player keeps one ordinary secure web connection open to the relay, which passes messages between the host and
+   the guests. Unlike PeerJS there is no direct browser-to-browser link, so it works on phone data, school and
+   work networks. The relay is a few dozen lines (relay/src/index.js) and never looks inside the messages. */
+function wsTransport(baseUrl,opts){
+  opts=opts||{};
+  const WS=opts.WebSocket||(typeof WebSocket!=='undefined'?WebSocket:null);
+  const root=String(baseUrl||'').trim().replace(/\/+$/,'');
+  const wsBase=root.replace(/^http/i,'ws'),httpBase=root.replace(/^ws/i,'http');
+  const PING_MS=opts.pingMs||20000,CONNECT_MS=opts.connectMs||12000,RETRY_MS=opts.retryMs||2000,RETRIES=opts.retries||60;
+  const netErr=m=>Object.assign(Error(m),{code:'net'});
+  const noRelay='Could not reach the relay server. Check your internet connection and the relay address.';
+  function openSocket(code,role){if(!WS)throw netErr('This browser cannot open web connections.');return new WS(wsBase+'/room/'+code+'?role='+role)}
+  function fire(c){if(c.onclose){const f=c.onclose;c.onclose=null;f()}}
+  function keepAlive(get){const t=setInterval(()=>{try{const w=get();if(w&&w.readyState===1)w.send('ping')}catch(e){}},PING_MS);if(t.unref)t.unref();return t}
+  return {
+    kind:'relay',
+    forgetIce(){},
+    async diagnose(){
+      try{const r=await fetch(httpBase+'/',{cache:'no-store'});const t=await r.text();return {kind:'relay',ok:r.ok&&/Iberia relay/.test(t)}}
+      catch(e){return {kind:'relay',ok:false}}
+    },
+    host(code,onConnection){
+      return new Promise((ok,no)=>{
+        let ws=null,closed=false,settled=false,tries=0;const conns=new Map();
+        const ping=keepAlive(()=>ws);
+        const handle={close(){closed=true;clearInterval(ping);const old=[...conns.values()];conns.clear();for(const c of old)fire(c);try{ws&&ws.close()}catch(e){}}};
+        function makeConn(g){
+          const c={onmessage:null,onclose:null,
+            send(s){if(ws&&ws.readyState===1)ws.send(JSON.stringify({g,d:s}))},
+            close(){if(conns.get(g)===c){conns.delete(g);try{ws.send(JSON.stringify({t:'kick',g}))}catch(e){}}}};
+          return c;
+        }
+        function connect(){
+          try{ws=openSocket(code,'host')}catch(e){if(!settled){settled=true;no(e)}return}
+          const mine=ws;let gotReady=false;
+          const timer=setTimeout(()=>{if(!gotReady){try{mine.close()}catch(e){}}},CONNECT_MS);
+          mine.onmessage=ev=>{
+            const raw=typeof ev.data==='string'?ev.data:String(ev.data);if(raw==='pong')return;
+            let m;try{m=JSON.parse(raw)}catch(e){return}
+            if(m.t==='ready'){gotReady=true;clearTimeout(timer);tries=0;if(!settled){settled=true;ok(handle)}return}
+            if(m.t==='error'){clearTimeout(timer);if(!settled){settled=true;closed=true;clearInterval(ping);no(m.code==='taken'?Object.assign(Error('That room code is already in use'),{code:'taken'}):netErr(noRelay))}return}
+            if(m.t==='open'){const c=makeConn(m.g);conns.set(m.g,c);onConnection(c);return}
+            if(m.t==='close'){const c=conns.get(m.g);if(c){conns.delete(m.g);fire(c)}return}
+            if(typeof m.g==='string'&&typeof m.d==='string'){const c=conns.get(m.g);if(c&&c.onmessage)c.onmessage(m.d)}
+          };
+          mine.onerror=()=>{};
+          mine.onclose=()=>{
+            clearTimeout(timer);
+            if(mine!==ws)return;
+            const old=[...conns.values()];conns.clear();for(const c of old)fire(c);   // the relay link dropped: guests rejoin by themselves
+            if(closed)return;
+            if(!settled){settled=true;clearInterval(ping);no(netErr(noRelay));return}
+            if(++tries>RETRIES){closed=true;clearInterval(ping);return}
+            setTimeout(()=>{if(!closed)connect()},RETRY_MS);
+          };
+        }
+        connect();
+      });
+    },
+    join(code){
+      return new Promise((ok,no)=>{
+        let ws,settled=false;
+        try{ws=openSocket(code,'guest')}catch(e){return no(e)}
+        const c={onmessage:null,onclose:null,send(s){if(ws.readyState===1)ws.send(s)},close(){clearInterval(ping);try{ws.close()}catch(e){}}};
+        const ping=keepAlive(()=>ws);
+        const timer=setTimeout(()=>{if(!settled){settled=true;clearInterval(ping);try{ws.close()}catch(e){}no(netErr(noRelay))}},CONNECT_MS);
+        ws.onmessage=ev=>{
+          const raw=typeof ev.data==='string'?ev.data:String(ev.data);if(raw==='pong')return;
+          if(!settled){
+            settled=true;clearTimeout(timer);let m=null;try{m=JSON.parse(raw)}catch(e){}
+            if(m&&m.t==='ready')ok(c);
+            else{clearInterval(ping);no(m&&m.code==='notfound'?Object.assign(Error('No such room'),{code:'notfound'}):netErr(noRelay))}
+            return;
+          }
+          if(c.onmessage)c.onmessage(raw);
+        };
+        ws.onerror=()=>{};
+        ws.onclose=()=>{clearTimeout(timer);clearInterval(ping);if(!settled){settled=true;no(netErr(noRelay))}else fire(c)};
+      });
+    }
+  };
+}
+
+if(typeof module!=='undefined')module.exports={createNet,peerJsTransport,wsTransport,netNormalizeCode,NET_PROTO};

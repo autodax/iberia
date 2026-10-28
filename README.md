@@ -1,4 +1,4 @@
-# Pandemic Iberia browser prototype v0.10.2
+# Pandemic Iberia browser prototype v0.10.3
 Play the current version at https://autodax.github.io/iberia/. Every version stays playable at https://autodax.github.io/iberia/versions/ in any modern browser. Everything is inside that one file.
 
 - 2-5 players, all 7 standard roles, all 15 Events (random selection per the setup table).
@@ -18,8 +18,19 @@ Rebuild: `python3 build.py` (sources in `src/`). Tests: `node tests/engine.test.
 
 ## Making online play work on any network (relay setup)
 
-Players connect browser to browser. Some networks (phone data, many work and school networks) block that, and a relay (TURN) server is needed. The page already tries a free shared relay. For something dependable:
+Online play sends messages through a tiny free relay server on Cloudflare (the code is in `relay/`). It works on any network, including phone data, school and work networks, which often block direct browser-to-browser links.
 
-1. Create a free account at https://www.metered.ca and make an app. Note its name (the part before `.metered.live`) and its API key.
-2. Easiest: each player opens Online > Relay settings, enters the app name and key, and presses Save. This stays in that browser only.
-3. Or build it in for everyone: put the app name and key in `src/ice.json`, run `python3 build.py`, and commit. Note the key becomes visible to anyone who views the page source. Metered's free tier is limited, so for a private game among friends that is fine, but do not reuse a key you care about.
+One-time setup (about 10 minutes, no tools to install):
+
+1. Make sure this repository is public and contains the `relay` folder.
+2. Open this link: https://deploy.workers.cloudflare.com/?url=https://github.com/autodax/iberia/tree/main/relay
+3. Sign in to (or create) a free Cloudflare account and follow the prompts. It asks to connect your GitHub account, makes a copy of the `relay` folder as a new repository on your account, and deploys it. Keep the suggested names.
+4. When it finishes, Cloudflare shows the relay's address, like `https://iberia-relay.yourname.workers.dev`. Copy it.
+5. Put it in `src/ice.json` as `"relay_url"`, run `python3 build.py`, and commit. Everyone then uses the relay automatically.
+   (For a quick test without rebuilding, open Online > Relay server on every device and paste the address. Everyone in a game must use the same relay.)
+
+If you host the game somewhere other than `autodax.github.io`, add that address to `ALLOWED_ORIGINS` at the top of `relay/src/index.js` and deploy again, otherwise the relay refuses the connection.
+
+Cost: the free Cloudflare plan allows 100,000 requests a day, and each game move is a small fraction of one, so a game among friends uses almost none of it.
+
+Checks: `node tests/relay.test.js` plays full games through the real relay, started locally with `cd relay && npx wrangler dev --port 8787`.
