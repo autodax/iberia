@@ -9,8 +9,9 @@ button:hover{background:var(--tanHover)}button:disabled{opacity:.45;cursor:defau
 select,input{background:var(--parchLight);color:var(--ink);border:1px solid var(--tanBorder);border-radius:4px;padding:5px;max-width:100%}
 #app{position:relative;width:var(--appW,100vw);height:var(--appH,100dvh);display:grid;grid-template-rows:34px minmax(0,1fr) 16px;padding:6px;gap:6px;background:var(--green);border-radius:9px;box-shadow:0 12px 40px #0005}
 header{display:flex;gap:8px;align-items:center;min-width:0}
-header strong{font-size:15px;white-space:nowrap;color:var(--title);margin-right:auto}
+header strong{font-size:15px;white-space:nowrap;color:var(--title)}
 header button{padding:4px 10px}
+#turnStatus{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--parchLight)}
 #phaseLabel{font-size:11px;background:var(--greenDeep);color:var(--parchLight);padding:3px 8px;border-radius:5px;border:1px solid #8aa596}
 main{min-height:0;display:grid;grid-template-columns:var(--boardW,minmax(0,1fr)) var(--sideW,292px);gap:6px}
 #playArea{display:grid;min-width:0;min-height:0;align-items:start}
