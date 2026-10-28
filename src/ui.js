@@ -53,7 +53,8 @@ async function loadRepoAssets(){let files=null;
  try{let r=await fetch('https://api.github.com/repos/'+REPO_NAME+'/git/trees/'+REPO_BRANCH+'?recursive=1',{cache:'no-store'});if(r.ok){let j=await r.json();files=j.tree.filter(t=>t.type==='blob'&&t.path.startsWith('assets/')).map(t=>t.path.slice(7))}}catch(e){}
  if(!files)files=typeof REPO_FILES!=='undefined'?REPO_FILES:[];
  files=files.filter(f=>/\.(png|jpe?g|webp|gif|svg|wav|mp3|ogg)$/i.test(f));let base=repoBase(),found={};
- await Promise.all(files.map(f=>new Promise(res=>{let url=base+f.split('/').map(encodeURIComponent).join('/');if(/\.(wav|mp3|ogg)$/i.test(f)){found[repoKey(f)]=url;return res()}let im=new Image();im.onload=()=>{found[repoKey(f)]=url;res()};im.onerror=()=>res();im.src=url})));
+ const LAZY=/^(city_cards|infection_cards|event_cards|role_cards)\/|(^|\/)(city_back|infection_back|role_back|actions_card)\./i;   // big card pictures load only when a card is shown
+ await Promise.all(files.map(f=>new Promise(res=>{let url=base+f.split('/').map(encodeURIComponent).join('/');if(/\.(wav|mp3|ogg)$/i.test(f)||LAZY.test(f)){found[repoKey(f)]=url;return res()}let im=new Image();im.onload=()=>{found[repoKey(f)]=url;res()};im.onerror=()=>res();im.src=url})));
  REPO=found;let n=Object.keys(found).length;REPO_STATUS=n?n+' graphics loaded from the GitHub repo ('+REPO_NAME+'/assets).':'Could not reach the GitHub repo; using the copies built into this file.';
  if(!Object.keys(ASSETS).length){$('assetStatus').textContent=REPO_STATUS;let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC)}render()}
 const BUILTIN={water:TOKENS.water,prevention:TOKENS.prevention,infection_rate:TOKENS.infection,outbreak:TOKENS.outbreak,railroad:TOKENS.rail};
@@ -178,10 +179,21 @@ async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{wh
 
 /* ---------- reveal & alert overlay ---------- */
 let fxQueue=[],fxTimer=null,fxCurrent=null,turnFlash=false;const MOVES=new Set(['carriage','train','ship','start']);
-function cardFace(k,landscape){let box=el('div',{className:'bigCard'+(landscape?' landscape':'')});let src=null;
- if(C[k])src=asset((landscape?'cards/infection/':'cards/player/')+slug(C[k].name));else if(EVENTS[k])src=asset('cards/events/'+slug(EVENTS[k]));else if(String(k).startsWith('epidemic'))src=asset('cards/epidemic');
- if(src){el('img',{src,alt:cardName(k)},box);return box}
- let color=C[k]?C[k].color:EVENTS[k]?'event':'epidemic';el('div',{className:'band '+color},box);el('div',{className:'kind',textContent:landscape?'Infection':C[k]?'City · '+C[k].color:EVENTS[k]?'Event':'Epidemic'},box);el('div',{className:'nm',textContent:cardName(k)},box);if(EVENTS[k])el('div',{className:'kind',textContent:EVENT_TEXT[k],style:'text-transform:none;letter-spacing:0;font-size:10px'},box);return box}
+// Card pictures: assets/city_cards/city_<name>, infection_cards/infection_<name>, event_cards/event_<name>.
+// A few file names differ from the city or event names (typos or shortened names), so they are listed here.
+const CARD_ALIAS={'ciudad-real':'cuidad-real'},INFECTION_ALIAS={'bilbao-bilbo':'bibao-bilbo','santiago-de-compostela':'santiage-de-compostela'};
+const EVENT_ART={government_mobilization:'gov-mobilizations',travel_day_night:'travel-day-and-night',when_plans_were_good:'when-plans-good'};
+function cardArt(k,landscape){
+ if(C[k]){let s=slug(C[k].name),names=[s];if(CARD_ALIAS[s])names.push(CARD_ALIAS[s]);if(landscape&&INFECTION_ALIAS[s])names.push(INFECTION_ALIAS[s]);
+  for(let n of names){let a=asset((landscape?'infection_cards/infection_':'city_cards/city_')+n);if(a)return a}
+  return asset((landscape?'cards/infection/':'cards/player/')+s)}
+ if(EVENTS[k])return asset('event_cards/event_'+(EVENT_ART[k]||k))||asset('cards/events/'+slug(EVENTS[k]));
+ if(String(k).startsWith('epidemic'))return asset('cards/epidemic');
+ return null}
+function genericFace(box,k,landscape){let color=C[k]?C[k].color:EVENTS[k]?'event':'epidemic';el('div',{className:'band '+color},box);el('div',{className:'kind',textContent:landscape?'Infection':C[k]?'City · '+C[k].color:EVENTS[k]?'Event':'Epidemic'},box);el('div',{className:'nm',textContent:cardName(k)},box);if(EVENTS[k])el('div',{className:'kind',textContent:EVENT_TEXT[k],style:'text-transform:none;letter-spacing:0;font-size:10px'},box)}
+function cardFace(k,landscape){let box=el('div',{className:'bigCard'+(landscape?' landscape':'')});let src=cardArt(k,landscape);
+ if(src){box.classList.add('art');let im=el('img',{src,alt:cardName(k)},box);im.onerror=()=>{im.remove();box.classList.remove('art');genericFace(box,k,landscape)};return box}
+ genericFace(box,k,landscape);return box}
 // ---------- prevented infections ----------
 function blockedNote(f,b){let box=el('div',{className:'blocked'},b);
  let all=f.blocked.reduce((a,x)=>a+x.n,0);
