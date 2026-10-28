@@ -3,7 +3,7 @@
 - Fixed: after a connection drop, a guest could come back as a second, new player while the old entry kept their seat. The host then controlled both players and the guest controlled nothing. Some browsers (private windows, some phones) cannot remember the guest's ID. The ID is now also kept in memory for the whole visit, and if it is lost anyway, a guest who rejoins with the same name as one player who is away is treated as that player.
 - A guest can now click "Take over" in the Online dialog on a seat whose player is away. A seat held by a connected player still cannot be taken.
 - A guest who controls no seat sees a message telling them to open Online and take one.
-- Your card artwork is now used in the popups: city cards when a player draws, infection cards when cities are infected, and event cards. Pictures load only when shown, so the page still opens quickly. File names with typos (cuidad-real, bibao-bilbo, santiage-de-compostela) are handled, no renaming needed. There is no epidemic card art yet, so epidemics show the city's infection card plus a plain epidemic card.
+- Your card artwork is now used in the popups: city cards when a player draws, infection cards when cities are infected, and event cards. Pictures load only when shown, so the page still opens quickly. File names with typos (cuidad-real, bibao-bilbo, santiage-de-compostela) are handled, no renaming needed. The new Epidemic card is shown alongside the city's infection card when an epidemic happens.
 
 # v0.10.4
 

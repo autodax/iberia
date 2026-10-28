@@ -53,7 +53,7 @@ async function loadRepoAssets(){let files=null;
  try{let r=await fetch('https://api.github.com/repos/'+REPO_NAME+'/git/trees/'+REPO_BRANCH+'?recursive=1',{cache:'no-store'});if(r.ok){let j=await r.json();files=j.tree.filter(t=>t.type==='blob'&&t.path.startsWith('assets/')).map(t=>t.path.slice(7))}}catch(e){}
  if(!files)files=typeof REPO_FILES!=='undefined'?REPO_FILES:[];
  files=files.filter(f=>/\.(png|jpe?g|webp|gif|svg|wav|mp3|ogg)$/i.test(f));let base=repoBase(),found={};
- const LAZY=/^(city_cards|infection_cards|event_cards|role_cards)\/|(^|\/)(city_back|infection_back|role_back|actions_card)\./i;   // big card pictures load only when a card is shown
+ const LAZY=/^(city_cards|infection_cards|event_cards|role_cards)\/|(^|\/)(city_back|infection_back|role_back|actions_card|epidemia_card)\./i;   // big card pictures load only when a card is shown
  await Promise.all(files.map(f=>new Promise(res=>{let url=base+f.split('/').map(encodeURIComponent).join('/');if(/\.(wav|mp3|ogg)$/i.test(f)||LAZY.test(f)){found[repoKey(f)]=url;return res()}let im=new Image();im.onload=()=>{found[repoKey(f)]=url;res()};im.onerror=()=>res();im.src=url})));
  REPO=found;let n=Object.keys(found).length;REPO_STATUS=n?n+' graphics loaded from the GitHub repo ('+REPO_NAME+'/assets).':'Could not reach the GitHub repo; using the copies built into this file.';
  if(!Object.keys(ASSETS).length){$('assetStatus').textContent=REPO_STATUS;let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC)}render()}
@@ -188,7 +188,7 @@ function cardArt(k,landscape){
   for(let n of names){let a=asset((landscape?'infection_cards/infection_':'city_cards/city_')+n);if(a)return a}
   return asset((landscape?'cards/infection/':'cards/player/')+s)}
  if(EVENTS[k])return asset('event_cards/event_'+(EVENT_ART[k]||k))||asset('cards/events/'+slug(EVENTS[k]));
- if(String(k).startsWith('epidemic'))return asset('cards/epidemic');
+ if(String(k).startsWith('epidemic'))return asset('tokens/epidemia_card')||asset('cards/epidemic');
  return null}
 function genericFace(box,k,landscape){let color=C[k]?C[k].color:EVENTS[k]?'event':'epidemic';el('div',{className:'band '+color},box);el('div',{className:'kind',textContent:landscape?'Infection':C[k]?'City · '+C[k].color:EVENTS[k]?'Event':'Epidemic'},box);el('div',{className:'nm',textContent:cardName(k)},box);if(EVENTS[k])el('div',{className:'kind',textContent:EVENT_TEXT[k],style:'text-transform:none;letter-spacing:0;font-size:10px'},box)}
 function cardFace(k,landscape){let box=el('div',{className:'bigCard'+(landscape?' landscape':'')});let src=cardArt(k,landscape);
