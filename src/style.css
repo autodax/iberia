@@ -198,8 +198,8 @@ header #onlineButton.live{background:var(--accent);color:var(--parchLight);borde
 
 #cardPreview{position:fixed;right:384px;top:50%;transform:translateY(-50%);z-index:60;pointer-events:none;filter:drop-shadow(0 8px 22px rgba(0,0,0,.55));text-align:center}
 #cardPreview.pinned{pointer-events:auto}
-#cardPreview .bigCard.art{width:clamp(220px,46vh,380px)}
-#cardPreview .prevText{max-width:340px;margin-top:6px;padding:6px 10px;background:var(--parchLight);border-radius:6px;font-size:13px;color:var(--ink);text-align:left}
+#cardPreview .bigCard.art{width:clamp(154px,32vh,266px)}
+#cardPreview .prevText{max-width:240px;font-size:12px;margin-top:6px;padding:6px 10px;background:var(--parchLight);border-radius:6px;font-size:13px;color:var(--ink);text-align:left}
 .roleLink{cursor:help}
 .deckArt{pointer-events:none}
 
@@ -213,3 +213,5 @@ header #onlineButton.live{background:var(--accent);color:var(--parchLight);borde
 #cubeSupply,#researchStatus{justify-content:flex-end}
 #cubeSupply .lbl,#researchStatus .lbl{margin-right:auto}
 #pieces image.treatable:hover{opacity:.75}
+
+#cityList .cube-red,#cubeSupply .cube-red,.chipCube.cube-red{filter:saturate(.9) brightness(1.15)}
