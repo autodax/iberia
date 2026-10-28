@@ -24,7 +24,7 @@ function shuffle(s,a){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor
 function hash(t){let h=2166136261;for(let c of String(t)){h=Math.imul(h^c.charCodeAt(0),16777619)}return h>>>0}
 function cardName(k){return C[k]?C[k].name:EVENTS[k]||(String(k).startsWith('epidemic')?'Epidemic':k)}
 function roleName(r){return ROLES[r]||r}
-function playerLabel(s,i){return s.players[i].name+' ('+roleName(s.players[i].role)+')'}
+function playerLabel(s,i){return roleName(s.players[i].role)}
 
 function initial(seed='iberia',difficulty=4,roles=['sailor','agronomist']){
  requireRule([4,5,6].includes(difficulty),'Difficulty must be 4, 5 or 6');

@@ -8,7 +8,7 @@ async def main():
     b=await p.chromium.launch(executable_path=__import__('os').environ.get('CHROMIUM') or None)
     for W,H in [(1280,720),(1366,768),(1440,900),(1920,1080),(1024,768)]:
       pg=await b.new_page(viewport={'width':W,'height':H});pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:m.type=='error' and errs.append(m.text))
-      await pg.goto(F);await pg.wait_for_timeout(300)
+      await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300)
       sc=await pg.evaluate("[document.documentElement.scrollHeight<=innerHeight+1,document.documentElement.scrollWidth<=innerWidth+1]")
       ok(all(sc),f'{W}x{H} no page scroll at setup')
       await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate('resetFx()')
@@ -20,12 +20,12 @@ async def main():
       await pg.screenshot(path=f'/tmp/shot_{W}x{H}.png')
       await pg.close()
     # repo graphics are the default
-    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.wait_for_function("Object.keys(REPO).length>0",timeout=20000)
+    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_function("Object.keys(REPO).length>0",timeout=20000)
     ok(await pg.evaluate("Object.keys(REPO).length>=17&&asset('tokens/cube-red')===REPO['tokens/cube-red']&&asset('tokens/hospital-blue').startsWith('https://')"),'repo graphics used by default: '+str(await pg.evaluate("Object.keys(REPO).length")))
     ok(await pg.evaluate("document.getElementById('assetStatus').textContent.includes('GitHub repo')"),'graphics status shows repo')
     await pg.close()
     # card reveals last a few seconds, then close on their own
-    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.wait_for_timeout(300)
+    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300)
     await pg.evaluate("queueFx([{kind:'infection',city:'c22'}])");await pg.wait_for_timeout(900)
     ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='infection'&&!!document.querySelector('#fx .fxBar')"),'infection reveal still showing after 0.9 s at Fast, with timer bar')
     await pg.keyboard.press('Enter');await pg.wait_for_timeout(100)
@@ -35,7 +35,7 @@ async def main():
     ok(await pg.evaluate("$('hands').closest('aside')!==null"),'hands are in the right-hand column')
     await pg.close()
     # cubes appear after the alert closes, flying in
-    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F);await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate('resetFx()')
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate('resetFx()')
     await pg.evaluate("(()=>{let s=CP(state);s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;state=s;recompute();render()})()")
     cid=await pg.evaluate("state.infectionDeck[0]");shown=f"COLORS.reduce((a,k)=>a+(cubeView||state.cubes)['{cid}'][k],0)";real=f"COLORS.reduce((a,k)=>a+state.cubes['{cid}'][k],0)"
     b0=await pg.evaluate(real);await pg.evaluate("perform({type:'infect'})");await pg.wait_for_timeout(400)
@@ -46,12 +46,12 @@ async def main():
     ok(await pg.evaluate(f"{shown}==={real}&&cubeView===null&&$('flyers').children.length===0"),'cube lands and the board matches the game state')
     await pg.close()
     # supply icons and rules links
-    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.wait_for_timeout(400)
+    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(400)
     ok(await pg.evaluate("[...document.querySelectorAll('#resources img')].filter(i=>!i.hidden&&i.getAttribute('src')).length>=12"),'supply icons shown (4 counters, 4 cubes, 4 research)')
     ok(await pg.evaluate("$('rulesLink').target==='_blank'&&$('rulesLink').href.endsWith('docs/Iberia_rulebook.pdf')&&$('guideLink').href.endsWith('docs/Guide.pdf')"),'Rules and Guide open in a new window')
     await pg.close()
     # undo
-    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F);await pg.wait_for_timeout(300)
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300)
     await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate('resetFx()')
     ok(await pg.evaluate("$('undo').hidden"),'undo hidden at start of turn (start reveals hands)')
     c0=await pg.evaluate("state.players[state.active].city")
@@ -80,7 +80,7 @@ async def main():
     pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)))
     await pg.goto(F)
     # new 4-player game with nurse etc via engine (UI menu path tested separately)
-    await pg.click('#menuButton');await pg.click('.choiceGroup[data-for=playerCount] [data-v="4"]');await pg.wait_for_timeout(100)
+    await pg.evaluate("roleChoice=['sailor','agronomist','railwayman','politician','nurse']");await pg.click('#menuButton');await pg.click('.choiceGroup[data-for=playerCount] [data-v="4"]');await pg.wait_for_timeout(100)
     n=await pg.evaluate("document.querySelectorAll('#roleFields select').length");ok(n==4,'4 role selectors')
     await pg.click('.choiceGroup[data-for=role2] [data-v="nurse"]');await pg.click('.choiceGroup[data-for=role3] [data-v="scientist"]')
     await pg.click('#newGame');await pg.wait_for_selector('#choiceDialog[open]');await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(200)
@@ -197,7 +197,7 @@ async def main():
     ok(len(seeds)==3,'each page load gets a new random seed '+str(seeds))
     async def newgame(seed=''):
         await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close())")
-        await pg.evaluate("s=>{$('seed').value=s;$('newGame').click()}",seed);await pg.wait_for_selector('#choiceDialog[open]');await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(200)
+        await pg.evaluate("s=>{roleChoice=['sailor','agronomist','railwayman','politician','nurse'];$('seed').value=s;$('newGame').click()}",seed);await pg.wait_for_selector('#choiceDialog[open]');await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(200)
         return await pg.evaluate("[state.seed,state.eventsInGame.join(),state.players.map(p=>p.hand.join('/')).join(';')]")
     a=await newgame();b2=await newgame()
     ok(a[0]!=b2[0] and (a[1]!=b2[1] or a[2]!=b2[2]),'New game with a blank seed deals differently')
@@ -267,6 +267,20 @@ async def main():
         if await pg.evaluate("$('choiceDialog').open"):await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(400)
         ok(await pg.evaluate("a=>state.players[state.active].city===a[0]&&state.actions===a[1]-1",[to,n0]),'one click on a destination button moves')
     else: ok(True,'carriage destination test skipped (single option)')
+    # v0.10.5 additions: random roles, role-based labels, red outline, click a cube to treat, cube icons on buttons
+    seen=set()
+    for _ in range(6):
+        await pg.reload();await pg.wait_for_timeout(200);seen.add(await pg.evaluate("state.players.map(p=>p.role).join()"))
+    ok(len(seen)>=3,'roles differ between page loads '+str(len(seen)))
+    await pg.evaluate("state=initial('lab',4,['sailor','agronomist']);render()");await pg.click('#begin');await pg.wait_for_timeout(300);await pg.evaluate('resetFx();mode="";render()')
+    ok(await pg.evaluate("!/Player \\d/.test(document.body.innerText.replace(/Player (deck|cards)/gi,''))"),'no Player 1/2 labels')
+    ok(await pg.evaluate("getComputedStyle(document.querySelector('#hands .hand.active')).borderTopColor==='rgb(192, 48, 58)'"),'active player outlined in red')
+    await pg.evaluate("let q=state.players[state.active],a=state.cubes[q.city].red;state.cubes[q.city].red=2;state.supply.red-=2-a;recompute();render()");await pg.wait_for_timeout(200)
+    n=await pg.evaluate("document.querySelectorAll('#pieces image.treatable').length");ok(n>=1,'cubes in your city are clickable')
+    await pg.evaluate("document.querySelector('#pieces image.cube-red.treatable').dispatchEvent(new MouseEvent('click',{bubbles:true}))");await pg.wait_for_timeout(500)
+    ok(await pg.evaluate("state.cubes[state.players[state.active].city].red===1&&state.actions===3"),'clicking a cube on the map treats it')
+    await pg.evaluate("mode='treat';render()");await pg.wait_for_timeout(200)
+    ok(await pg.evaluate("document.querySelectorAll('.choiceGroup[data-for=disease] .chip img, .choiceGroup[data-for=disease] .chip i').length>=1&&!/red|blue|yellow|black/.test(document.querySelector('.choiceGroup[data-for=disease]').innerText)"),'disease buttons show cubes, not color names')
     await pg.click('#muteButton');ok(await pg.evaluate("!sndPrefs.on"),'mute again')
     await b.close()
 asyncio.run(main())

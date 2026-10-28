@@ -1,3 +1,19 @@
+# v0.10.5
+
+- Fixed: after a connection drop, a guest could come back as a second, new player while the old entry kept their seat. The host then controlled both players and the guest controlled nothing. Some browsers (private windows, some phones) cannot remember the guest's ID. The ID is now also kept in memory for the whole visit, and if it is lost anyway, a guest who rejoins with the same name as one player who is away is treated as that player.
+- A guest can now click "Take over" in the Online dialog on a seat whose player is away. A seat held by a connected player still cannot be taken.
+- A guest who controls no seat sees a message telling them to open Online and take one.
+- Roles are now random in every new game, in the offline menu and in a new online room (you can still pick roles by hand).
+- Players are named by their role, plus the name typed in the Online window when playing online (for example "Sam · Sailor"). "Player 1" and "Player 2" are gone, since the first player is not always player 1.
+- The active player now has a red outline, and the turn pulse is gone.
+- Hover over a card in a hand to see the full card. Click a player's name to see their role card (click anywhere to close it).
+- The Infection and Player decks on the board now show your card backs with the number of cards left, and the discard piles show the top card.
+- Cubes now show as pictures on the action buttons (Treat disease, destination cities, Rural Doctor's extra cube) instead of color names and counts.
+- Click a cube on the map in your own city to treat it (the Rural Doctor then picks the extra cube as before).
+- The cube and research rows in the summary are lined up on the right, and the prevention token sits in the middle of its region and is a little larger.
+- Undo now works online: the player whose turn it is asks, and the host agrees. The host can undo without asking.
+- Your card artwork is now used in the popups: city cards when a player draws, infection cards when cities are infected, and event cards. Pictures load only when shown, so the page still opens quickly. File names with typos (cuidad-real, bibao-bilbo, santiage-de-compostela) are handled, no renaming needed. The new Epidemic card is shown alongside the city's infection card when an epidemic happens.
+
 # v0.10.4
 
 - The game now uses the deployed Cloudflare relay (https://iberia-relayer.sdeban.workers.dev) by default, so online play works on phone data and strict networks without any setup. The backup relay for your own computer still works: paste its address under Online > Relay server, and the invite link carries it to friends.

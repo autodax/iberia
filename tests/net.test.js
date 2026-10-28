@@ -8,7 +8,7 @@ const {C,transact,initial,hash,fullHands,CP}=E;
 
 let pass=0,fail=0;const failures=[];
 function ok(v,m){if(v)pass++;else{fail++;failures.push(m)}}
-async function group(name,f){try{await f()}catch(e){fail++;failures.push(name+': '+(e&&e.stack||e).toString().split('\n').slice(0,4).join(' | '))}}
+async function group(name,f){if(process.env.VERBOSE)console.log('GROUP '+name+' @'+Math.round(process.uptime())+'s');try{await f()}catch(e){fail++;failures.push(name+': '+(e&&e.stack||e).toString().split('\n').slice(0,4).join(' | '))}}
 const tick=(ms=0)=>new Promise(r=>setTimeout(r,ms));
 async function settle(){for(let i=0;i<8;i++)await tick(0)}
 
@@ -33,16 +33,17 @@ function makeNetwork(){
 /* ---------- one simulated page ---------- */
 const VERSION={ui:'test',engine:E.VERSION,map:'m'};
 function makePage(nw,label,opts={}){
-  const page={label,state:initial('placeholder',4,['sailor','agronomist']),applied:0,asked:[],answer:true,starts:0,loads:0,store:new Map(),tok:new Map()};
+  const page={label,state:initial('placeholder',4,['sailor','agronomist']),applied:0,asked:[],hist:[],answer:true,starts:0,loads:0,store:new Map(),tok:new Map()};
   const mem=m=>({getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k)});
   const sum=()=>hash(JSON.stringify({...page.state,fx:undefined})).toString(16);
   const hooks={
     getState:()=>page.state,
     loadState:s=>{page.state=s;page.loads++},
-    apply:cmd=>{let n;try{n=transact(page.state,cmd)}catch(e){return {ok:false,error:e.needChoice?'Incomplete choices':e.message}}page.state=n;page.applied++;return {ok:true,sum:sum()}},
+    apply:cmd=>{let n;try{n=transact(page.state,cmd)}catch(e){return {ok:false,error:e.needChoice?'Incomplete choices':e.message}}page.hist.push(page.state);page.state=n;page.applied++;return {ok:true,sum:sum()}},
     checksum:sum,
     onStart:g=>{page.state=initial(g.seed,g.difficulty,g.roles);page.starts++;page.game=g},
-    ask:async q=>{page.asked.push(q);return page.answer}
+    ask:async q=>{page.asked.push(q);return page.answer},
+    undo:()=>{if(!page.hist.length)return null;page.state=page.hist.pop();return 'move'},undoLabel:()=>page.hist.length?'move':null
   };
   page.sum=sum;
   page.net=createNet({transport:opts.transport||nw.transport(),hooks,version:opts.version||VERSION,storage:opts.storage||mem(page.store),tokenStore:mem(page.tok),newSeed:()=>opts.seed||('seed'+Math.random().toString(36).slice(2,6)),heartbeat:false});
@@ -224,6 +225,42 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     ok(hash(JSON.stringify({...back.state,fx:undefined})).toString(16)===host.sum(),'and the current state');
   });
 
+  await group('a guest whose browser cannot save its ID still keeps its seat when reconnecting',async()=>{
+    const nw=makeNetwork();const {host,guests,code}=await startRoom(nw,1,{players:2});
+    // replace the guest page's ID storage with one that refuses to save (private windows, some phones)
+    const g=guests[0];
+    const broken=makePage(nw,'broken');
+    broken.net=createNet({transport:nw.transport(),hooks:{getState:()=>broken.state,loadState:s=>{broken.state=s},apply:cmd=>{try{broken.state=transact(broken.state,cmd)}catch(e){return {ok:false,error:e.message}}return {ok:true,sum:hash(JSON.stringify({...broken.state,fx:undefined})).toString(16)}},checksum:()=>0,onStart:gm=>{broken.state=initial(gm.seed,gm.difficulty,gm.roles)},ask:async()=>true},version:VERSION,tokenStore:{getItem:()=>null,setItem:()=>{throw Error('storage blocked')},removeItem:()=>{}},newSeed:()=>'x',heartbeat:false});
+    await broken.net.join(code,'Brokie');await settle();
+    broken.net.claim(1);await settle();
+    const id=broken.net.myId;ok(host.net.lobby.seats[1]===id,'claimed a seat');
+    nw.dropAll();await tick(400);ok(broken.net.status!=='connected','drop noticed by the guest');
+    for(let i=0;i<40&&!(broken.net.status==='connected');i++)await tick(250);await tick(300);
+    ok(broken.net.status==='connected','guest reconnected');
+    ok(broken.net.myId===id,'same identity after reconnecting even though nothing could be saved');
+    ok(host.net.lobby.people.filter(p=>p.name.startsWith('Brokie')).length===1,'host sees one Brokie, not a duplicate');
+    ok(broken.net.mine(1),'guest still controls its seat');
+  });
+  await group('a seat held by an away player can be taken over by a connected guest',async()=>{
+    const nw=makeNetwork();const {host,guests,code}=await startRoom(nw,1,{players:2});
+    // a guest that can join once and never again, like someone whose phone went to sleep for good
+    let joins=0;const base=nw.transport();
+    const ghost=makePage(nw,'ghost',{transport:{host:base.host.bind(base),join:async c=>{if(++joins>1)throw Object.assign(Error('offline'),{code:'net'});return base.join(c)}}});
+    await ghost.net.join(code,'Ghost');await settle();
+    ghost.net.claim(0);await settle();
+    const gid=ghost.net.myId;ok(host.net.lobby.seats[0]===gid,'ghost holds seat 1');
+    nw.dropAll();await tick(500);
+    ok(host.net.lobby.people.find(p=>p.id===gid).connected===false,'host sees the ghost as away');
+    guests[0].net.claim(0);await tick(1500);   // the first guest reconnects after the same drop, then claims
+    for(let i=0;i<30&&host.net.lobby.seats[0]===gid;i++){guests[0].net.claim(0);await tick(300)}
+    ok(host.net.lobby.seats[0]===guests[0].net.myId,'a connected guest took the away player\'s seat');
+    ok(guests[0].net.mine(0),'and now controls it');
+  });
+  await group('a connected player\'s seat cannot be taken',async()=>{
+    const nw=makeNetwork();const {host,guests}=await startRoom(nw,2,{players:2});
+    guests[0].net.claim(0);await settle();guests[1].net.claim(0);await settle();
+    ok(host.net.lobby.seats[0]===guests[0].net.myId,'still held by the connected owner');
+  });
   await group('desync is detected and repaired',async()=>{
     const nw=makeNetwork();const {host,guests}=await startRoom(nw,1,{players:2});
     guests[0].net.claim(0);await settle();host.net.start();await settle();await hostStartsPlay(host);await settle();
@@ -289,6 +326,24 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     host.net.leave();await settle();ok(!host.net.active&&!host.net.savedHost(),'host leaving closes the room and forgets the snapshot');
   });
 
+  await group('online undo: the player whose turn it is asks, the host agrees',async()=>{
+    const nw=makeNetwork();const {host,guests}=await startRoom(nw,2,{players:3});
+    guests[0].net.claim(0);await settle();host.net.start();await settle();await hostStartsPlay(host);await settle();
+    const move=()=>{const p=host.state.players[host.state.active];return resolve(host.state,{type:'carriage',to:Object.keys(C).find(k=>transactOk(host.state,{type:'carriage',to:k}))})};
+    const transactOk=(st,c)=>{try{transact(st,resolve(st,c));return true}catch(e){return false}};
+    const before=host.sum();
+    let r=await guests[0].net.submit(move());ok(r.ok,'guest moves');await settle();
+    ok(host.state.actions===3&&allSame([host,...guests]),'move reached everyone');
+    ok(guests[1].net.undo&&!(await guests[1].net.undo()).ok,'a player who is not on turn cannot undo');
+    host.answer=false;r=await guests[0].net.undo();ok(!r.ok,'host can refuse the undo');ok(host.state.actions===3,'refused undo changes nothing');
+    host.answer=true;r=await guests[0].net.undo();await settle();
+    ok(r.ok,'host agrees');ok(host.state.actions===4&&host.sum()===before,'host state is back');ok(allSame([host,...guests]),'all pages show the same state again');
+    ok(host.asked.some(q=>/undo/i.test(q)),'host was asked');
+    r=await guests[0].net.submit(move());ok(r.ok,'play continues after an undo');await settle();ok(allSame([host,...guests]),'still in step');
+    r=await host.net.undo();await settle();ok(r.ok&&host.state.actions===4&&allSame([host,...guests]),'host can undo without asking');
+  });
+
   console.log(pass+' checks passed, '+fail+' failed');
   if(fail){console.log(failures.map(f=>' - '+f).join('\n'));process.exit(1)}
+  process.exit(0);
 })();
