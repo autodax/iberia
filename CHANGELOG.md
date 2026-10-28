@@ -1,3 +1,14 @@
+# v0.10.2
+
+- Online play over the internet: added relay (TURN) support. Phone data and many home, work and school networks block direct connections between browsers, which showed up as "Connecting…" followed by "No room found". The page now also tries a free shared relay, and uses your own free Metered relay if configured.
+- New "Test my connection" button in the Online dialog reports what the current network can do, and a "Relay settings" box for entering a Metered app name and API key (kept only in that browser).
+- The error for a room that exists but cannot be reached is now distinct from "No room found".
+- To build the relay settings into the page for everyone, fill in src/ice.json (see README).
+
+# v0.10.1
+
+- Removed the "Player's turn" banner. It could appear on top of the infection card popups. Card popups now always run their full course on their own. When they finish, the new active player's hand is highlighted instead.
+
 # v0.10.0
 
 - Online play. Menu bar → Online: one player hosts and shares a five-character room code (or an invite link); everyone else joins from their own browser. The game runs directly between browsers, with no game server and no account.

@@ -1,4 +1,4 @@
-# Pandemic Iberia browser prototype v0.10.0
+# Pandemic Iberia browser prototype v0.10.2
 Play the current version at https://autodax.github.io/iberia/. Every version stays playable at https://autodax.github.io/iberia/versions/ in any modern browser. Everything is inside that one file.
 
 - 2-5 players, all 7 standard roles, all 15 Events (random selection per the setup table).
@@ -14,3 +14,12 @@ Rebuild: `python3 build.py` (sources in `src/`). Tests: `node tests/engine.test.
 - `docs/Iberia_rulebook.pdf`: the game manual.
 - `docs/Guide.pdf`: the rules summary, including the Events and Roles glossaries.
 - `docs/RULINGS.md`: how the prototype interprets unclear rules.
+
+
+## Making online play work on any network (relay setup)
+
+Players connect browser to browser. Some networks (phone data, many work and school networks) block that, and a relay (TURN) server is needed. The page already tries a free shared relay. For something dependable:
+
+1. Create a free account at https://www.metered.ca and make an app. Note its name (the part before `.metered.live`) and its API key.
+2. Easiest: each player opens Online > Relay settings, enters the app name and key, and presses Save. This stays in that browser only.
+3. Or build it in for everyone: put the app name and key in `src/ice.json`, run `python3 build.py`, and commit. Note the key becomes visible to anyone who views the page source. Metered's free tier is limited, so for a private game among friends that is fine, but do not reuse a key you care about.

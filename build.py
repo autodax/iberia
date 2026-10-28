@@ -18,9 +18,10 @@ TOKENS={'water':T('purification'),'prevention':T('prevention'),'infection':T('in
 board='data:image/jpeg;base64,'+base64.b64encode(open('assets/board.jpeg','rb').read()).decode()
 eng=d('src/engine.js').replace("if(typeof module!=='undefined')","if(false)")
 mp=d('src/map.js').replace('if(typeof module!=="undefined")','if(false)')
+ice='const NET_ICE='+json.dumps(json.loads(d('src/ice.json')))+';'
 net=d('src/net.js').replace("if(typeof module!=='undefined')","if(false)")
 REPO_FILES=sorted(os.path.relpath(p,'assets').replace(os.sep,'/') for p in glob.glob('assets/**/*',recursive=True) if os.path.isfile(p))
-js=mp+'\n'+net+'\nconst REPO_FILES='+json.dumps(REPO_FILES)+';\nconst TOKENS='+json.dumps(TOKENS)+';\nconst EMBED='+json.dumps(EMBED)+';\n'+eng+'\n'+d('src/ui.js')
+js=mp+'\n'+ice+'\n'+net+'\nconst REPO_FILES='+json.dumps(REPO_FILES)+';\nconst TOKENS='+json.dumps(TOKENS)+';\nconst EMBED='+json.dumps(EMBED)+';\n'+eng+'\n'+d('src/ui.js')
 html=d('src/index.html').replace('/*CSS*/',d('src/style.css')).replace('/*BOARD*/',board).replace('/*PEERJS*/',d('src/vendor/peerjs.min.js').replace('</script','<\\/script')).replace('/*JS*/',js.replace('</script','<\\/script'))
 ver=re.search(r"UI_VERSION='([\d.]+)'",d('src/ui.js')).group(1)
 os.makedirs('versions',exist_ok=True)
