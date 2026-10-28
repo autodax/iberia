@@ -16,6 +16,7 @@ const NET_PROTO=1,NET_MAX_PEOPLE=8,NET_HOST_ID='host',NET_ACK_TIMEOUT=20000,NET_
 const NET_CODE_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I so a code read aloud is hard to get wrong
 const NET_SAVE_KEY='iberia-online-host';
 
+function netShuffleRoles(){const pool=['sailor','agronomist','railwayman','politician','nurse','scientist','rural_doctor'];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,5)}
 function netRandom(n,chars){let out='',a=new Uint32Array(n);try{crypto.getRandomValues(a)}catch(e){for(let i=0;i<n;i++)a[i]=Math.random()*4294967296}for(let i=0;i<n;i++)out+=chars[a[i]%chars.length];return out}
 function netNewCode(){return netRandom(5,NET_CODE_CHARS)}
 function netNormalizeCode(t){return String(t||'').toUpperCase().split('').filter(c=>NET_CODE_CHARS.includes(c)).join('')}
@@ -41,7 +42,7 @@ function createNet(cfg){
   let people=new Map();      // host only: id -> {id,name,token,conn,connected,lastSeen}
   let idCounter=0,hostHandle=null,guestConn=null,leaving=false,fatal=false,gen=0,awaitingSync=false,lastHeard=0;
   let timers=[],pending=new Map(),cidCounter=0,askCounter=0,asks=new Map(),reconnecting=false;
-  const lobby={phase:'lobby',settings:{players:2,difficulty:4,roles:['sailor','agronomist','railwayman','politician','nurse']},seats:[null,null]};
+  const lobby={phase:'lobby',settings:{players:2,difficulty:4,roles:netShuffleRoles()},seats:[null,null]};
 
   /* ---------- small helpers ---------- */
   function emit(){for(const f of listeners.slice()){try{f(net)}catch(e){console.error(e)}}}
@@ -174,6 +175,7 @@ function createNet(cfg){
         const r=hostRun(p.id,m.cmd);
         send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error});return;
       }
+      case 'undo':return hostUndo(p.id).then(r=>send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error}));
       case 'ask':return hostAsk(p.id,m.seat,m.q).then(ok=>send(conn,{t:'askresult',id:m.id,ok}));
       case 'answer':{const a=asks.get(m.id);if(a&&a.owner===p.id){asks.delete(m.id);finishAsk(a,!!m.ok)}return}
     }
@@ -216,6 +218,32 @@ function createNet(cfg){
     net.seq++;broadcast({t:'applied',seq:net.seq,cmd,sum:r.sum,by:pid});persist();emit();
     return {ok:true};
   }
+
+  // Take back the last action (host only does the work). A guest may ask when it is their turn; the host must agree.
+  async function hostUndo(pid){
+    if(!H.undoLabel||!H.undo)return {ok:false,error:'Undo is not available'};
+    const st=H.getState();
+    if(pid!==NET_HOST_ID&&!canControl(pid,st.active))return {ok:false,error:'Only the player whose turn it is can undo'};
+    const before=H.undoLabel();if(!before)return {ok:false,error:'Nothing to undo'};
+    if(pid!==NET_HOST_ID){
+      const who=(people.get(pid)||{}).name||'A player';
+      const yes=await Promise.resolve(H.ask(who+' wants to undo: '+before+'. Allow it?')).catch(()=>false);
+      if(!yes)return {ok:false,error:'The host did not allow the undo'};
+      if(H.undoLabel()!==before)return {ok:false,error:'The game moved on, so the undo was cancelled'};
+    }
+    const done=H.undo();if(!done)return {ok:false,error:'Cannot undo right now. Wait a moment and try again'};
+    net.seq++;broadcast({t:'sync',seq:net.seq,state:H.getState()});persist();emit();
+    return {ok:true,label:done};
+  }
+  net.undo=function(){
+    if(!net.active)return Promise.resolve({ok:false,error:'Not in an online game'});
+    if(net.isHost)return hostUndo(NET_HOST_ID);
+    if(!guestConn)return Promise.resolve({ok:false,error:'Not connected to the host'});
+    return new Promise(resolve=>{
+      const cid=++cidCounter,timer=setTimeout(()=>{pending.delete(cid);resolve({ok:false,error:'The host did not answer'})},NET_ASK_TIMEOUT+5000);
+      pending.set(cid,{resolve,timer});send(guestConn,{t:'undo',cid});
+    });
+  };
 
   // Host-only lobby controls
   net.setSettings=function(part){

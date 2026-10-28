@@ -33,16 +33,17 @@ function makeNetwork(){
 /* ---------- one simulated page ---------- */
 const VERSION={ui:'test',engine:E.VERSION,map:'m'};
 function makePage(nw,label,opts={}){
-  const page={label,state:initial('placeholder',4,['sailor','agronomist']),applied:0,asked:[],answer:true,starts:0,loads:0,store:new Map(),tok:new Map()};
+  const page={label,state:initial('placeholder',4,['sailor','agronomist']),applied:0,asked:[],hist:[],answer:true,starts:0,loads:0,store:new Map(),tok:new Map()};
   const mem=m=>({getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k)});
   const sum=()=>hash(JSON.stringify({...page.state,fx:undefined})).toString(16);
   const hooks={
     getState:()=>page.state,
     loadState:s=>{page.state=s;page.loads++},
-    apply:cmd=>{let n;try{n=transact(page.state,cmd)}catch(e){return {ok:false,error:e.needChoice?'Incomplete choices':e.message}}page.state=n;page.applied++;return {ok:true,sum:sum()}},
+    apply:cmd=>{let n;try{n=transact(page.state,cmd)}catch(e){return {ok:false,error:e.needChoice?'Incomplete choices':e.message}}page.hist.push(page.state);page.state=n;page.applied++;return {ok:true,sum:sum()}},
     checksum:sum,
     onStart:g=>{page.state=initial(g.seed,g.difficulty,g.roles);page.starts++;page.game=g},
-    ask:async q=>{page.asked.push(q);return page.answer}
+    ask:async q=>{page.asked.push(q);return page.answer},
+    undo:()=>{if(!page.hist.length)return null;page.state=page.hist.pop();return 'move'},undoLabel:()=>page.hist.length?'move':null
   };
   page.sum=sum;
   page.net=createNet({transport:opts.transport||nw.transport(),hooks,version:opts.version||VERSION,storage:opts.storage||mem(page.store),tokenStore:mem(page.tok),newSeed:()=>opts.seed||('seed'+Math.random().toString(36).slice(2,6)),heartbeat:false});
@@ -323,6 +324,23 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     ok(host.net.lobby.seats[0]===null,'seat freed');ok(host.net.lobby.people.length===2,'person removed');
     ok(!guests[0].net.active,'guest is out');
     host.net.leave();await settle();ok(!host.net.active&&!host.net.savedHost(),'host leaving closes the room and forgets the snapshot');
+  });
+
+  await group('online undo: the player whose turn it is asks, the host agrees',async()=>{
+    const nw=makeNetwork();const {host,guests}=await startRoom(nw,2,{players:3});
+    guests[0].net.claim(0);await settle();host.net.start();await settle();await hostStartsPlay(host);await settle();
+    const move=()=>{const p=host.state.players[host.state.active];return resolve(host.state,{type:'carriage',to:Object.keys(C).find(k=>transactOk(host.state,{type:'carriage',to:k}))})};
+    const transactOk=(st,c)=>{try{transact(st,resolve(st,c));return true}catch(e){return false}};
+    const before=host.sum();
+    let r=await guests[0].net.submit(move());ok(r.ok,'guest moves');await settle();
+    ok(host.state.actions===3&&allSame([host,...guests]),'move reached everyone');
+    ok(guests[1].net.undo&&!(await guests[1].net.undo()).ok,'a player who is not on turn cannot undo');
+    host.answer=false;r=await guests[0].net.undo();ok(!r.ok,'host can refuse the undo');ok(host.state.actions===3,'refused undo changes nothing');
+    host.answer=true;r=await guests[0].net.undo();await settle();
+    ok(r.ok,'host agrees');ok(host.state.actions===4&&host.sum()===before,'host state is back');ok(allSame([host,...guests]),'all pages show the same state again');
+    ok(host.asked.some(q=>/undo/i.test(q)),'host was asked');
+    r=await guests[0].net.submit(move());ok(r.ok,'play continues after an undo');await settle();ok(allSame([host,...guests]),'still in step');
+    r=await host.net.undo();await settle();ok(r.ok&&host.state.actions===4&&allSame([host,...guests]),'host can undo without asking');
   });
 
   console.log(pass+' checks passed, '+fail+' failed');
