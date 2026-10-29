@@ -1,6 +1,6 @@
 # v0.10.7
 
-- New railroads fly in like cubes and land with a choo-choo sound. A leftover second-track choice no longer draws a stray dashed turquoise line between distant cities.
+- New railroads fly in like cubes and land with a soft steam-engine chuffing sound. A leftover second-track choice no longer draws a stray dashed turquoise line between distant cities.
 - "End actions", "Resolve Epidemic" and "Infect next city" wait until the popups on screen have finished, so cards are always drawn before infections are shown.
 - A popup tells the player when their hand is over the limit and how many cards to discard.
 - Infection popups show "Infect <city>" above the card, in large letters, like the card-draw popup.
