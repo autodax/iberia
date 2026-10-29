@@ -264,7 +264,7 @@ aside .hand.idle:hover{opacity:.9}
 .fxWho svg{filter:drop-shadow(0 2px 4px #0008)}
 
 /* The active player's hand and the available actions share one dark green box on top; the others sit below, dimmed. */
-#turnBox{border:3px solid #1f5a3a;border-radius:9px;box-shadow:0 0 8px rgba(31,90,58,.4);background:#e8d8b2;padding:6px;display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
+#turnBox{--pc:#1f5a3a;border:4px solid var(--pc);border-radius:9px;box-shadow:0 0 0 1px rgba(0,0,0,.55),0 0 9px color-mix(in srgb,var(--pc) 55%,transparent);background:#e8d8b2;padding:6px;display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
 #turnBox[hidden]{display:none}
 #turnBox .hand.active,aside #turnBox .hand.active{border:none;box-shadow:none;background:transparent;padding:2px}
 #turnBox #actionArea{border-top:1px solid rgba(31,90,58,.35);padding-top:6px}

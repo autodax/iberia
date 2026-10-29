@@ -1,5 +1,6 @@
 # v0.10.7
 
+- The active player's box is outlined in their pawn color, and "actions left" appears only once the new turn has started (after the turn chime).
 - The Time Traveller sees the next infection cards as small thumbnails of the real cards, side by side. The marker alert label fits its text and is centered.
 - The board is bigger: the buttons, version number and game info moved into the green strip under the board, and the side panel is a little narrower. Nothing was made smaller.
 - The "turn" row is gone: the number of actions left is shown in the active hand's title.
