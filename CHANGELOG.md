@@ -1,5 +1,8 @@
 # v0.10.5
 
+- Cards in each hand are sorted by color, the color you hold most of first (Events last, oldest city first within a color).
+- The turn change now waits a little longer, then shows a short "<role>'s turn" popup with the bell.
+- Softer, less hissy card-draw sound.
 - A soft bell plays when a new turn begins (after the infection animation and pause).
 - Sound files are now fetched with a version tag so a changed sound is not hidden by the browser's old copy.
 - The next player's turn now waits until the last infection animation (cubes landing) has finished, then a short pause. Until then the previous player stays highlighted and actions are locked.

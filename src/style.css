@@ -217,3 +217,8 @@ header #onlineButton.live{background:var(--accent);color:var(--parchLight);borde
 
 #cityList .cube-red,#cubeSupply .cube-red,.chipCube.cube-red{filter:saturate(.9) brightness(1.15)}
 #cardSizeVal{margin-left:6px;font-size:12px}
+
+#turnPop{position:absolute;left:50%;top:14%;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:10px;padding:10px 22px 10px 16px;background:var(--parchLight);border:2px solid var(--pc,#4c6b5c);border-left-width:10px;border-radius:8px;font-size:20px;font-weight:600;line-height:1.2;color:var(--ink);box-shadow:0 6px 22px rgba(0,0,0,.4);pointer-events:none;animation:turnPopIn 2.2s ease-in-out forwards}
+#turnPop .tp svg{display:block}
+@keyframes turnPopIn{0%{opacity:0;transform:translate(-50%,-10px)}12%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){#turnPop{animation:none}}
