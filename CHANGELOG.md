@@ -1,5 +1,6 @@
 # v0.10.7
 
+- The "turn" row is gone: the number of actions left is shown in the active hand's title.
 - The sidebar shows the active player first: hand and available actions together in one dark green box, with the other players dimmed below. Cards in the Time Traveller's "Infection cards this turn" row have more room.
 - Researching a disease plays a short fanfare and the microscope flies in like a cube. When the infection-rate or outbreak marker moves, rings and a label appear around it with a dramatic hit.
 - The Time Traveller's start-of-turn draw now appears after the "Time Traveller's turn" banner, not before it.

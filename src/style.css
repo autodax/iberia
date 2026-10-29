@@ -270,3 +270,7 @@ aside .hand.idle:hover{opacity:.9}
 #turnBox #actionArea{border-top:1px solid rgba(31,90,58,.35);padding-top:6px}
 .hand>.detail{margin-top:8px;padding:4px 4px 2px;line-height:2}
 .hand .detail .miniCard{display:inline-block;margin:4px 8px 4px 0;padding:5px 10px}
+#actionHeading{display:none}
+.actHead{justify-content:flex-end}
+.actHead:has(#undo[hidden]){display:none}
+.handTitle .turnState{font-weight:700;color:#1f5a3a;white-space:nowrap}
