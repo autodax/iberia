@@ -1,5 +1,7 @@
 # v0.10.7
 
+- A chain reaction of outbreaks shows one popup (with the whole chain) instead of one per city. Pawn and railroad animations, like the cube animations, start only after the popups are gone.
+- Railroads and the Civil Engineer now follow the curved printed connections (Barcelona–Girona, Madrid–Ciudad Real, Cartagena–Almería and others), and the railroad token sits in the middle of the line.
 - New railroads fly in like cubes and land with a soft steam-engine chuffing sound. A leftover second-track choice no longer draws a stray dashed turquoise line between distant cities.
 - "End actions", "Resolve Epidemic" and "Infect next city" wait until the popups on screen have finished, so cards are always drawn before infections are shown.
 - A popup tells the player when their hand is over the limit and how many cards to discard.

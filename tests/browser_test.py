@@ -117,7 +117,7 @@ async def main():
     ok(await pg.evaluate("!!document.querySelector('#fx .alert h3')&&document.querySelector('#fx .alert h3').textContent==='Epidemic'"),'epidemic alert')
     await pg.screenshot(path='/tmp/shot_epidemic.png')
     await pg.click('#fx');await pg.wait_for_timeout(400)
-    ok(await pg.evaluate("document.querySelector('#fx .alert h3')?.textContent.includes('Outbreak')"),'outbreak alert')
+    ok(await pg.evaluate("document.querySelector('#fx .alert h3')?.textContent.toLowerCase().includes('outbreak')"),'outbreak alert')
     await pg.wait_for_timeout(4000)
     ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='outbreak'"),'outbreak alert stays until clicked')
     ok(await pg.evaluate("!!document.querySelector('#fx .fxSkip button')"),'continue button shown')
@@ -221,7 +221,7 @@ async def main():
     if await pg.evaluate("state.phase==='setup'"):await pg.click('#begin');await pg.wait_for_timeout(300);await pg.evaluate('resetFx()')
     await pg.evaluate("""(()=>{resetFx();let s=state,id=s.infectionDeck[0],col=C[id].color,put=k=>{s.supply[col]-=3-s.cubes[k][col];s.cubes[k][col]=3};for(let w in s.water)s.water[w]=0;s.prevention=null;put(id);let n=ADJ[id][0];put(n);s.phase='infection';s.infectionRemaining=1;s.actions=0;render()})()""")
     await pg.evaluate("perform({type:'infect'})");await pg.wait_for_timeout(300)
-    ok(await pg.evaluate("for(let i=0;i<5&&!document.querySelector('#fx .alert.chain');i++)nextFx();!!document.querySelector('#fx .alert.chain .chainPath .step.now')"),'chain reaction alert')
+    ok(await pg.evaluate("for(let i=0;i<5&&!document.querySelector('#fx .alert.chain');i++)nextFx();!!document.querySelector('#fx .alert.chain .chainPath .step')"),'chain reaction alert')
     ok(await pg.evaluate("let seen=false;for(let i=0;i<12&&(fxCurrent||fxQueue.length);i++){if(document.querySelector('#fx .turnAlert'))seen=true;nextFx()}!seen&&!document.querySelector('#fx .turnAlert')&&/turn/.test($('actionHeading').textContent)"),'turn change shows no banner, heading updated')
     await pg.evaluate("resetFx()")
     # founding dates
