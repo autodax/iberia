@@ -1,5 +1,6 @@
 # v0.10.7
 
+- No phrase starts with a numeral any more: "Actions left: 3", "Cities: 9 · Cubes: 18", "Chain of 3 outbreaks", and so on. The yellow microscope sits 6 px further right.
 - The active player's box is outlined in their pawn color, and "actions left" appears only once the new turn has started (after the turn chime).
 - The Time Traveller sees the next infection cards as small thumbnails of the real cards, side by side. The marker alert label fits its text and is centered.
 - The board is bigger: the buttons, version number and game info moved into the green strip under the board, and the side panel is a little narrower. Nothing was made smaller.

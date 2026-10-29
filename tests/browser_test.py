@@ -116,7 +116,7 @@ async def main():
       await pg.click('#fx');await pg.wait_for_timeout(80)
     ok(await pg.evaluate("!!document.querySelector('#fx .alert h3')&&document.querySelector('#fx .alert h3').textContent==='Epidemic'"),'epidemic alert')
     await pg.screenshot(path='/tmp/shot_epidemic.png')
-    await pg.click('#fx');await pg.wait_for_timeout(400)
+    await pg.evaluate("if(fxCurrent&&fxCurrent.kind==='epidemic')nextFx()");await pg.wait_for_timeout(400)
     ok(await pg.evaluate("document.querySelector('#fx .alert h3')?.textContent.toLowerCase().includes('outbreak')"),'outbreak alert')
     await pg.wait_for_timeout(4000)
     ok(await pg.evaluate("fxCurrent&&fxCurrent.kind==='outbreak'"),'outbreak alert stays until clicked')
