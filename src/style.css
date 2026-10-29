@@ -273,8 +273,8 @@ aside .hand.idle:hover{opacity:.9}
 #actionHeading{display:none}
 .actHead{justify-content:flex-end}
 .actHead:has(#undo[hidden]){display:none}
-.hand.active .handTitle{flex-wrap:wrap;white-space:normal}
-.handTitle .turnState{flex:0 0 100%;font-weight:700;color:#1f5a3a}
+.hand .turnState{font-weight:700;font-size:15px;color:#1f5a3a;margin:8px 2px 2px;padding-top:6px;border-top:1px solid rgba(31,90,58,.35)}
+#turnBox #actionArea{border-top:none;padding-top:0}
 
 /* The title bar and the footer line live at the top and bottom of the side panel, so the board gets the full height. */
 aside>header{flex-wrap:wrap;gap:6px;flex:0 0 auto}
