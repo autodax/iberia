@@ -75,7 +75,7 @@ const BOARD_SRC=document.getElementById('boardImage').getAttribute('href');
 /* ---------- sounds (assets/sounds/*.mp3; a local folder or the repo can replace them) ---------- */
 const SND_VOL={blocked:.7,move:.7,draw:.6,cube:.7,outbreak:.9,epidemic:.75,win:.7,lose:.7,turn:.55},SND_KEY='iberia-sound';
 let sndCtx=null,sndBuf={},sndLast={},sndPrefs={on:false,vol:.7};try{Object.assign(sndPrefs,JSON.parse(localStorage.getItem(SND_KEY)||'{}'))}catch(e){}
-const SND_REV='3';
+const SND_REV='5';
 function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'tokens/'+name]){k=norm(k);for(let src of [ASSETS,REPO,typeof EMBED!=='undefined'?EMBED:{}]){let u=src[k];if(u&&src===REPO&&/^https?:|^assets\//.test(u))u+='?r='+SND_REV;if(u&&!out.includes(u))out.push(u)}}return out}
 function soundUrl(name){return soundUrls(name)[0]||null}
 function saveSound(){try{localStorage.setItem(SND_KEY,JSON.stringify(sndPrefs))}catch(e){}}
