@@ -184,8 +184,8 @@ function chooseNow(title,options,labels){return new Promise(res=>{let d=$('choic
 async function ask(q){return (await choose(q,['yes','no'],['Yes — agreed','No']))==='yes'}
 
 /* ---------- layout ---------- */
-function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pad=6,gap=6,minSide=W>=1600?370:W>=1200?322:290,maxSide=560;
- let boardH=Math.max(200,H-2*pad),boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];
+function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pad=6,gap=6,bar=34,minSide=W>=1600?370:W>=1200?322:290,maxSide=560;
+ let boardH=Math.max(200,H-2*pad-bar-gap),boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];
  if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
  let side=Math.min(maxSide,Math.max(minSide,W-2*pad-gap-boardW));
  let appW=2*pad+boardW+gap+side,appH=H;

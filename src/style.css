@@ -277,8 +277,10 @@ aside .hand.idle:hover{opacity:.9}
 #turnBox #actionArea{border-top:none;padding-top:0}
 
 /* The title bar and the footer line live at the top and bottom of the side panel, so the board gets the full height. */
-aside>header{flex-wrap:wrap;gap:6px;flex:0 0 auto}
-aside>header strong{color:var(--ink);flex:1 1 100%}
-aside>header #turnStatus{flex:1 1 100%;font-size:12.5px;color:#5c4a2a;white-space:normal;overflow:visible;background:none;border:none;padding:0}
-aside>header #phaseLabel{display:none}
-aside #footer{white-space:normal;color:#5c4a2a;font-size:11px;line-height:15px;overflow:visible;flex:0 0 auto}
+aside #turnStatus{font-size:12.5px;color:#5c4a2a;flex:0 0 auto}
+aside #phaseLabel{display:none}
+/* Title, buttons, version and game info sit in the green strip under the board. */
+#playArea{grid-template-rows:auto auto;align-content:start;row-gap:6px}
+#bar{display:flex;align-items:center;gap:8px;min-width:0;width:var(--boardW,100%);height:34px;overflow:hidden}
+#bar strong{color:var(--title);white-space:nowrap;font-size:15px}
+#bar #footer{flex:1 1 0;min-width:0;white-space:normal;overflow:hidden;font-size:10.5px;line-height:13px;max-height:30px;color:#d9e3da;text-align:left}
