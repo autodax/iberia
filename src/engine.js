@@ -123,7 +123,7 @@ function endTurn(s,ctx){s.active=(s.active+1)%s.players.length;s.turn++;s.action
 function revealInfection(s){let n=RATE[s.rateIndex],bottom=false;if(s.goodSeason){s.goodSeason=false;n=1;bottom=true;s.log.push('Good Season: one Infection card from the bottom')}s.revealed=[];for(let i=0;i<n&&s.infectionDeck.length;i++)s.revealed.push(bottom?s.infectionDeck.pop():s.infectionDeck.shift());s.log.push('Infection cards for this turn: '+s.revealed.map(cardName).join(', '))}
 function startTurn(s,ctx){let p=s.players[s.active];if(s.status!=='playing'||p.role!=='time_traveler')return;
  if(s.playerDeck.length<2){lose(s,'not enough Player cards to draw');return}
- let drawn=s.playerDeck.splice(0,2);pushFx(s,{kind:'playerDraw',cards:drawn.slice(),seat:s.active});for(let card of drawn){if(card.startsWith('epidemic_'))s.pendingEpidemics.push(card);else p.hand.push(card)}
+ let drawn=s.playerDeck.splice(0,2);pushFx(s,{kind:'playerDraw',cards:drawn.slice(),seat:s.active,start:true});for(let card of drawn){if(card.startsWith('epidemic_'))s.pendingEpidemics.push(card);else p.hand.push(card)}
  s.log.push(p.name+' draws '+drawn.map(cardName).join(', ')+' at the start of the turn');
  if(s.pendingEpidemics.length){s.ttStart=true;epidemic(s,ctx)}else revealInfection(s)}
 // Student: copies of the matching token or cube land on her card when another player acts in a region next to her.
