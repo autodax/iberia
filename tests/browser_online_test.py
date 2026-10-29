@@ -81,8 +81,14 @@ async def main():
       ok(not await B.evaluate("document.getElementById('onlineDialog').open"),'lobby dialog closes on the guest at start')
       ok(await A.evaluate('netSum()')==await B.evaluate('netSum()'),'same opening deal on both pages')
       ok(await A.is_visible('#setupPanel'),'host sees the setup panel')
-      ok(not await B.is_visible('#setupPanel'),'guest does not see the setup panel')
-      r0=await A.evaluate("ROLES[state.players[0].role]");await A.locator('#setupPanel button',has_text=r0).last.click()  # the first player depends on the random deal, so choose seat 1
+      ok(await B.is_visible('#setupPanel'),'guest also sees the setup panel (own starting city)')
+      ok(await A.evaluate("document.getElementById('begin').disabled"),'host cannot begin before everyone has chosen')
+      ok(await B.evaluate("document.getElementById('begin').hidden"),'guest has no Begin button')
+      for pg,seat in((A,0),(B,1)):
+        await pg.evaluate("(async()=>{let q=state.players[%d];await perform({type:'pick',seat:%d,city:q.hand.find(k=>C[k])||'madrid'})})()"%(seat,seat))
+      await A.wait_for_function('state.players.every(q=>q.city)',timeout=8000)
+      await B.wait_for_function('state.players.every(q=>q.city)',timeout=8000)
+      await A.evaluate("document.getElementById('firstPlayer').value='0'")
       await A.click('#begin')
       for _ in range(12):  # random roles: the Civil Engineer (or a Palliative Care/Student start) may ask a question
         if await A.evaluate("document.getElementById('choiceDialog').open"):await A.locator('#choiceOptions button').first.click()
@@ -105,7 +111,10 @@ async def main():
       for _ in range(60):
         if await A.evaluate('state.active')==1 and await A.evaluate('state.phase')=='actions':break
         txt=await A.evaluate('(()=>{let b=document.getElementById("nextPhase");return b.hidden||b.disabled?"":"go"})()')
-        if txt=='go':await A.evaluate('document.getElementById("nextPhase").click()')
+        if txt=='go':
+          await A.evaluate('document.getElementById("nextPhase").click()')
+          await A.wait_for_timeout(200)
+          if await A.evaluate("document.getElementById('choiceDialog').open"):await A.locator('#choiceOptions button').first.click()  # confirm ending the actions early
         else:
           # discard if over the limit, or clear a card reveal
           await A.evaluate('resetFx();(async()=>{let s=fullHands(state);if(s.length)await perform({type:"discard",seat:s[0],card:state.players[s[0]].hand.find(k=>C[k])})})()')
@@ -126,7 +135,7 @@ async def main():
       await B.evaluate('(window.__peers||[]).forEach(p=>p.destroy())')  # what a closing tab does to its connections
       await B.close()
       await A.wait_for_function('Net.lobby.people.find(p=>p.name==="Ben").connected===false',timeout=8000)
-      ok(await A.evaluate('Net.mine(1)'),'host can act for an absent player\'s seat')
+      ok(not await A.evaluate('Net.mine(1)'),'host has no authority over an absent player\'s seat')
       # --- host leaves: board stays as a local game
       await A.evaluate('Net.leave();render()');await A.wait_for_timeout(200)
       ok(await A.evaluate('!Net.active&&state.players.length===2'),'after leaving, the board stays as a local game')

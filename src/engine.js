@@ -40,7 +40,7 @@ function initial(seed='iberia',difficulty=4,roles=['sailor','agronomist']){
  requireRule(roles.every(r=>ROLES[r])&&new Set(roles).size===roles.length,'Each player needs a different standard role');
  let n=roles.length,cfg=SETUP[n];
  let s={version:VERSION,mapId:'approved-34-regions',seed:String(seed),rng:hash(seed),difficulty,
-  players:roles.map((role,i)=>({name:'Player '+(i+1),role,city:null,city2:null,hand:[],...(role==='student'?{hold:{rail:0,water:0,cubes:[]}}:{}),...(role==='professor'?{event:null}:{})})),active:0,phase:'setup',actions:4,turn:1,status:'playing',
+  players:roles.map((role,i)=>({name:ROLES[role],role,city:null,city2:null,hand:[],...(role==='student'?{hold:{rail:0,water:0,cubes:[]}}:{}),...(role==='professor'?{event:null}:{})})),active:0,phase:'setup',actions:4,turn:1,status:'playing',
   research:[],hospitals:Object.fromEntries(COLORS.map(c=>[c,null])),rails:[],railSupply:20,
   water:Object.fromEntries(MAP.regions.map(r=>[r.id,0])),waterSupply:14,prevention:null,
   cubes:Object.fromEntries(MAP.cities.map(c=>[c.id,Object.fromEntries(COLORS.map(k=>[k,0]))])),supply:Object.fromEntries(COLORS.map(c=>[c,24])),
@@ -198,8 +198,10 @@ function act(s,p,cmd,from,ctx){
    else throw Error('Unsupported command')}
 function pushFx(s,f){f.pre=JSON.parse(JSON.stringify(s.cubes));s.fx.push(f)}
 function transact(state,cmd){let s=CP(state),ctx={choices:cmd.choices||[],index:0};s.fx=[];requireRule(s.status==='playing','Game has ended');let p=s.players[s.active];
- if(cmd.type==='start'){s.revealed=s.revealed||[];s.gone=s.gone||[];requireRule(s.phase==='setup','Already started');requireRule(cmd.cities?.length===s.players.length&&seatOk(s,cmd.first),'Choose starting cities and first player');
-  for(let i=0;i<s.players.length;i++){let opts=s.players[i].hand.filter(k=>C[k]);requireRule(C[cmd.cities[i]]&&(!opts.length||opts.includes(cmd.cities[i])),'Start must match a City card in that hand');relocate(s,i,cmd.cities[i],ctx)}
+ if(cmd.type==='pick'){requireRule(s.phase==='setup','Starting cities are chosen before the game begins');requireRule(seatOk(s,cmd.seat),'Invalid seat');let q=s.players[cmd.seat],opts=q.hand.filter(k=>C[k]);requireRule(C[cmd.city]&&(!opts.length||opts.includes(cmd.city)),'Start must match a City card in that hand');q.city=null;q.city2=null;relocate(s,cmd.seat,cmd.city,ctx);s.log.push(playerLabel(s,cmd.seat)+' starts in '+C[cmd.city].name)}
+ else if(cmd.type==='start'){s.revealed=s.revealed||[];s.gone=s.gone||[];requireRule(s.phase==='setup','Already started');requireRule(seatOk(s,cmd.first),'Choose the first player');
+  for(let i=0;i<s.players.length;i++){let c=cmd.cities&&cmd.cities[i];if(!c)continue;let q=s.players[i],opts=q.hand.filter(k=>C[k]);requireRule(C[c]&&(!opts.length||opts.includes(c)),'Start must match a City card in that hand');q.city=null;q.city2=null;relocate(s,i,c,ctx)}
+  requireRule(s.players.every(q=>q.city),'Every player must choose a starting city');
   s.active=cmd.first;s.phase='actions';s.log.push('First player: '+playerLabel(s,s.active));startTurn(s,ctx)}
  else if(cmd.type==='discard'){requireRule(seatOk(s,cmd.seat),'Invalid seat');requireRule(s.phase!=='setup'&&s.phase!=='epidemic','Resolve Epidemics before discarding');let q=s.players[cmd.seat];requireRule(q.hand.length>handLimit(q),'Discard only to resolve the hand limit');spend(s,q,cmd.card);s.log.push(q.name+' discards '+cardName(cmd.card))}
  else if(cmd.type==='event'){requireRule(s.phase!=='setup','Finish setup first');requireRule(seatOk(s,cmd.seat),'Invalid Event owner');let q=s.players[cmd.seat];let own=cmd.fromRole===true;if(own)requireRule(q.role==='professor'&&q.event===cmd.card,'No such Event on the role card');else requireRule(EVENTS[cmd.card]&&q.hand.includes(cmd.card),'Event not held');

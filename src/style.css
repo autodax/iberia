@@ -18,7 +18,7 @@ main{min-height:0;display:grid;grid-template-columns:var(--boardW,minmax(0,1fr))
 #hands{display:grid;gap:6px;min-height:0;flex:0 1 auto;align-content:start;grid-auto-rows:max-content;overflow:auto;padding-bottom:6px;border-bottom:1px solid var(--tanBorder)}
 aside.roomy{font-size:15px}aside.roomy .handTitle{font-size:16.5px;line-height:22px}aside.roomy .card{font-size:15.5px;line-height:20px;height:28px;padding:3px 9px}aside.roomy .action{font-size:15px;padding:8px 6px}aside.roomy h2{font-size:17px}aside.roomy #actionHint,aside.roomy #message,aside.roomy #resources{font-size:14px}aside.roomy #cubeSupply,aside.roomy #researchStatus,aside.roomy #flags,aside.roomy .detail{font-size:13px}aside.roomy label{font-size:14px}
 .hand{padding:6px 8px;background:var(--parchLight);border:2px solid var(--tanBorder);border-radius:6px;min-width:0;overflow:hidden}
-.hand.active{border-color:#c0303a;box-shadow:0 0 0 2px #c0303a inset}
+.hand.active{border-color:#1f5a3a;box-shadow:0 0 0 2px #1f5a3a inset}
 .hand.over{border-color:var(--warn)}
 .handTitle{display:flex;align-items:center;gap:6px;font-size:14px;line-height:19px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;color:var(--ink)}
 .handTitle svg{flex:none}
@@ -138,7 +138,7 @@ header .sndBtn.off .cross{display:inline}
 #actionHeading .tp svg{display:block}#actionHeading .sub{font-size:13px;font-weight:400;color:var(--inkSoft)}
 #actionHeading.justActive,.hand.justActive{animation:turnPulse 1.6s ease-out 2}
 @keyframes turnPulse{0%{box-shadow:0 0 0 0 rgba(22,180,200,.9)}60%{box-shadow:0 0 0 10px rgba(22,180,200,0)}100%{box-shadow:0 0 0 0 rgba(22,180,200,0)}}
-.hand.active{border-color:#c0303a;box-shadow:0 0 0 3px #c0303a inset,0 0 8px rgba(192,48,58,.4)}
+.hand.active{border-color:#1f5a3a;box-shadow:0 0 0 3px #1f5a3a inset,0 0 8px rgba(31,90,58,.4)}
 .alert.chain{border:3px solid #9c1f14;box-shadow:0 0 0 4px rgba(156,31,20,.25);animation:chainShake .5s ease-in-out 2}
 .chainTag{display:inline-block;background:#9c1f14;color:#f6e8cd;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:13px;padding:3px 12px;border-radius:3px;margin:4px 0}
 .chainPath{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;margin:6px 0;font-size:13.5px}.chainPath .step{padding:2px 7px;border:1px solid #8b7a5a;border-radius:3px;background:#f3e6c8}.chainPath .step.done{opacity:.6}.chainPath .step.now{background:#9c1f14;color:#f6e8cd;border-color:#9c1f14;font-weight:700}.chainPath .arr{color:#9c1f14;font-weight:700}
@@ -233,7 +233,7 @@ aside #nextPhase:hover,aside #confirm:hover{background:#3f5c4e}
 aside .choiceGroup .chip.on{background:var(--greenDeep);color:var(--parchLight);border-color:transparent}
 aside select,aside input{border:1px solid rgba(90,65,25,.22);background:#f4ead0}
 aside .hand{background:#e8d8b2;border:1px solid rgba(90,65,25,.14)}
-aside .hand.active{border:2px solid #c0303a;box-shadow:0 0 0 3px #c0303a inset,0 0 8px rgba(192,48,58,.4)}
+aside .hand.active{border:2px solid #1f5a3a;box-shadow:0 0 0 3px #1f5a3a inset,0 0 8px rgba(31,90,58,.4)}
 aside .hand.over{border-color:var(--warn)}
 aside .card,aside .clRow{background:#fbf3df;border:1px solid rgba(90,65,25,.16);border-left-width:9px}
 aside .card.blue,aside .clRow.blue{border-left-color:#3059c8}aside .card.red,aside .clRow.red{border-left-color:#b0262a}aside .card.yellow,aside .clRow.yellow{border-left-color:#f0bf0a}aside .card.black,aside .clRow.black{border-left-color:#2a2828}
@@ -249,3 +249,16 @@ aside #undo{padding:4px 10px}
 /* New-game role pickers show every role without an inner scrollbar; the menu itself scrolls */
 #roleFields .choiceGroup.many{max-height:none;overflow:visible}
 #roleFields.rolesGrid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+
+/* active player: dark green outline; the players waiting are dimmed */
+aside .hand.idle{opacity:.62;filter:saturate(.75)}
+aside .hand.idle:hover{opacity:.9}
+/* a chosen city button keeps its color stripe */
+.choiceGroup .chip.city.blue.on,aside .choiceGroup .chip.city.blue.on{border-left-color:#3059c8}
+.choiceGroup .chip.city.red.on,aside .choiceGroup .chip.city.red.on{border-left-color:#b0262a}
+.choiceGroup .chip.city.yellow.on,aside .choiceGroup .chip.city.yellow.on{border-left-color:#f0bf0a}
+.choiceGroup .chip.city.black.on,aside .choiceGroup .chip.city.black.on{border-left-color:#2a2828;box-shadow:inset 1px 0 0 rgba(255,255,255,.55),inset 8px 0 0 #2a2828}
+.choiceGroup .chip.city.on,aside .choiceGroup .chip.city.on{border-left-width:9px}
+/* card-draw popup: who is drawing, large and plain, above the cards */
+.fxWho{display:flex;align-items:center;justify-content:center;gap:12px;font-size:30px;font-weight:700;color:#fff8e6;text-shadow:0 2px 12px #000c,0 0 3px #000;margin-bottom:14px;letter-spacing:.02em;pointer-events:none}
+.fxWho svg{filter:drop-shadow(0 2px 4px #0008)}

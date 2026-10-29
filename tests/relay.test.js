@@ -40,6 +40,7 @@ function makePage(nw,label,opts={}){
   };
   page.sum=sum;
   page.net=createNet({transport:opts.transport||nw.transport(),hooks,version:opts.version||VERSION,storage:opts.storage||mem(page.store),tokenStore:mem(page.tok),newSeed:()=>opts.seed||('seed'+Math.random().toString(36).slice(2,6)),heartbeat:false});
+  {const n=page.net,go=n.start;n.start=function(){if(n.isHost&&n.lobby)n.lobby.seats.forEach((o,k)=>{if(o==null)n.assign(k,'host')});return go.call(n)}}   // tests: the host fills open seats before starting (it has no automatic cover any more)
   return page;
 }
 
@@ -67,7 +68,7 @@ function botMove(s){
 async function startRoom(nw,guestCount,{players=3,seed='seedA'}={}){
   const host=makePage(nw,'host',{seed});
   const guests=[];
-  const code=await host.net.host('Hosty');
+  const code=await host.net.host('Hosty');host.net.release(0);
   for(let i=0;i<guestCount;i++){const g=makePage(nw,'g'+i);guests.push(g);await g.net.join(code,'Guest'+i)}
   await settle();
   host.net.setSettings({players});
@@ -100,7 +101,7 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     guests[1].net.claim(0);await settle();
     ok(host.net.lobby.seats[0]===guests[0].net.myId,'cannot take a seat someone else holds');
     ok(guests[0].net.mine(0)&&!guests[0].net.mine(1),'mine() reflects the claim');
-    ok(!guests[0].net.mine(2)&&host.net.mine(2),'host covers the unclaimed seat');
+    ok(!guests[0].net.mine(2)&&!host.net.mine(2),'nobody acts for an unclaimed seat, not even the host');
     host.net.assign(2,guests[0].net.myId);await settle();
     ok(guests[0].net.mine(2),'host can assign a seat');
     guests[0].net.release(2);await settle();
@@ -298,7 +299,7 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     // build the host so the test can switch off its link for good, as a refreshed page's old self would be
     let h1=null;const base=nw.transport();
     const host=makePage(nw,'host',{seed:'seedA',transport:{host:async(c,f)=>{h1=await base.host(c,f);return h1},join:c=>base.join(c)}});
-    const code=await host.net.host('Hosty');const g=makePage(nw,'g0');await g.net.join(code,'Guest0');await settle();
+    const code=await host.net.host('Hosty');host.net.release(0);const g=makePage(nw,'g0');await g.net.join(code,'Guest0');await settle();
     host.net.setSettings({players:2});g.net.claim(0);await settle();host.net.start();await tick(300);await hostStartsPlay(host);await tick(300);
     const saved=host.store,sumBefore=host.sum();
     h1.close();await tick(300);                      // the old host page is gone

@@ -1,3 +1,14 @@
+# v0.10.7
+
+- Players pick their own starting city (from their starting hand) during setup. The host only starts the game and has no special authority in play: undo needs no approval, and every action must come from the seat's own player.
+- The turn chime plays only for the player whose turn starts. Players are always shown by name and role, never by number.
+- Choices such as Overseas Migration show cubes in the right number and color; highlighted cities show their color. Purify Water is chosen on the map. The purification token is centered in its region with a water-drop sound.
+- Card draw popup shows who drew, above the cards. The epidemic popup times out like the others. The top discard is dimmed. Sounds are louder and keep working after the browser pauses audio.
+- Pawns travel along their ship, carriage or train route. The active player has a dark green border and the others are dimmed. The blue microscope sits 3 px further right. Move markers line up with city circles.
+- "End actions and draw two cards" is spelled out and asks for confirmation if actions are left. The Scientist's look at the next three cards can no longer be undone.
+- Save buttons are now Save Game, Restore Game and Restore Last Game. The last game is kept in this browser's local storage.
+- Cloudflare relay: a returning host now replaces its own stale connection instead of being refused (redeploy the worker to get this).
+
 # v0.10.6
 
 - Five expansion roles added (12 roles in total; the random role choice now draws from all of them):

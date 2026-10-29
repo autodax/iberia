@@ -72,15 +72,14 @@ function createNet(cfg){
     if(!Number.isInteger(seat)||seat<0||seat>=lobby.seats.length)return false;
     const owner=lobby.seats[seat];
     if(owner===pid)return true;
-    // the host keeps unclaimed seats going, and covers a seat whose player has dropped out
-    return pid===NET_HOST_ID&&(owner==null||!seatOwnerConnected(seat));
+    return false;    // the host has no special authority: only the player of a seat acts for it
   }
   function authorize(pid,cmd){
     if(!cmd||typeof cmd!=='object'||typeof cmd.type!=='string')return 'Not a valid command';
     if(lobby.phase!=='playing')return 'The game has not started yet';
     if(cmd.type==='start')return pid===NET_HOST_ID?null:'Only the host can begin the game';
     const st=H.getState();
-    const seat=(cmd.type==='discard'||cmd.type==='event')?cmd.seat:st.active;
+    const seat=(cmd.type==='discard'||cmd.type==='event'||cmd.type==='pick')?cmd.seat:st.active;
     return canControl(pid,seat)?null:'That seat is played by someone else';
   }
   net.mine=seat=>{
@@ -128,7 +127,7 @@ function createNet(cfg){
       catch(e){lastErr=e;if(!(e&&e.code==='taken'))break}
     }
     if(lastErr){resetLocal();throw lastErr}
-    resizeSeats();net.status='connected';broadcastLobby();return net.code;
+    resizeSeats();if(lobby.seats[0]==null)lobby.seats[0]=NET_HOST_ID;net.status='connected';broadcastLobby();return net.code;
   };
   net.resumeHost=async function(name){
     if(net.active)throw Error('Already in a room');
@@ -223,14 +222,8 @@ function createNet(cfg){
   async function hostUndo(pid){
     if(!H.undoLabel||!H.undo)return {ok:false,error:'Undo is not available'};
     const st=H.getState();
-    if(pid!==NET_HOST_ID&&!canControl(pid,st.active))return {ok:false,error:'Only the player whose turn it is can undo'};
+    if(!canControl(pid,st.active))return {ok:false,error:'Only the player whose turn it is can undo'};
     const before=H.undoLabel();if(!before)return {ok:false,error:'Nothing to undo'};
-    if(pid!==NET_HOST_ID){
-      const who=(people.get(pid)||{}).name||'A player';
-      const yes=await Promise.resolve(H.ask(who+' wants to undo: '+before+'. Allow it?')).catch(()=>false);
-      if(!yes)return {ok:false,error:'The host did not allow the undo'};
-      if(H.undoLabel()!==before)return {ok:false,error:'The game moved on, so the undo was cancelled'};
-    }
     const done=H.undo();if(!done)return {ok:false,error:'Cannot undo right now. Wait a moment and try again'};
     net.seq++;broadcast({t:'sync',seq:net.seq,state:H.getState()});persist();emit();
     return {ok:true,label:done};
@@ -262,6 +255,7 @@ function createNet(cfg){
   };
   net.start=function(){
     if(!net.isHost||lobby.phase!=='lobby')return {ok:false,error:'Only the host can start, from the lobby'};
+    if(lobby.seats.some(o=>o==null))return {ok:false,error:'Every seat needs a player first. Open seats can be taken with "Take this seat".'};
     const s=lobby.settings;
     const game={seed:cfg.newSeed(),difficulty:s.difficulty,roles:s.roles.slice(0,s.players)};
     try{H.onStart(game)}catch(e){return {ok:false,error:e.message}}
@@ -280,7 +274,8 @@ function createNet(cfg){
       if(!Number.isInteger(seat)||seat<0||seat>=lobby.seats.length)return resolve(false);
       const owner=lobby.seats[seat];
       const ownerP=owner!=null?people.get(owner):null;
-      const target=ownerP&&ownerP.connected?ownerP.id:NET_HOST_ID; // unclaimed or absent: the host answers
+      if(!ownerP||!ownerP.connected)return resolve(false);   // nobody there to agree
+      const target=ownerP.id;
       if(target===NET_HOST_ID)return Promise.resolve(H.ask(String(text))).then(resolve,()=>resolve(false));
       const id='a'+(++askCounter),a={owner:target,resolve,timer:setTimeout(()=>{asks.delete(id);resolve(false)},NET_ASK_TIMEOUT)};
       asks.set(id,a);send(ownerP.conn,{t:'ask',id,q:String(text)});

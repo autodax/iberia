@@ -47,6 +47,7 @@ function makePage(nw,label,opts={}){
   };
   page.sum=sum;
   page.net=createNet({transport:opts.transport||nw.transport(),hooks,version:opts.version||VERSION,storage:opts.storage||mem(page.store),tokenStore:mem(page.tok),newSeed:()=>opts.seed||('seed'+Math.random().toString(36).slice(2,6)),heartbeat:false});
+  {const n=page.net,go=n.start;n.start=function(){if(n.isHost&&n.lobby)n.lobby.seats.forEach((o,k)=>{if(o==null)n.assign(k,'host')});return go.call(n)}}   // tests: the host fills open seats before starting (it has no automatic cover any more)
   return page;
 }
 
@@ -74,7 +75,7 @@ function botMove(s){
 async function startRoom(nw,guestCount,{players=3,seed='seedA'}={}){
   const host=makePage(nw,'host',{seed});
   const guests=[];
-  const code=await host.net.host('Hosty');
+  const code=await host.net.host('Hosty');host.net.release(0);
   for(let i=0;i<guestCount;i++){const g=makePage(nw,'g'+i);guests.push(g);await g.net.join(code,'Guest'+i)}
   await settle();
   host.net.setSettings({players});
@@ -107,7 +108,7 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     guests[1].net.claim(0);await settle();
     ok(host.net.lobby.seats[0]===guests[0].net.myId,'cannot take a seat someone else holds');
     ok(guests[0].net.mine(0)&&!guests[0].net.mine(1),'mine() reflects the claim');
-    ok(!guests[0].net.mine(2)&&host.net.mine(2),'host covers the unclaimed seat');
+    ok(!guests[0].net.mine(2)&&!host.net.mine(2),'nobody acts for an unclaimed seat, not even the host');
     host.net.assign(2,guests[0].net.myId);await settle();
     ok(guests[0].net.mine(2),'host can assign a seat');
     guests[0].net.release(2);await settle();
@@ -214,7 +215,7 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     // hard-kill every connection, then let guest 1 reconnect with the same token
     nw.dropAll();await settle();
     ok(!host.net.lobby.people.find(p=>p.id===gid).connected,'host notices the drop');
-    ok(host.net.mine(1),'host can now act for the absent seat');
+    ok(!host.net.mine(1),'the host has no cover for an absent player');
     // reconnect (fresh page object with the same token store)
     const back=makePage(nw,'back');back.tok=g.tok;
     // reuse the same token store by joining through a page that shares it
@@ -297,7 +298,7 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     guests[1].answer=false;
     ok(await guests[0].net.askSeat(1,'Ana: again?')===false,'a "no" comes back as false');
     host.answer=true;
-    ok(await guests[0].net.askSeat(2,'Unclaimed seat: ok?')===true&&host.asked.length===1,'an unclaimed seat is answered by the host');
+    ok(await guests[0].net.askSeat(2,'Host seat: ok?')===true&&host.asked.length===1,'a seat the host plays is answered by the host');
     guests[0].answer=true;
     ok(await host.net.askSeat(0,'Host asks guest 0')===true&&guests[0].asked.length===1,'host asks a guest');
   });
@@ -335,12 +336,11 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     let r=await guests[0].net.submit(move());ok(r.ok,'guest moves');await settle();
     ok(host.state.actions===3&&allSame([host,...guests]),'move reached everyone');
     ok(guests[1].net.undo&&!(await guests[1].net.undo()).ok,'a player who is not on turn cannot undo');
-    host.answer=false;r=await guests[0].net.undo();ok(!r.ok,'host can refuse the undo');ok(host.state.actions===3,'refused undo changes nothing');
-    host.answer=true;r=await guests[0].net.undo();await settle();
-    ok(r.ok,'host agrees');ok(host.state.actions===4&&host.sum()===before,'host state is back');ok(allSame([host,...guests]),'all pages show the same state again');
-    ok(host.asked.some(q=>/undo/i.test(q)),'host was asked');
+    r=await guests[0].net.undo();await settle();
+    ok(r.ok,'undo needs no approval');ok(host.state.actions===4&&host.sum()===before,'host state is back');ok(allSame([host,...guests]),'all pages show the same state again');
+    ok(!host.asked.some(q=>/undo/i.test(q)),'the host was not asked');
     r=await guests[0].net.submit(move());ok(r.ok,'play continues after an undo');await settle();ok(allSame([host,...guests]),'still in step');
-    r=await host.net.undo();await settle();ok(r.ok&&host.state.actions===4&&allSame([host,...guests]),'host can undo without asking');
+    r=await host.net.undo();ok(!r.ok&&host.state.actions===3,'the host cannot undo another player\u2019s turn');
   });
 
   console.log(pass+' checks passed, '+fail+' failed');

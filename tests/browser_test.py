@@ -140,7 +140,9 @@ async def main():
     # play an event through UI: inject purify_water into hand via engine-friendly swap
     await pg.evaluate("""(()=>{let s=CP(state);let ev='purify_water';if(!s.eventsInGame.includes(ev)){let out=s.eventsInGame[0];s.unusedEvents.splice(s.unusedEvents.indexOf(ev),1,out);s.eventsInGame=s.eventsInGame.filter(x=>x!==out).concat(ev);for(let a of [s.playerDeck,s.discard,...s.players.map(p=>p.hand)]){let j=a.indexOf(out);if(j>=0)a[j]=ev}}for(let a of [s.playerDeck,s.discard,...s.players.map(p=>p.hand)]){let j=a.indexOf(ev);if(j>=0)a.splice(j,1)}s.players[1].hand.push(ev);invariant(s);state=s;recompute();render()})()""")
     await pg.click('.hand >> nth=1 >> text=Purify Water');await pg.wait_for_selector('#eventDialog[open]')
-    await pg.click('.choiceGroup[data-for=pw0] [data-v="r01"]');await pg.click('.choiceGroup[data-for=pw1] [data-v="r02"]');await pg.click('#eventConfirm');await pg.wait_for_timeout(200)
+    for r in ['r01','r02']:
+      await pg.click('#eventForm button:has-text("Choose a region on the map")');await pg.wait_for_function('!!mapPick');await pg.evaluate(f"mapPick.pick('{r}')");await pg.wait_for_selector('#eventDialog[open]')
+    await pg.click('#eventConfirm');await pg.wait_for_timeout(200)
     ok(await pg.evaluate("state.water.r01===1&&state.water.r02===1&&state.discard.includes('purify_water')"),'Purify Water event via UI')
     ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].filter(i=>i.getAttribute('href')===tokenImg('purification')).length===2"),'water drops drawn')
     # save / load
@@ -155,7 +157,7 @@ async def main():
     ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].some(i=>i.getAttribute('href').startsWith('blob:'))"),'local asset replaces token')
     ok(await pg.evaluate("document.getElementById('assetStatus').textContent.startsWith('2 files')"),'asset status')
     # sounds
-    ok(await pg.evaluate("Object.keys(EMBED).filter(k=>k.startsWith('sounds/')).length===9"),'9 built-in sounds')
+    ok(await pg.evaluate("Object.keys(EMBED).filter(k=>k.startsWith('sounds/')).length===10"),'10 built-in sounds')
     ok(await pg.evaluate("$('muteButton').classList.contains('off')&&!sndPrefs.on"),'sound starts muted')
     await pg.evaluate("window.soundLog=[]");await pg.click('#logButton');await pg.wait_for_timeout(50)
     ok(await pg.evaluate("window.soundLog.length===0"),'no sound while muted')
@@ -274,7 +276,7 @@ async def main():
     ok(len(seen)>=3,'roles differ between page loads '+str(len(seen)))
     await pg.evaluate("state=initial('lab',4,['sailor','agronomist']);render()");await pg.click('#begin');await pg.wait_for_timeout(300);await pg.evaluate('resetFx();mode="";render()')
     ok(await pg.evaluate("!/Player \\d/.test(document.body.innerText.replace(/Player (deck|cards)/gi,''))"),'no Player 1/2 labels')
-    ok(await pg.evaluate("getComputedStyle(document.querySelector('#hands .hand.active')).borderTopColor==='rgb(192, 48, 58)'"),'active player outlined in red')
+    ok(await pg.evaluate("getComputedStyle(document.querySelector('#hands .hand.active')).borderTopColor==='rgb(31, 90, 58)'"),'active player outlined in dark green')
     await pg.evaluate("let q=state.players[state.active],a=state.cubes[q.city].red;state.cubes[q.city].red=2;state.supply.red-=2-a;recompute();render()");await pg.wait_for_timeout(200)
     n=await pg.evaluate("document.querySelectorAll('#pieces image.treatable').length");ok(n>=1,'cubes in your city are clickable')
     await pg.evaluate("document.querySelector('#pieces image.cube-red.treatable').dispatchEvent(new MouseEvent('click',{bubbles:true}))");await pg.wait_for_timeout(500)
