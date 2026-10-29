@@ -196,15 +196,13 @@ async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{wh
 /* ---------- reveal & alert overlay ---------- */
 let fxQueue=[],fxTimer=null,fxCurrent=null,turnFlash=false;const MOVES=new Set(['carriage','train','ship','start']);
 // Card pictures: assets/city_cards/city_<name>, infection_cards/infection_<name>, event_cards/event_<name>.
-// A few file names differ from the city or event names (typos or shortened names), so they are listed here.
-const CARD_ALIAS={'ciudad-real':'cuidad-real'},INFECTION_ALIAS={'bilbao-bilbo':'bibao-bilbo','santiago-de-compostela':'santiage-de-compostela'};
-const EVENT_ART={government_mobilization:'gov-mobilizations',travel_day_night:'travel-day-and-night',when_plans_were_good:'when-plans-good'};
+// File names match the game's own names: city_<city-name>, infection_<city-name>, event_<event_key>, role_<role_key>.
 function cardArt(k,landscape){
- if(C[k]){let s=slug(C[k].name),names=[s];if(CARD_ALIAS[s])names.push(CARD_ALIAS[s]);if(landscape&&INFECTION_ALIAS[s])names.push(INFECTION_ALIAS[s]);
+ if(C[k]){let s=slug(C[k].name),names=[s];
   for(let n of names){let a=asset((landscape?'infection_cards/infection_':'city_cards/city_')+n);if(a)return a}
   return asset((landscape?'cards/infection/':'cards/player/')+s)}
- if(EVENTS[k])return asset('event_cards/event_'+(EVENT_ART[k]||k))||asset('cards/events/'+slug(EVENTS[k]));
- if(String(k).startsWith('role:')){let r=k.slice(5);return asset('role_cards/role_'+(r==='rural_doctor'?'doctor':r))}
+ if(EVENTS[k])return asset('event_cards/event_'+k)||asset('cards/events/'+slug(EVENTS[k]));
+ if(String(k).startsWith('role:')){let r=k.slice(5);return asset('role_cards/role_'+r)}
  if(String(k).startsWith('epidemic'))return asset('tokens/epidemia_card')||asset('cards/epidemic');
  return null}
 function genericFace(box,k,landscape){let color=C[k]?C[k].color:EVENTS[k]?'event':'epidemic';el('div',{className:'band '+color},box);el('div',{className:'kind',textContent:landscape?'Infection':C[k]?'City · '+C[k].color:EVENTS[k]?'Event':'Epidemic'},box);el('div',{className:'nm',textContent:cardName(k)},box);if(EVENTS[k])el('div',{className:'kind',textContent:EVENT_TEXT[k],style:'text-transform:none;letter-spacing:0;font-size:10px'},box)}

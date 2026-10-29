@@ -46,3 +46,12 @@ The code is in `tools/home-relay/`. It needs only Node.js (https://nodejs.org, L
 ### Checks
 
 `node tests/relay.test.js` plays full games through a relay. Start one first: Cloudflare version locally with `cd relay && npx wrangler dev --port 8787`, home version with `node tools/home-relay/relay.js` (set `PORT`, and `RELAY_URL=http://127.0.0.1:<port>` for the test). `RELAY_URL=... python3 tests/browser_online_test.py` runs the same through two real browser tabs.
+
+## Card picture names
+
+Card art lives in `assets/` and is found by name, with no lookup table:
+
+- `city_cards/city_<city>.jpeg` and `infection_cards/infection_<city>.jpeg`, where `<city>` is the city name in lower case with accents removed and dashes for spaces (`city_a-coruna`, `infection_san-sebastian-donostia`).
+- `event_cards/event_<event>.jpeg`, using the event's code name (`event_new_rails`, `event_when_plans_were_good`).
+- `role_cards/role_<role>.jpeg` (`role_rural_doctor`, `role_scientist`).
+- `city_back.png`, `infection_back.jpg`, `role_back.jpg` and `epidemia_card.jpeg` in the main `assets` folder.
