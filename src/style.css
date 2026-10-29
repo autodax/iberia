@@ -245,3 +245,7 @@ aside #actionHeading{background:#f4ead0;border-top:none;border-right:none;border
 aside .choiceGroup.many{border:none;background:rgba(246,232,205,.4)}
 aside #undo{padding:4px 10px}
 #choiceOptions.mapOnly button{display:none}
+
+/* New-game role pickers show every role without an inner scrollbar; the menu itself scrolls */
+#roleFields .choiceGroup.many{max-height:none;overflow:visible}
+#roleFields.rolesGrid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
