@@ -7,7 +7,7 @@ button,select,input{font:inherit}
 button{cursor:pointer;border:1px solid var(--tanBorder);background:var(--tan);color:var(--ink);border-radius:6px;padding:6px 9px}
 button:hover{background:var(--tanHover)}button:disabled{opacity:.45;cursor:default}
 select,input{background:var(--parchLight);color:var(--ink);border:1px solid var(--tanBorder);border-radius:4px;padding:5px;max-width:100%}
-#app{position:relative;width:var(--appW,100vw);height:var(--appH,100dvh);display:grid;grid-template-rows:34px minmax(0,1fr) 16px;padding:6px;gap:6px;background:var(--green);border-radius:9px;box-shadow:0 12px 40px #0005}
+#app{position:relative;width:var(--appW,100vw);height:var(--appH,100dvh);display:grid;grid-template-rows:minmax(0,1fr);padding:6px;gap:6px;background:var(--green);border-radius:9px;box-shadow:0 12px 40px #0005}
 header{display:flex;gap:8px;align-items:center;min-width:0}
 header strong{font-size:15px;white-space:nowrap;color:var(--title)}
 header button{padding:4px 10px}
@@ -275,3 +275,10 @@ aside .hand.idle:hover{opacity:.9}
 .actHead:has(#undo[hidden]){display:none}
 .hand.active .handTitle{flex-wrap:wrap;white-space:normal}
 .handTitle .turnState{flex:0 0 100%;font-weight:700;color:#1f5a3a}
+
+/* The title bar and the footer line live at the top and bottom of the side panel, so the board gets the full height. */
+aside>header{flex-wrap:wrap;gap:6px;flex:0 0 auto}
+aside>header strong{color:var(--ink);flex:1 1 100%}
+aside>header #turnStatus{flex:1 1 100%;font-size:12.5px;color:#5c4a2a;white-space:normal;overflow:visible;background:none;border:none;padding:0}
+aside>header #phaseLabel{display:none}
+aside #footer{white-space:normal;color:#5c4a2a;font-size:11px;line-height:15px;overflow:visible;flex:0 0 auto}
