@@ -1,5 +1,6 @@
 # v0.10.7
 
+- The Time Traveller sees the next infection cards as small thumbnails of the real cards, side by side. The marker alert label fits its text and is centered.
 - The board is bigger: the buttons, version number and game info moved into the green strip under the board, and the side panel is a little narrower. Nothing was made smaller.
 - The "turn" row is gone: the number of actions left is shown in the active hand's title.
 - The sidebar shows the active player first: hand and available actions together in one dark green box, with the other players dimmed below. Cards in the Time Traveller's "Infection cards this turn" row have more room.

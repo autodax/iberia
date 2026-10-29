@@ -284,6 +284,11 @@ aside #phaseLabel{display:none}
 #bar{display:flex;align-items:center;gap:8px;min-width:0;width:var(--boardW,100%);height:34px;overflow:hidden}
 #bar strong{color:var(--title);white-space:nowrap;font-size:15px}
 #bar #footer{flex:1 1 0;min-width:0;white-space:normal;overflow:hidden;font-size:10.5px;line-height:13px;max-height:30px;color:#d9e3da;text-align:left}
+
+/* Time Traveller: the infection cards he can see, side by side under the text */
+.ttBox{display:block}
+.ttCards{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.ttCards.thumbs .bigCard,.ttCards.thumbs .bigCard.art{width:118px;height:auto;aspect-ratio:724/510;border-radius:6px;border-width:1px;box-shadow:0 2px 5px #0005;flex:none}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <filter id="cubeBlackFx" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
@@ -1396,7 +1401,8 @@ function flyMicro(c){let speed=+$('fxSpeed').value;if(!microHide.has(c))return;
 function markerAlert(kind,val){if(+$('fxSpeed').value<0)return;let [x,y]=kind==='rate'?RATE_POS[val]:OUT_POS[Math.min(8,val)],G=document.getElementById('markerFx');if(!G){G=document.createElementNS(NS,'g');G.id='markerFx';G.style.pointerEvents='none';$('flyers').parentNode.appendChild(G)}G.replaceChildren();
  let txt=kind==='rate'?'Infection rate '+RATE[val]:'Outbreaks '+val+' / 8',w=txt.length*16+30,lx=kind==='rate'?x-w/2:x-w-48,ly=kind==='rate'?y+62:y-22;
  if(matchMedia('(prefers-reduced-motion: reduce)').matches===false)for(let i=0;i<3;i++){let c=svg('circle',{cx:x,cy:y,r:30,fill:'none',stroke:'#ff3b2f','stroke-width':5},G);c.animate([{transform:'scale(.6)',opacity:.95,transformOrigin:`${x}px ${y}px`},{transform:'scale(2.4)',opacity:0,transformOrigin:`${x}px ${y}px`}],{duration:1100,delay:i*260,easing:'ease-out',fill:'both'})}
- svg('rect',{x:lx,y:ly,width:w,height:44,rx:9,fill:'#7a0f0a',stroke:'#f6e8cd','stroke-width':2},G);let t=svg('text',{x:lx+w/2,y:ly+31,'text-anchor':'middle','font-size':27,'font-weight':700,fill:'#fff8e6'},G);t.textContent=txt;
+ let rect=svg('rect',{x:lx,y:ly,width:w,height:44,rx:9,fill:'#7a0f0a',stroke:'#f6e8cd','stroke-width':2},G);let t=svg('text',{x:lx+w/2,y:ly+22,'text-anchor':'middle','dominant-baseline':'central','font-size':27,'font-weight':700,fill:'#fff8e6'},G);t.textContent=txt;
+ try{let tw=t.getComputedTextLength();if(tw>0){let nw=tw+22;rect.setAttribute('width',nw);rect.setAttribute('x',kind==='rate'?x-nw/2:x-nw-48);t.setAttribute('x',+rect.getAttribute('x')+nw/2)}}catch(e){}
  playSound('marker');setTimeout(()=>{if(G.isConnected)G.replaceChildren()},2200)}
 // Pawn and railroad animations wait until the popups on screen are gone.
 function animAfterFx(fn){if(fxCurrent||fxQueue.length)afterFx.push(fn);else fn()}
@@ -1523,7 +1529,7 @@ function drawHands(){let box=$('hands'),top=$('activeHand'),n=state.players.leng
    else b.onclick=()=>{if(i!==state.active||!['purify','ship','research'].includes(mode))return;if(mode==='research'){if(C[k].color!==sel.color)return;selectedCards=selectedCards.includes(k)?selectedCards.filter(c=>c!==k):[...selectedCards,k]}else selectedCards=[k];render()}}
   if(p.event){let b=el('button',{className:'card event',textContent:'On role card: '+EVENTS[p.event],title:EVENTS[p.event]+': '+EVENT_TEXT[p.event]+' (played from the University Professor card, then removed from the game)'},cards);b.onmouseenter=()=>showPreview(p.event);b.onmouseleave=()=>hidePreview();b.onclick=()=>openEvent(i,p.event,true);b.disabled=['setup','ended'].includes(state.phase)||!mine(i)}
   if(p.hold){let h2=p.hold,bits=[];if(h2.rail)bits.push('railroad');if(h2.water)bits.push('purification');for(let c of h2.cubes)bits.push(c+' cube');el('div',{className:'detail',textContent:'On the Student card: '+(bits.join(', ')||'nothing yet')},h)}
-  if(p.role==='time_traveler'&&state.revealed&&state.revealed.length){let r=el('div',{className:'detail'},h);r.append('Infection cards this turn: ');state.revealed.forEach((k,j)=>{el('span',{className:'miniCard '+C[k].color,textContent:C[k].name,title:'Will be infected '+(j+1)+(j===0?'st':j===1?'nd':j===2?'rd':'th')},r);r.append(' ')})}
+  if(p.role==='time_traveler'&&state.revealed&&state.revealed.length){let r=el('div',{className:'detail ttBox'},h);el('div',{textContent:'Infection cards this turn:'},r);let row=el('div',{className:'ttCards thumbs'},r);state.revealed.forEach((k,j)=>{let nth=j===0?'1st':j===1?'2nd':j===2?'3rd':(j+1)+'th',tip='Will be infected '+nth+': '+C[k].name;let f=cardFace(k,true);f.title=tip;row.appendChild(f)})}
   if(p.hand.length>handLimit(p)&&!['epidemic','setup','ended'].includes(state.phase))el('span',{className:'detail',textContent:' Over the limit: click ✕ to discard, or play an Event.'},cards);if(shownActive()===i&&state.phase!=='setup'&&state.status==='playing'){let ts=state.phase==='actions'?state.actions+(state.actions===1?' action left':' actions left'):state.phase==='draw'?'Draw cards':state.phase==='infection'?'infection step':state.phase==='epidemic'?'epidemic':state.phase==='discard'?'discard to the limit':'';if(ts)el('div',{className:'turnState',textContent:ts},h)}});$('turnBox').hidden=state.phase==='setup'||inLobby()}
 
 /* ---------- action panel ---------- */
