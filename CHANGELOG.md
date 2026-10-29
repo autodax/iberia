@@ -1,5 +1,7 @@
 # v0.10.5
 
+- New wooden-house hospital tokens (larger on the board), and the microscopes were recolored with a darker border. Cubes, hospitals, microscopes and the colored card stripes now all use the same four colors.
+- Calmer side panel: darker beige panel, mid-beige player boxes, lighter soft-edged buttons and cards, and far fewer lines. The active player keeps a thick red outline.
 - Card picture files were renamed to match the game's own names (for example city_ciudad-real, infection_bilbao-bilbo, event_government_mobilization, role_rural_doctor), and the special-case spellings were removed from the code. If you add new card art, name it the same way.
 - Cards in each hand are sorted by color, the color you hold most of first (Events last, oldest city first within a color).
 - The turn change now waits a little longer, then shows a short "<role>'s turn" popup with the bell.
