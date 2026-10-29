@@ -1,5 +1,5 @@
 // Iberia prototype UI v0.10
-const UI_VERSION='0.10.5',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
+const UI_VERSION='0.10.6',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
 const SAVE_KEY='iberia-v09-save';
 // The board picture (assets/board.jpeg, 3910x2760) is placed into map coordinates (cities use a 1521x1080 frame)
 // by the transform on #boardImage, measured by matching it to the previous board. The frame is cropped to the picture.
@@ -25,7 +25,7 @@ function cubeOrigin(cid,view){let c=C[cid],W=cubeWidth(cid,view),np=pawnsAt(cid)
 function hospitalOrigin(cid,n,extra){let c=C[cid],x=c.x,y=c.y,W=30*n,H=30;let cands=[[x-35,y-8],[x+5,y-8],[x-W/2,y+12],[x-14-W,y-15],[x+14,y-15],[x-35,y-48],[x+5,y-48],[x-W/2,y+30]];let b=pick(cands,W,H,extra,cid);return [b.x,b.y]}
 function pawnSpot(cid,n){let L=layoutBase(),key='p:'+cid+':'+n;if(L.cache[key])return L.cache[key];let c=C[cid],W=20*(n-1)+30,best=null;
  for(let dy of [0,12,22])for(let dx of [0,10,-10,18,-18]){let r=[c.x+dx-W/2,c.y-4+dy-42,c.x+dx+W/2,c.y-4+dy+3],s=hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==cid))*3+Math.abs(dx)*8+dy*5;if(!best||s<best.s)best={dx,dy,s,r}}return L.cache[key]=best}
-function pawnsAt(cid){return state.players.filter(q=>q.city===cid).length}
+function pawnsAt(cid){return state.players.filter(q=>q.city===cid&&!q.city2).length}
 function regionCenter(r){let pts=r.boundary_cities.map(k=>[C[k].x,C[k].y]),A=0,cx=0,cy=0;for(let i=0;i<pts.length;i++){let [x1,y1]=pts[i],[x2,y2]=pts[(i+1)%pts.length],f=x1*y2-x2*y1;A+=f;cx+=(x1+x2)*f;cy+=(y1+y2)*f}if(Math.abs(A)<1e-6)return [pts.reduce((a,q)=>a+q[0],0)/pts.length,pts.reduce((a,q)=>a+q[1],0)/pts.length];return [cx/(3*A),cy/(3*A)]}
 function tokenSpot(x,y,w,h,extra){let cands=[[0,0]];for(let r of [14,26,38,50])for(let a=0;a<8;a++)cands.push([Math.round(r*Math.cos(a*Math.PI/4)),Math.round(r*Math.sin(a*Math.PI/4))]);let b=pick(cands.map(([dx,dy])=>[x+dx-w/2,y+dy-h/2]),w,h,extra);return [b.x+w/2,b.y+h/2]}
 function railSpot(x1,y1,x2,y2,extra){let L=layoutBase(),best=null,len=Math.hypot(x2-x1,y2-y1),ux=(x2-x1)/len,uy=(y2-y1)/len;[.5,.42,.58,.35,.65,.28,.72].forEach((t,i)=>{let mx=x1+(x2-x1)*t,my=y1+(y2-y1)*t,s=i*2;for(let d=-22;d<=22;d+=5.5){let px=mx+ux*d,py=my+uy*d,r=[px-6,py-6,px+6,py+6];s+=hit(r,L.labels)*3+hit(r,L.dots)+hit(r,extra)}if(!best||s<best.s)best={mx,my,s}});return [best.mx,best.my]}
@@ -33,10 +33,10 @@ const FOUNDED={c0:1208,c1:850,c2:-150,c3:-25,c4:-16,c5:-136,c6:-250,c7:-45,c8:-3
 function fmtYear(y){return y<0?'–'+(-y):String(y)}
 function oldestCard(p){let cs=p.hand.filter(k=>C[k]);if(!cs.length)return null;return cs.reduce((a,b)=>FOUNDED[b]<FOUNDED[a]?b:a)}
 function suggestFirst(){let best=null;state.players.forEach((p,i)=>{let k=oldestCard(p);if(k&&(best===null||FOUNDED[k]<best.y))best={i,k,y:FOUNDED[k]}});return best}
-const PAWN={sailor:'#2f6fb3',agronomist:'#3f8f3a',railwayman:'#8a5a2b',politician:'#6b3fa0',nurse:'#e07aa6',scientist:'#ece4cf',rural_doctor:'#e07b1a'};
+const PAWN={sailor:'#2f6fb3',agronomist:'#3f8f3a',railwayman:'#8a5a2b',politician:'#6b3fa0',nurse:'#e07aa6',scientist:'#ece4cf',rural_doctor:'#e07b1a',civil_engineer:'#2c3340',palliative_nurse:'#d9dde3',student:'#c0489a',time_traveler:'#2fa37a',professor:'#e6c229'};
 const DISEASE={red:'#b0262a',blue:'#3059c8',yellow:'#f0bf0a',black:'#2a2828'};
 const HOSP={red:'#b0262a',blue:'#3059c8',yellow:'#f0bf0a',black:'#2a2828'};
-const REVEALS=new Set(['start','draw','infect','epidemic','peek']);
+const REVEALS=new Set(['start','draw','infect','epidemic','peek','ttswap','profdraw']);
 function newSeed(){let a=new Uint32Array(2);try{crypto.getRandomValues(a)}catch(e){a[0]=Math.random()*2**32;a[1]=Date.now()}return a[0].toString(36)+a[1].toString(36).slice(0,3)}
 function randRoles(){let pool=Object.keys(ROLES);for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,5)}
 let holdActive=null;
@@ -44,8 +44,9 @@ function shownActive(){return holdActive!=null?holdActive:state.active}
 function releaseHold(){if(holdActive==null)return;if(fxCurrent||fxQueue.length||flyTimer){setTimeout(releaseHold,200);return}setTimeout(()=>{if(fxCurrent||fxQueue.length||flyTimer)return releaseHold();holdActive=null;render();flashActive()},1500)}
 let state=initial(newSeed(),4,randRoles().slice(0,2)),history=[],commands=[],mode='',legal={},selectedCards=[],busy=false;
 let sel={to:null,to2:'',color:'red',region:'r34',direction:'give',other:null,passenger:false,extra:'',swapTake:null};
-const TYPES=['carriage','train','ship','build','treat','hospital','purify','agronomist','research','share','pgive','pswap','peek'];
-const LABEL={carriage:'Carriage / boat',train:'Train',ship:'Ship',build:'Build railroad',treat:'Treat disease',hospital:'Build hospital',purify:'Purify water',agronomist:'Agronomist: water',research:'Research disease',share:'Share knowledge',pgive:'Politician: give',pswap:'Politician: swap',peek:'Scientist: look at 3'};
+const TYPES=['carriage','train','ship','build','treat','hospital','purify','agronomist','research','share','pgive','pswap','peek','attract','htreat','ttswap','profdraw','stbuild','stwater','sttreat'];
+const FREEA=new Set(['stbuild','stwater','sttreat']);
+const LABEL={carriage:'Carriage / boat',train:'Train',ship:'Ship',build:'Build railroad',treat:'Treat disease',hospital:'Build hospital',purify:'Purify water',agronomist:'Agronomist: water',research:'Research disease',share:'Share knowledge',pgive:'Politician: give',pswap:'Politician: swap',peek:'Scientist: look at 3',attract:'Attract cubes',htreat:'Treat all at hospital',ttswap:'Look & swap Infection card',profdraw:'Draw an Event card',stbuild:'Place held railroad',stwater:'Place held purification',sttreat:'Treat with held cube'};
 
 /* ---------- local assets ---------- */
 let ASSETS={},REPO={},REPO_STATUS='Loading graphics from the GitHub repo…';
@@ -129,12 +130,14 @@ function syncChips(){for(let g of document.querySelectorAll('.choiceGroup[data-f
 // fewer clicks: once nothing is left to choose, the action happens straight away (Undo is available)
 function readyToGo(){if(!mode||!canAct()||busy)return false;let p=state.players[state.active],o=legal[mode]||[];if(!o.length)return false;
  let mates=others().some(i=>state.players[i].city===p.city),carrier=(mode==='ship'&&p.role==='sailor'||mode==='train'&&p.role==='railwayman')&&mates;
- if(['carriage','train','ship','build'].includes(mode)){if(!sel.to||!o.some(c=>c.to===sel.to))return false;if(carrier&&sel.passenger===undefined)return false;
+ if(['attract','htreat','ttswap','profdraw'].includes(mode))return true;
+ if(['carriage','train','ship','build','stbuild'].includes(mode)){if(!sel.to||!o.some(c=>c.to===sel.to))return false;if(carrier&&sel.passenger===undefined)return false;
   if(mode==='build'&&p.role==='railwayman'&&!state.doubleRailUsed&&state.railSupply>=2&&!sel.to2Chosen&&ADJ[sel.to].some(n=>n!==p.city&&possible({type:'build',to:sel.to,to2:n})))return false;
   if(mode==='ship'&&p.role!=='sailor')return o.filter(c=>c.to===sel.to).length===1;return true}
+ if(mode==='sttreat')return true;
  if(mode==='treat')return p.role!=='rural_doctor'||sel.extraChosen;
  if(mode==='purify')return o.filter(c=>c.region===sel.region).length===1;
- if(mode==='agronomist')return !!sel.region;
+ if(mode==='agronomist'||mode==='stwater')return !!sel.region;
  if(mode==='hospital'||mode==='pgive')return o.length===1||sel.otherChosen;
  if(mode==='share')return o.filter(c=>c.other===+sel.other).length===1||sel.dirChosen;
  if(mode==='pswap')return o.filter(c=>c.take===sel.swapTake).length===1;
@@ -176,17 +179,19 @@ function possible(cmd){try{transact(state,cmd);return true}catch(e){return !!e.n
 function canAct(){return holdActive==null&&state.status==='playing'&&state.phase==='actions'&&state.actions>0&&!fullHands(state).length&&mine(state.active)&&!inLobby()}
 function others(){return state.players.map((_,i)=>i).filter(i=>i!==state.active)}
 function choicesFor(type){if(!canAct())return [];let p=state.players[state.active],base={type},cities=p.hand.filter(k=>C[k]);
- if(['carriage','train','build'].includes(type))return MAP.cities.map(c=>({...base,to:c.id})).filter(possible);
+ if(type==='build'&&p.role==='civil_engineer')return [{...base,to:p.city2}].filter(possible);
+ if(['carriage','train','build','stbuild'].includes(type))return MAP.cities.map(c=>({...base,to:c.id})).filter(possible);
  if(type==='ship'){if(p.role==='sailor')return MAP.cities.map(c=>({...base,to:c.id})).filter(possible);return MAP.cities.flatMap(c=>cities.map(card=>({...base,to:c.id,card}))).filter(possible)}
- if(type==='treat')return COLORS.map(color=>({...base,color})).filter(possible);
+ if(type==='treat'||type==='sttreat')return COLORS.map(color=>({...base,color})).filter(possible);
+ if(['attract','htreat','ttswap','profdraw'].includes(type))return [base].filter(possible);
  if(type==='hospital')return [base].filter(possible);
  if(type==='share')return others().flatMap(o=>['give','take'].map(direction=>({...base,other:o,direction,consent:true}))).filter(possible);
  if(type==='pgive')return others().map(o=>({...base,other:o,consent:true})).filter(possible);
  if(type==='pswap')return cities.flatMap(card=>state.discard.filter(k=>C[k]).map(t=>({...base,card,take:t}))).filter(possible);
  if(type==='peek')return p.role==='scientist'&&state.playerDeck.length?[{...base,order:state.playerDeck.slice(0,3)}].filter(possible):[];
  if(type==='research')return COLORS.map(color=>({...base,color,cards:cities.filter(k=>C[k].color===color).slice(0,5)})).filter(possible);
- if(type==='agronomist')return MAP.regions.map(r=>({...base,region:r.id})).filter(possible);
- if(type==='purify')return C[p.city].region_ids.flatMap(r=>cities.map(card=>({...base,region:r,card}))).filter(possible);
+ if(type==='agronomist'||type==='stwater')return MAP.regions.map(r=>({...base,region:r.id})).filter(possible);
+ if(type==='purify')return uniq(locs(p).flatMap(c=>C[c].region_ids)).flatMap(r=>cities.map(card=>({...base,region:r,card}))).filter(possible);
  return []}
 function recompute(){for(let t of TYPES)legal[t]=choicesFor(t);if(mode&&!legal[mode]?.length)mode='';selectedCards=selectedCards.filter(k=>state.players[state.active].hand.includes(k))}
 
@@ -277,12 +282,15 @@ function drawSupply(){for(let im of document.querySelectorAll('#resources img[da
 // hand display order: the color you hold most of first, then the next, Events last; oldest city first within a color
 function handOrder(hand){let cnt={};for(let k of hand)if(C[k])cnt[C[k].color]=(cnt[C[k].color]||0)+1;let rank=k=>C[k]?[0,-cnt[C[k].color],COLORS.indexOf(C[k].color),FOUNDED[k]??0]:[1,0,0,0];return hand.slice().sort((a,b)=>{let x=rank(a),y=rank(b);for(let i=0;i<4;i++)if(x[i]!==y[i])return x[i]-y[i];return String(a)<String(b)?-1:1})}
 function drawHands(){let box=$('hands'),n=state.players.length;box.replaceChildren();
- state.players.forEach((p,i)=>{let h=el('div',{className:'hand'+(shownActive()===i&&state.phase!=='setup'?' active':'')+(p.hand.length>HAND_LIMIT?' over':'')},box);let t=el('div',{className:'handTitle'},h);pawnIcon(p.role,t,14);el('span',{className:'roleLink',onmouseenter:()=>showPreview('role:'+p.role),onmouseleave:()=>hidePreview(),onclick:e=>{e.stopPropagation();showPreview('role:'+p.role,true)},textContent:plabel(i)+' · '+(p.city?C[p.city].name:'choose start')+' · '+p.hand.length+'/'+HAND_LIMIT+seatTag(i),title:ROLE_TEXT[p.role]},t);
+ state.players.forEach((p,i)=>{let h=el('div',{className:'hand'+(shownActive()===i&&state.phase!=='setup'?' active':'')+(p.hand.length>handLimit(p)?' over':'')},box);let t=el('div',{className:'handTitle'},h);pawnIcon(p.role,t,14);el('span',{className:'roleLink',onmouseenter:()=>showPreview('role:'+p.role),onmouseleave:()=>hidePreview(),onclick:e=>{e.stopPropagation();showPreview('role:'+p.role,true)},textContent:plabel(i)+' · '+(p.city?C[p.city].name+(p.city2?' – '+C[p.city2].name:''):'choose start')+' · '+p.hand.length+'/'+handLimit(p)+seatTag(i),title:ROLE_TEXT[p.role]},t);
   let cards=el('div',{className:'handCards'},h);for(let k of handOrder(p.hand)){let b=el('button',{className:'card '+(C[k]?.color||'event')+(selectedCards.includes(k)&&i===state.active?' selected':''),textContent:cardName(k),title:C[k]?cardName(k)+' — '+C[k].color+' · founded '+fmtYear(FOUNDED[k]):EVENTS[k]+': '+EVENT_TEXT[k]},cards);b.onmouseenter=()=>showPreview(k);b.onmouseleave=()=>hidePreview();
-   if(p.hand.length>HAND_LIMIT&&!['epidemic','setup','ended'].includes(state.phase)&&!EVENTS[k]){b.textContent='✕ '+cardName(k);b.title='Discard to reach the hand limit';b.onclick=()=>perform({type:'discard',seat:i,card:k});b.disabled=!mine(i)}
+   if(p.hand.length>handLimit(p)&&!['epidemic','setup','ended'].includes(state.phase)&&!EVENTS[k]){b.textContent='✕ '+cardName(k);b.title='Discard to reach the hand limit';b.onclick=()=>perform({type:'discard',seat:i,card:k});b.disabled=!mine(i)}
    else if(EVENTS[k]){b.onclick=()=>openEvent(i,k);b.disabled=['setup','ended'].includes(state.phase)||!mine(i)}
    else b.onclick=()=>{if(i!==state.active||!['purify','ship','research'].includes(mode))return;if(mode==='research'){if(C[k].color!==sel.color)return;selectedCards=selectedCards.includes(k)?selectedCards.filter(c=>c!==k):[...selectedCards,k]}else selectedCards=[k];render()}}
-  if(p.hand.length>HAND_LIMIT&&!['epidemic','setup','ended'].includes(state.phase))el('span',{className:'detail',textContent:' Over the limit: click ✕ to discard, or play an Event.'},cards)});let act=box.children[state.active];if(act&&box.scrollHeight>box.clientHeight)requestAnimationFrame(()=>{let r=act.offsetTop-box.offsetTop;if(r<box.scrollTop||r+act.offsetHeight>box.scrollTop+box.clientHeight)box.scrollTop=r-4})}
+  if(p.event){let b=el('button',{className:'card event',textContent:'On role card: '+EVENTS[p.event],title:EVENTS[p.event]+': '+EVENT_TEXT[p.event]+' (played from the University Professor card, then removed from the game)'},cards);b.onmouseenter=()=>showPreview(p.event);b.onmouseleave=()=>hidePreview();b.onclick=()=>openEvent(i,p.event,true);b.disabled=['setup','ended'].includes(state.phase)||!mine(i)}
+  if(p.hold){let h2=p.hold,bits=[];if(h2.rail)bits.push('railroad');if(h2.water)bits.push('purification');for(let c of h2.cubes)bits.push(c+' cube');el('div',{className:'detail',textContent:'On the Student card: '+(bits.join(', ')||'nothing yet')},h)}
+  if(p.role==='time_traveler'&&state.revealed&&state.revealed.length){let r=el('div',{className:'detail'},h);r.append('Infection cards this turn: ');state.revealed.forEach((k,j)=>{el('span',{className:'miniCard '+C[k].color,textContent:C[k].name,title:'Will be infected '+(j+1)+(j===0?'st':j===1?'nd':j===2?'rd':'th')},r);r.append(' ')})}
+  if(p.hand.length>handLimit(p)&&!['epidemic','setup','ended'].includes(state.phase))el('span',{className:'detail',textContent:' Over the limit: click ✕ to discard, or play an Event.'},cards)});let act=box.children[state.active];if(act&&box.scrollHeight>box.clientHeight)requestAnimationFrame(()=>{let r=act.offsetTop-box.offsetTop;if(r<box.scrollTop||r+act.offsetHeight>box.scrollTop+box.clientHeight)box.scrollTop=r-4})}
 
 /* ---------- action panel ---------- */
 function drawSetup(){let box=$('startFields');box.replaceChildren();state.players.forEach((p,i)=>{let items=p.hand.filter(k=>C[k]);let opts=(items.length?items:Object.keys(C)).map(k=>[k,C[k].name]);if(!opts.some(([v])=>v===sel['start'+i]))sel['start'+i]=opts[0][0];field(plabel(i)+' starts in','start'+i,opts,sel['start'+i],v=>sel['start'+i]=v,box)});let fp=$('firstPlayer'),sug=suggestFirst(),key=state.seed+':'+state.players.map(q=>q.hand.join()).join('|');fp.replaceChildren();state.players.forEach((p,i)=>{let k=oldestCard(p);el('option',{value:i,textContent:plabel(i)+(k?' · '+C[k].name+' '+fmtYear(FOUNDED[k]):'')},fp)});if(fp.dataset.key!==key){fp.dataset.key=key;fp.value=sug?String(sug.i):'0'}else if(+fp.dataset.v<state.players.length)fp.value=fp.dataset.v;fp.onchange=()=>fp.dataset.v=fp.value;fp.dataset.v=fp.value;buttonize(fp);
@@ -297,29 +305,30 @@ function drawAction(){let box=$('actionButtons');box.replaceChildren();{let u=$(
  if(!TYPES.some(t=>legal[t]?.length)){$('actionHint').textContent=state.actions?'No legal actions. End actions to draw.':'No actions left. End actions to draw 2 cards.';return}
  if(!mode){$('actionHint').textContent='Choose an action, or click a ringed city on the map to move there. Only actions you can take right now are shown.';return}
  let options=legal[mode],p=state.players[state.active],form=$('actionForm');
- if(['carriage','train','ship','build'].includes(mode)){let ids=byCubes(uniq(options.map(c=>c.to)));if(!ids.includes(sel.to))sel.to=ids[0];field('Destination — or click a highlighted city','target',ids.map(k=>[k,C[k].name+cubeNote(k)]),sel.to,v=>{sel.to=v;sel.to2='';render()},form,{go:true});
+ if(['carriage','train','ship','build','stbuild'].includes(mode)){let ids=byCubes(uniq(options.map(c=>c.to)));if(!ids.includes(sel.to))sel.to=ids[0];field('Destination — or click a highlighted city','target',ids.map(k=>[k,C[k].name+cubeNote(k)]),sel.to,v=>{sel.to=v;sel.to2='';render()},form,{go:true});
   let carrier=mode==='ship'&&p.role==='sailor'||mode==='train'&&p.role==='railwayman';let mates=others().filter(i=>state.players[i].city===p.city);
   if(carrier&&mates.length){let items=[['','No passenger'],...mates.map(i=>[String(i),'Take '+plabel(i)])];field('Passenger','passenger',items,sel.passenger===false?'':sel.passenger,v=>sel.passenger=v===''?false:v,form,{go:true})}else sel.passenger=false;
   if(mode==='build'&&p.role==='railwayman'&&!state.doubleRailUsed&&state.railSupply>=2){let next=ADJ[sel.to].filter(n=>n!==p.city&&possible({type:'build',to:sel.to,to2:n}));if(next.length){field('Railwayman: second token (once per turn)','to2',[['','No second token'],...next.map(k=>[k,C[sel.to].name+' → '+C[k].name])],sel.to2,v=>{sel.to2=v;sel.to2Chosen=true;paint()},form,{go:true})}}}
- if(['treat','research'].includes(mode)){let ids=uniq(options.map(c=>c.color));if(!ids.includes(sel.color))sel.color=ids[0];field('Disease','disease',ids.map(k=>[k,k]),sel.color,v=>{sel.color=v;selectedCards=[];sel.extra='';render()},form,{go:true})}
+ if(['treat','research','sttreat'].includes(mode)){let ids=uniq(options.map(c=>c.color));if(!ids.includes(sel.color))sel.color=ids[0];field('Disease','disease',ids.map(k=>[k,k]),sel.color,v=>{sel.color=v;selectedCards=[];sel.extra='';render()},form,{go:true})}
  if(mode==='treat'&&p.role==='rural_doctor'){let near=uniq([p.city,...C[p.city].region_ids.flatMap(r=>R[r].adjacent_cities)]);let after=CP(state.cubes);after[p.city][sel.color]--;let items=[['','No extra cube']];for(let c of near)for(let k of COLORS)if(after[c][k]>0)items.push([c+'|'+k,C[c].name+' · '+k+' ('+after[c][k]+')']);field('Rural Doctor: extra cube','extra',items,sel.extra,v=>{sel.extra=v;sel.extraChosen=true},form,{go:true})}
- if(['purify','agronomist'].includes(mode)){let ids=uniq(options.map(c=>c.region));if(!ids.includes(sel.region))sel.region=ids[0];field('Adjacent region — or click it on the map','region',ids.map(k=>[k,k+' · water '+state.water[k]]),sel.region,v=>{sel.region=v;selectedCards=[];render()},form,{go:true});el('p',{className:'detail',textContent:R[sel.region].adjacent_cities.map(k=>C[k].name).join(' · ')},form)}
+ if(['purify','agronomist','stwater'].includes(mode)){let ids=uniq(options.map(c=>c.region));if(!ids.includes(sel.region))sel.region=ids[0];field('Adjacent region — or click it on the map','region',ids.map(k=>[k,k+' · water '+state.water[k]]),sel.region,v=>{sel.region=v;selectedCards=[];render()},form,{go:true});el('p',{className:'detail',textContent:R[sel.region].adjacent_cities.map(k=>C[k].name).join(' · ')},form)}
  if(mode==='share'||mode==='pgive'){let ids=uniq(options.map(c=>c.other));if(!ids.includes(+sel.other))sel.other=ids[0];field('Other player','other',ids.map(i=>[String(i),plabel(i)]),sel.other,v=>{sel.other=+v;sel.otherChosen=mode==='pgive';render()},form,{go:true});if(mode==='share'){let dirs=options.filter(c=>c.other===+sel.other).map(c=>c.direction);if(!dirs.includes(sel.direction))sel.direction=dirs[0];field('Transfer','direction',dirs.map(k=>[k,k==='give'?'Give the '+C[p.city].name+' card':'Take the '+C[p.city].name+' card']),sel.direction,v=>{sel.direction=v;sel.dirChosen=true},form,{go:true})}else el('p',{className:'detail',textContent:'Gives the '+C[p.city].name+' card to that player, wherever they are.'},form)}
  if(mode==='pswap'){let takes=uniq(options.map(c=>c.take));if(!takes.includes(sel.swapTake))sel.swapTake=takes[0];field('Take from discard pile','swapTake',takes.map(k=>[k,C[k].name+' ('+C[k].color+')']),sel.swapTake,v=>{sel.swapTake=v;selectedCards=[];render()},form,{go:true});let gives=options.filter(c=>c.take===sel.swapTake).map(c=>c.card);selectedCards=selectedCards.filter(k=>gives.includes(k));if(!selectedCards.length)selectedCards=[gives[0]];let pk=el('div',{className:'cardPicker'},form);el('div',{className:'label',textContent:'Card to put in the discard pile'},pk);for(let k of gives)el('button',{className:'miniCard '+C[k].color+(selectedCards.includes(k)?' selected':''),textContent:C[k].name,onclick:()=>{selectedCards=[k];render();goNow()}},pk)}
  if(mode==='peek'){let top=state.playerDeck.slice(0,3);if(!sel.peek||sel.peek.join()!==[...sel.peek].sort().join()&&false||sel.peek.slice().sort().join()!==top.slice().sort().join())sel.peek=top.slice();el('p',{className:'detail',textContent:'Top of the Player deck (first = drawn next). Reorder, then confirm.'},form);let list=el('div',{className:'peekList'},form);sel.peek.forEach((k,i)=>{let row=el('div',{},list);el('span',{className:'miniCard '+(C[k]?.color||(EVENTS[k]?'event':'epidemic')),textContent:(i+1)+'. '+cardName(k)},row);let up=el('button',{textContent:'↑',disabled:i===0,onclick:()=>{[sel.peek[i-1],sel.peek[i]]=[sel.peek[i],sel.peek[i-1]];render()}},row);let dn=el('button',{textContent:'↓',disabled:i===sel.peek.length-1,onclick:()=>{[sel.peek[i+1],sel.peek[i]]=[sel.peek[i],sel.peek[i+1]];render()}},row)})}
  if(['purify','research'].includes(mode)||(mode==='ship'&&p.role!=='sailor')){let eligible=p.hand.filter(k=>C[k]);if(mode==='purify')eligible=eligible.filter(k=>options.some(c=>c.card===k&&c.region===sel.region));if(mode==='ship')eligible=eligible.filter(k=>C[k].color===C[sel.to].color);if(mode==='research')eligible=eligible.filter(k=>C[k].color===sel.color);selectedCards=selectedCards.filter(k=>eligible.includes(k));if(mode!=='research'&&!selectedCards.length)selectedCards=eligible.slice(0,1);if(mode==='research'&&!selectedCards.length&&eligible.length===5)selectedCards=eligible.slice();let pk=el('div',{className:'cardPicker'},form);el('div',{className:'label',textContent:mode==='research'?'Select five cards ('+selectedCards.length+'/5)':'City card to discard'},pk);for(let k of eligible)el('button',{className:'miniCard '+C[k].color+(selectedCards.includes(k)?' selected':''),textContent:C[k].name,onclick:()=>{selectedCards=mode==='research'?(selectedCards.includes(k)?selectedCards.filter(c=>c!==k):[...selectedCards,k]):[k];render();if(mode!=='research')goNow()}},pk)}
  if(mode==='hospital')$('actionHint').textContent='Discard '+C[p.city].name+' to place the '+C[p.city].color+' hospital here'+(state.hospitals[C[p.city].color]?' (moves it from '+C[state.hospitals[C[p.city].color]].name+').':'.');
- if(mode==='treat'&&p.role!=='rural_doctor')$('actionHint').textContent='Remove one '+sel.color+' cube from '+C[p.city].name+'.';
+ if(mode==='treat'&&p.role!=='rural_doctor')$('actionHint').textContent='Remove one '+sel.color+' cube'+(p.city2?' from one of your two cities.':' from '+C[p.city].name+'.');
+ if(mode==='stbuild')$('actionHint').textContent='Places the railroad token from your card. This costs no action.';if(mode==='stwater')$('actionHint').textContent='Places the purification token from your card. This costs no action.';if(mode==='sttreat')$('actionHint').textContent='Returns the cube on your card to remove a cube of that color here. This costs no action.';
  if(mode==='agronomist')$('actionHint').textContent='Place one purification token. No card required.';
  if(mode==='purify')$('actionHint').textContent='Places up to '+(p.role==='agronomist'?3:2)+' tokens ('+state.waterSupply+' left in supply).';
- $('confirm').hidden=false;$('confirm').textContent=LABEL[mode]+' · 1 action';$('confirm').disabled=mode==='research'&&selectedCards.length!==5}
+ $('confirm').hidden=false;$('confirm').textContent=LABEL[mode]+(FREEA.has(mode)?' · free':' · 1 action');$('confirm').disabled=mode==='research'&&selectedCards.length!==5}
 async function makeCmd(){let p=state.players[state.active],cmd={type:mode};
- if(['carriage','train','ship','build'].includes(mode))cmd.to=sel.to;
+ if(['carriage','train','ship','build','stbuild'].includes(mode))cmd.to=sel.to;
  if(mode==='ship'&&p.role!=='sailor')cmd.card=selectedCards[0];
  if(mode==='build'&&sel.to2)cmd.to2=sel.to2;
- if(['treat','research'].includes(mode))cmd.color=sel.color;
+ if(['treat','research','sttreat'].includes(mode))cmd.color=sel.color;
  if(mode==='treat'&&sel.extra){let [city,color]=sel.extra.split('|');cmd.extra={city,color}}
- if(['purify','agronomist'].includes(mode))cmd.region=sel.region;if(mode==='purify')cmd.card=selectedCards[0];
+ if(['purify','agronomist','stwater'].includes(mode))cmd.region=sel.region;if(mode==='purify')cmd.card=selectedCards[0];
  if(mode==='research')cmd.cards=selectedCards.slice();
  if(mode==='pswap'){cmd.card=selectedCards[0];cmd.take=sel.swapTake}
  if(mode==='peek')cmd.order=sel.peek.slice();
@@ -358,7 +367,7 @@ function drawDecks(T){
  let ti=state.infectionDiscard[state.infectionDiscard.length-1],tp=state.discard[state.discard.length-1];
  if(ti)put('infDisc',cardArt(ti,true),state.infectionDiscard.length,'Infection discard');
  if(tp)put('plDisc',cardArt(tp,false),state.discard.length,'Player discard')}
-function paint(){drawCityList();for(let k of ['areas','tracks','pieces'])$(k).replaceChildren();let A=$('areas'),T=$('tracks'),P=$('pieces');drawDecks(T);let p=state.players[state.active];let occupied=new Set(state.players.map(q=>q.city).filter(Boolean));
+function paint(){drawCityList();for(let k of ['areas','tracks','pieces'])$(k).replaceChildren();let A=$('areas'),T=$('tracks'),P=$('pieces');drawDecks(T);let p=state.players[state.active];let occupied=new Set(state.players.flatMap(q=>[q.city,q.city2]).filter(Boolean));
  let quick=quickMoves(),regionMode=['purify','agronomist'].includes(mode)&&canAct(),targets=['carriage','train','ship','build'].includes(mode)&&canAct()?new Set((legal[mode]||[]).map(c=>c.to)):new Set();
  for(let r of MAP.regions){let active=regionMode&&r.id===sel.region,cand=regionMode&&(legal[mode]||[]).some(c=>c.region===r.id);if(active||cand||$('showRegions').checked||state.prevention===r.id){let poly=svg('polygon',{points:r.boundary_cities.map(k=>C[k].x+','+C[k].y).join(' '),fill:active?'#00edff':state.prevention===r.id?'#e04040':'#4a9aff','fill-opacity':active?.28:cand?.1:state.prevention===r.id?.1:.04,stroke:active?'#00efff':'none','stroke-width':3},A);if(cand)poly.style.cursor='pointer';poly.onclick=()=>{if(cand){sel.region=r.id;selectedCards=[];render();autoGo()}}}if($('showRegions').checked){let t=svg('text',{x:r.label_position.x,y:r.label_position.y+30,'text-anchor':'middle',style:'font-size:11px'},P);t.textContent=r.id}}
  if(mapPick&&mapPick.kind==='region')for(let r of MAP.regions){if(!mapPick.options.has(r.id))continue;let hv=mapPick.hover===r.id,poly=svg('polygon',{points:r.boundary_cities.map(k=>C[k].x+','+C[k].y).join(' '),fill:'#00edff','fill-opacity':hv?.4:.2,stroke:'#00efff','stroke-width':hv?5:3,class:'pickable'},A);poly.style.cursor='pointer';svg('title',{},poly).textContent=regionLabel(r.id);poly.onclick=e=>{e.stopPropagation();mapPick.pick(r.id)};poly.onmouseenter=()=>{mapPick.hover=r.id;for(let b of document.querySelectorAll('#choiceOptions button'))b.classList.toggle('hot',b.textContent===regionLabel(r.id))}}
@@ -378,7 +387,7 @@ function paint(){drawCityList();for(let k of ['areas','tracks','pieces'])$(k).re
   let hs=COLORS.filter(color=>state.hospitals[color]===c.id);if(hs.length){if(occupied.has(c.id))used.push(pawnSpot(c.id,pawnsAt(c.id)).r);let [hx,hy]=hospitalOrigin(c.id,hs.length,used);hs.forEach((color,i)=>drawHospital(P,hx+15+30*i,hy+28,color))}
   let pk=mapPick&&mapPick.kind==='city'&&mapPick.options.has(c.id),qm=!pk&&!mapPick&&quick.has(c.id),tg=targets.has(c.id)||pk,dot=svg('circle',{cx:c.x,cy:c.y,r:15,fill:tg?'#00edff':'#fff','fill-opacity':tg?.25:qm?.08:0,stroke:tg?'#00efff':qm?'#00d0e0':'transparent','stroke-width':tg?3:2.5,'stroke-dasharray':qm?'4 3':'none'},P);svg('title',{},dot).textContent=c.name+(c.port?' (port)':'')+(qm?' · click to '+quick.get(c.id).label:'');if(pk){dot.style.cursor='pointer';dot.onclick=()=>mapPick.pick(c.id)}else if(tg){dot.style.cursor='pointer';dot.onclick=()=>{sel.to=c.id;sel.to2='';render();autoGo()}}else if(qm){dot.style.cursor='pointer';dot.onclick=()=>quickMove(c.id)}if($('showNames').checked){let t=svg('text',{x:c.x+12,y:c.y-18,style:'font-size:12px'},P);t.textContent=c.name}}
  // pawns
- let byCity={};state.players.forEach((q,i)=>{if(q.city)(byCity[q.city]=byCity[q.city]||[]).push(i)});for(let [cid,seats] of Object.entries(byCity)){let c=C[cid],n=seats.length,ps=pawnSpot(cid,n);seats.forEach((i,j)=>{let x=c.x+ps.dx+(j-(n-1)/2)*20,y=c.y-4+ps.dy;drawPawn(P,x,y,state.players[i].role,i+1,i===state.active&&state.phase!=='setup')})}}
+ let byCity={};state.players.forEach((q,i)=>{if(q.city&&!q.city2)(byCity[q.city]=byCity[q.city]||[]).push(i)});state.players.forEach((q,i)=>{if(q.city&&q.city2){let a=C[q.city],b=C[q.city2];svg('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:PAWN[q.role],'stroke-width':3,'stroke-linecap':'round',opacity:.55},P);drawPawn(P,(a.x+b.x)/2,(a.y+b.y)/2+8,q.role,i+1,i===state.active&&state.phase!=='setup')}});for(let [cid,seats] of Object.entries(byCity)){let c=C[cid],n=seats.length,ps=pawnSpot(cid,n);seats.forEach((i,j)=>{let x=c.x+ps.dx+(j-(n-1)/2)*20,y=c.y-4+ps.dy;drawPawn(P,x,y,state.players[i].role,i+1,i===state.active&&state.phase!=='setup')})}}
 
 /* ---------- render ---------- */
 // keep the side panel from overflowing: shrink a long button list (it scrolls) rather than push the page
@@ -388,7 +397,7 @@ function render(){syncChips();requestAnimationFrame(fitChoices);let p=state.play
  $('phaseLabel').textContent=state.phase;$('footer').textContent='Player deck '+state.playerDeck.length+' · infection deck '+state.infectionDeck.length+' · Events in game: '+state.eventsInGame.map(k=>EVENTS[k]).join(', ')+' · seed '+state.seed+' · v'+UI_VERSION;
  $('outbreaks').textContent=shownOut()+'/8';$('rate').textContent=RATE[shownRate()];$('railsSupply').textContent=state.railSupply;$('waterSupply').textContent=state.waterSupply;drawSupply();
  let flags=[];if(state.goodSeason)flags.push('Good Season pending: next infection step draws 1 bottom card');if(state.phase==='infection'&&state.infectionFromBottom)flags.push('Good Season: drawing from the bottom');if(state.doubleRailUsed)flags.push('Railwayman double build used this turn');$('flags').textContent=flags.join(' · ');
- let np=$('nextPhase');np.hidden=['setup','ended'].includes(state.phase)||!mine(state.active);np.disabled=holdActive!=null||fullHands(state).length>0&&state.phase!=='epidemic';np.textContent=state.phase==='actions'?'End actions & draw 2':state.phase==='epidemic'?'Resolve next Epidemic':'Infect next city · '+state.infectionRemaining+' left';
+ let np=$('nextPhase');np.hidden=['setup','ended'].includes(state.phase)||!mine(state.active);np.disabled=holdActive!=null||fullHands(state).length>0&&state.phase!=='epidemic';np.textContent=state.phase==='actions'?(p.role==='time_traveler'?'End actions & start infection step':'End actions & draw 2'):state.phase==='epidemic'?'Resolve next Epidemic':'Infect next city · '+state.infectionRemaining+' left';
  drawAction();onlineHint();drawHands();paint();fitLayout()}
 
 /* ---------- events ---------- */
@@ -420,8 +429,8 @@ function eventForm(card,box,seat,onChange){let m={},n=state.players.length,refre
   if(card==='travel_day_night')Object.assign(a,{seat:m.seat,to:m.to});
   if(card==='when_plans_were_good'){a.event=m.event;a.inner=m.inner?m.inner.args:{}}
   return a},consentNeeded(a){a=a||this.args;let c=card==='when_plans_were_good'?a.event:card,x=card==='when_plans_were_good'?a.inner:a;if(c==='mail_correspondence')return 'Do '+plabel(x.seatA)+' and '+plabel(x.seatB)+' agree to swap these cards?';if(c==='telegraph_message')return state.players[x.to]?.name+': do you accept these cards?';if(c==='ships_arrive')return 'Do the moved players agree to travel to '+C[x.city]?.name+'?';if(c==='travel_day_night'&&x.seat!==seat)return plabel(x.seat)+': do you agree to move to '+C[x.to]?.name+'?';return null}}}
-function openEvent(seat,card){if(['setup','ended'].includes(state.phase)||busy||!mine(seat))return;let box=$('eventForm');box.replaceChildren();$('eventTitle').textContent=plabel(seat)+': '+EVENTS[card];let f=eventForm(card,box,seat);
- $('eventConfirm').onclick=async()=>{let args=f.args,q=f.consentNeeded(args);if(q){let ok=await ask(q);if(!ok){notice('Not agreed — Event not played.');return}if(card==='when_plans_were_good')args.inner.consent=true;else args.consent=true}$('eventDialog').close();if(!await perform({type:'event',seat,card,args}))showDialog('eventDialog')};showDialog('eventDialog')}
+function openEvent(seat,card,fromRole){if(['setup','ended'].includes(state.phase)||busy||!mine(seat))return;let box=$('eventForm');box.replaceChildren();$('eventTitle').textContent=plabel(seat)+': '+EVENTS[card];let f=eventForm(card,box,seat);
+ $('eventConfirm').onclick=async()=>{let args=f.args,q=f.consentNeeded(args);if(q){let ok=await ask(q);if(!ok){notice('Not agreed — Event not played.');return}if(card==='when_plans_were_good')args.inner.consent=true;else args.consent=true}$('eventDialog').close();if(!await perform({type:'event',seat,card,args,...(fromRole?{fromRole:true}:{})}))showDialog('eventDialog')};showDialog('eventDialog')}
 
 /* ---------- wiring ---------- */
 function showDialog(id){if(!$(id).open)$(id).showModal()}

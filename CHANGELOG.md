@@ -1,3 +1,13 @@
+# v0.10.6
+
+- Five expansion roles added (12 roles in total; the random role choice now draws from all of them):
+  - Civil Engineer: the pawn stands on a connection between two cities and counts as being in both (you choose the city for each action). Carriage/Boat moves to a neighbouring connection, and railroads can only be built on the connection you stand on.
+  - Palliative Care Nurse: carries 1 disease cube along whenever she moves (asked each time); "Attract cubes" pulls 1 cube from each connected city (extras beyond 3 are treated); "Treat all at hospital" removes every cube of the hospital's color.
+  - Student: when another player builds a railroad, places a purification token or treats a cube near her, a matching token/cube lands on her card and she may take 1 free move. On her turn she places those tokens (or returns a cube to treat that color) for free.
+  - Time Traveller: draws his 2 Player cards at the start of his turn and the Infection cards for the end of the turn are laid out face up; "Look & swap" lets him swap one of the next 2 deck cards with a visible one; hand limit 9.
+  - University Professor: once per turn draws a random unused Event onto his role card; he needs a matching-color City card near him to play any Event; Events he plays leave the game.
+- New pawn pictures for the five roles, and the role card pictures were renamed to match the usual pattern (role_civil_engineer, role_palliative_nurse, role_student, role_time_traveler, role_professor).
+
 # v0.10.5
 
 - The numbers on the pawns are gone.

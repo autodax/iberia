@@ -52,7 +52,9 @@ def shade(hexcol):
     pm=pm.reshape(H,SS,W,SS,4).mean((1,3));out=pm.copy();out[...,:3]=np.where(pm[...,3:]>0,pm[...,:3]/np.maximum(pm[...,3:],1e-6),0)
     return Image.fromarray((np.clip(out,0,1)*255).astype(np.uint8),'RGBA')
 import sys,os
-PAWN={'sailor':'#2f6fb3','agronomist':'#3f8f3a','railwayman':'#8a5a2b','politician':'#6b3fa0','nurse':'#e07aa6','scientist':'#ece4cf','rural_doctor':'#e07b1a'}
+PAWN={'sailor':'#2f6fb3','agronomist':'#3f8f3a','railwayman':'#8a5a2b','politician':'#6b3fa0','nurse':'#e07aa6','scientist':'#ece4cf','rural_doctor':'#e07b1a','civil_engineer':'#2c3340','palliative_nurse':'#d9dde3','student':'#c0489a','time_traveler':'#2fa37a','professor':'#e6c229'}
 os.makedirs(sys.argv[1],exist_ok=True)
+ONLY=os.environ.get('ONLY','').split(',') if os.environ.get('ONLY') else None
 for k,c in PAWN.items():
+    if ONLY and k not in ONLY:continue
     im=shade(c).crop((30,36,226,330));print(k,im.size,im.getbbox());im.save(os.path.join(sys.argv[1],'pawn_'+k+'.png'))

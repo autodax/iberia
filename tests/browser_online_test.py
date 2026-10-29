@@ -83,7 +83,11 @@ async def main():
       ok(await A.is_visible('#setupPanel'),'host sees the setup panel')
       ok(not await B.is_visible('#setupPanel'),'guest does not see the setup panel')
       r0=await A.evaluate("ROLES[state.players[0].role]");await A.locator('#setupPanel button',has_text=r0).last.click()  # the first player depends on the random deal, so choose seat 1
-      await A.click('#begin');await B.wait_for_function('state.phase==="actions"',timeout=8000)
+      await A.click('#begin')
+      for _ in range(12):  # random roles: the Civil Engineer (or a Palliative Care/Student start) may ask a question
+        if await A.evaluate("document.getElementById('choiceDialog').open"):await A.locator('#choiceOptions button').first.click()
+        await A.wait_for_timeout(150)
+      await B.wait_for_function('state.phase==="actions"',timeout=8000)
       await A.evaluate('resetFx()');await B.evaluate('resetFx()')
       ok(await A.evaluate('netSum()')==await B.evaluate('netSum()'),'same state after Begin game')
       # --- it is seat 0's turn (host). The guest has no actions and cannot act.

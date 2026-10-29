@@ -16,7 +16,7 @@ const NET_PROTO=1,NET_MAX_PEOPLE=8,NET_HOST_ID='host',NET_ACK_TIMEOUT=20000,NET_
 const NET_CODE_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I so a code read aloud is hard to get wrong
 const NET_SAVE_KEY='iberia-online-host';
 
-function netShuffleRoles(){const pool=['sailor','agronomist','railwayman','politician','nurse','scientist','rural_doctor'];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,5)}
+function netShuffleRoles(){const pool=['sailor','agronomist','railwayman','politician','nurse','scientist','rural_doctor','civil_engineer','palliative_nurse','student','time_traveler','professor'];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,5)}
 function netRandom(n,chars){let out='',a=new Uint32Array(n);try{crypto.getRandomValues(a)}catch(e){for(let i=0;i<n;i++)a[i]=Math.random()*4294967296}for(let i=0;i<n;i++)out+=chars[a[i]%chars.length];return out}
 function netNewCode(){return netRandom(5,NET_CODE_CHARS)}
 function netNormalizeCode(t){return String(t||'').toUpperCase().split('').filter(c=>NET_CODE_CHARS.includes(c)).join('')}

@@ -1,7 +1,7 @@
-# Pandemic Iberia browser prototype v0.10.5
+# Pandemic Iberia browser prototype v0.10.6
 Play the current version at https://autodax.github.io/iberia/. Every version stays playable at https://autodax.github.io/iberia/versions/ in any modern browser. Everything is inside that one file.
 
-- 2-5 players, all 7 standard roles, all 15 Events (random selection per the setup table).
+- 2-5 players, 12 roles (7 standard plus 5 expansion roles), all 15 Events (random selection per the setup table).
 - Outbreak and epidemic alerts; drawn player and infection cards are shown briefly (Menu > Card reveals: Normal / Fast / Off). Click a reveal to skip it.
 - Graphics: loaded from this repo's `assets/` folder by default. Top-level files are matched by name (`cube_red.png` -> cube, `hospital_blue.png`, `research_black.png`, `purification.png`, `prevention.png`, `infection_rate.png`, `outbreak.png`, `railroad.png`, `board.jpeg` = board). Subfolders keep their path, e.g. `assets/pawns/pawn_nurse.png`, `assets/cards/epidemic.png`, `assets/alerts/outbreak.png`, `assets/audio/epidemic.mp3`.
 - Local override: Menu > Asset folder. Pick a folder laid out as in `docs/asset-manifest.csv`; matching files replace the built-in graphics for that session. Names are case-insensitive, `_` and `-` are treated alike, any image extension works.
@@ -53,5 +53,5 @@ Card art lives in `assets/` and is found by name, with no lookup table:
 
 - `city_cards/city_<city>.jpeg` and `infection_cards/infection_<city>.jpeg`, where `<city>` is the city name in lower case with accents removed and dashes for spaces (`city_a-coruna`, `infection_san-sebastian-donostia`).
 - `event_cards/event_<event>.jpeg`, using the event's code name (`event_new_rails`, `event_when_plans_were_good`).
-- `role_cards/role_<role>.jpeg` (`role_rural_doctor`, `role_scientist`).
+- `role_cards/role_<role>.jpeg` (`role_rural_doctor`, `role_scientist`, `role_civil_engineer`, `role_palliative_nurse`, `role_student`, `role_time_traveler`, `role_professor`).
 - `city_back.png`, `infection_back.jpg`, `role_back.jpg` and `epidemia_card.jpeg` in the main `assets` folder.
