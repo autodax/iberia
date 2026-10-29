@@ -41,7 +41,7 @@ function newSeed(){let a=new Uint32Array(2);try{crypto.getRandomValues(a)}catch(
 function randRoles(){let pool=Object.keys(ROLES);for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,5)}
 let holdActive=null;
 function shownActive(){return holdActive!=null?holdActive:state.active}
-function releaseHold(){if(holdActive==null)return;if(fxCurrent||fxQueue.length||flyTimer){setTimeout(releaseHold,200);return}setTimeout(()=>{if(fxCurrent||fxQueue.length||flyTimer)return releaseHold();holdActive=null;render()},700)}
+function releaseHold(){if(holdActive==null)return;if(fxCurrent||fxQueue.length||flyTimer){setTimeout(releaseHold,200);return}setTimeout(()=>{if(fxCurrent||fxQueue.length||flyTimer)return releaseHold();holdActive=null;render();flashActive()},700)}
 let state=initial(newSeed(),4,randRoles().slice(0,2)),history=[],commands=[],mode='',legal={},selectedCards=[],busy=false;
 let sel={to:null,to2:'',color:'red',region:'r34',direction:'give',other:null,passenger:false,extra:'',swapTake:null};
 const TYPES=['carriage','train','ship','build','treat','hospital','purify','agronomist','research','share','pgive','pswap','peek'];
@@ -73,9 +73,10 @@ async function loadAssets(files){for(let u of Object.values(ASSETS))URL.revokeOb
  let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC);$('assetStatus').textContent=n?n+' files loaded from your folder'+(b?' (including board image).':'.'):'No local files loaded. '+REPO_STATUS;render()}
 const BOARD_SRC=document.getElementById('boardImage').getAttribute('href');
 /* ---------- sounds (assets/sounds/*.mp3; a local folder or the repo can replace them) ---------- */
-const SND_VOL={blocked:.7,move:.7,draw:.6,cube:.7,outbreak:.9,epidemic:.75,win:.7,lose:.7},SND_KEY='iberia-sound';
+const SND_VOL={blocked:.7,move:.7,draw:.6,cube:.7,outbreak:.9,epidemic:.75,win:.7,lose:.7,turn:.55},SND_KEY='iberia-sound';
 let sndCtx=null,sndBuf={},sndLast={},sndPrefs={on:false,vol:.7};try{Object.assign(sndPrefs,JSON.parse(localStorage.getItem(SND_KEY)||'{}'))}catch(e){}
-function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'tokens/'+name]){k=norm(k);for(let src of [ASSETS,REPO,typeof EMBED!=='undefined'?EMBED:{}])if(src[k]&&!out.includes(src[k]))out.push(src[k])}return out}
+const SND_REV='3';
+function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'tokens/'+name]){k=norm(k);for(let src of [ASSETS,REPO,typeof EMBED!=='undefined'?EMBED:{}]){let u=src[k];if(u&&src===REPO&&/^https?:|^assets\//.test(u))u+='?r='+SND_REV;if(u&&!out.includes(u))out.push(u)}}return out}
 function soundUrl(name){return soundUrls(name)[0]||null}
 function saveSound(){try{localStorage.setItem(SND_KEY,JSON.stringify(sndPrefs))}catch(e){}}
 function syncSoundUI(){let b=$('muteButton');if(b){b.classList.toggle('off',!sndPrefs.on);b.title=sndPrefs.on?'Sound on (click to mute)':'Sound off (click to turn on)';b.setAttribute('aria-pressed',String(sndPrefs.on))}if($('sound'))$('sound').checked=sndPrefs.on;if($('volume'))$('volume').value=Math.round(sndPrefs.vol*100)}
@@ -227,10 +228,10 @@ function showBlocked(list){if(+$('fxSpeed').value<0||matchMedia('(prefers-reduce
 function queueFx(list){let speed=+$('fxSpeed').value;list=list||[];if(!trackView){let o=list.find(f=>f.kind==='outbreak'),e=list.find(f=>f.kind==='epidemic');if(o||e){trackView={o:o?o.count-1:state.outbreaks,r:e&&e.rateIndex!=null?Math.max(0,e.rateIndex-1):state.rateIndex};paint()}}if(list.length&&list[0].pre&&!cubeView&&!fxCurrent&&!fxQueue.length){cubeView=list[0].pre;paint()}for(let f of list){if(f.kind==='epidemic'||f.kind==='outbreak'||f.kind==='end'||f.blocked){fxQueue.push(f);continue}if(speed>=0)fxQueue.push(f);else if(f.after)fxQueue.push({...f,silent:true})}if(!fxCurrent)nextFx()}
 let trackView=null;
 function shownOut(){return trackView?trackView.o:state.outbreaks}function shownRate(){return trackView?trackView.r:state.rateIndex}
-function flashActive(){return;for(let h of document.querySelectorAll('#hands .hand.active')){h.classList.remove('justActive');void h.offsetWidth;h.classList.add('justActive')}let t=$('actionHeading');if(t){t.classList.remove('justActive');void t.offsetWidth;t.classList.add('justActive')}}
+function flashActive(){playSound('turn');return;for(let h of document.querySelectorAll('#hands .hand.active')){h.classList.remove('justActive');void h.offsetWidth;h.classList.add('justActive')}let t=$('actionHeading');if(t){t.classList.remove('justActive');void t.offsetWidth;t.classList.add('justActive')}}
 function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';let done=fxCurrent;if(done&&done.after)applyCubes(done.after,done);if(done&&done.blocked)showBlocked(done.blocked);fxCurrent=fxQueue.shift()||null;
  while(fxCurrent&&fxCurrent.silent){applyCubes(fxCurrent.after,null);fxCurrent=fxQueue.shift()||null}
- if(!fxCurrent){if(trackView){trackView=null;paint()}settleCubes();releaseHold();if(turnFlash){turnFlash=false;flashActive()}return}let f=fxCurrent;if(trackView&&(f.kind==='outbreak'||f.kind==='epidemic')){if(f.kind==='outbreak')trackView.o=f.count;else if(f.rateIndex!=null)trackView.r=f.rateIndex;paint()}f=fxCurrent;let speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
+ if(!fxCurrent){if(trackView){trackView=null;paint()}settleCubes();releaseHold();if(turnFlash){turnFlash=false;if(holdActive==null)flashActive()}return}let f=fxCurrent;if(trackView&&(f.kind==='outbreak'||f.kind==='epidemic')){if(f.kind==='outbreak')trackView.o=f.count;else if(f.rateIndex!=null)trackView.r=f.rateIndex;paint()}f=fxCurrent;let speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
  if(f.kind==='playerDraw'){let row=el('div',{className:'fxRow'},b);for(let k of f.cards)row.appendChild(cardFace(k));el('div',{className:'fxCaption',textContent:plabel(f.seat)+' draws'},b);dur=3500;playSound('draw')}
  else if(f.kind==='infection'){b.appendChild(cardFace(f.city,true));el('div',{className:'fxCaption',textContent:'Infect '+C[f.city].name},b);dur=f.blocked?5000:3000;playSound('draw')}
  else if(f.kind==='research'){el('div',{className:'fxCaption',textContent:f.color[0].toUpperCase()+f.color.slice(1)+' disease researched'},b);dur=3000}

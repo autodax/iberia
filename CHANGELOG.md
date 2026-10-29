@@ -1,5 +1,7 @@
 # v0.10.5
 
+- A soft bell plays when a new turn begins (after the infection animation and pause).
+- Sound files are now fetched with a version tag so a changed sound is not hidden by the browser's old copy.
 - The next player's turn now waits until the last infection animation (cubes landing) has finished, then a short pause. Until then the previous player stays highlighted and actions are locked.
 - Quieter, papery card-draw sound and a duller cube-drop sound.
 - Menu has a Card size slider for hover and drawn-card popups.
