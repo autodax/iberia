@@ -1,5 +1,6 @@
 # v0.10.7
 
+- Researching a disease plays a short fanfare and the microscope flies in like a cube. When the infection-rate or outbreak marker moves, rings and a label appear around it with a dramatic hit.
 - The Time Traveller's start-of-turn draw now appears after the "Time Traveller's turn" banner, not before it.
 - Railroads and the Civil Engineer no longer add their own lines to the map; the printed lines are used.
 - A chain reaction of outbreaks shows one popup (with the whole chain) instead of one per city. Pawn and railroad animations, like the cube animations, start only after the popups are gone.
