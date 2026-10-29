@@ -262,3 +262,11 @@ aside .hand.idle:hover{opacity:.9}
 /* card-draw popup: who is drawing, large and plain, above the cards */
 .fxWho{display:flex;align-items:center;justify-content:center;gap:12px;font-size:30px;font-weight:700;color:#fff8e6;text-shadow:0 2px 12px #000c,0 0 3px #000;margin-bottom:14px;letter-spacing:.02em;pointer-events:none}
 .fxWho svg{filter:drop-shadow(0 2px 4px #0008)}
+
+/* The active player's hand and the available actions share one dark green box on top; the others sit below, dimmed. */
+#turnBox{border:3px solid #1f5a3a;border-radius:9px;box-shadow:0 0 8px rgba(31,90,58,.4);background:#e8d8b2;padding:6px;display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
+#turnBox[hidden]{display:none}
+#turnBox .hand.active,aside #turnBox .hand.active{border:none;box-shadow:none;background:transparent;padding:2px}
+#turnBox #actionArea{border-top:1px solid rgba(31,90,58,.35);padding-top:6px}
+.hand>.detail{margin-top:8px;padding:4px 4px 2px;line-height:2}
+.hand .detail .miniCard{display:inline-block;margin:4px 8px 4px 0;padding:5px 10px}
