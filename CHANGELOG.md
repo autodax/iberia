@@ -1,5 +1,8 @@
 # v0.10.5
 
+- The next player's turn now waits until the last infection animation (cubes landing) has finished, then a short pause. Until then the previous player stays highlighted and actions are locked.
+- Quieter, papery card-draw sound and a duller cube-drop sound.
+- Menu has a Card size slider for hover and drawn-card popups.
 - Fixed: after a connection drop, a guest could come back as a second, new player while the old entry kept their seat. The host then controlled both players and the guest controlled nothing. Some browsers (private windows, some phones) cannot remember the guest's ID. The ID is now also kept in memory for the whole visit, and if it is lost anyway, a guest who rejoins with the same name as one player who is away is treated as that player.
 - A guest can now click "Take over" in the Online dialog on a seat whose player is away. A seat held by a connected player still cannot be taken.
 - A guest who controls no seat sees a message telling them to open Online and take one.
