@@ -3,6 +3,7 @@
 - New railroads fly in like cubes and land with a soft steam-engine chuffing sound. A leftover second-track choice no longer draws a stray dashed turquoise line between distant cities.
 - "End actions", "Resolve Epidemic" and "Infect next city" wait until the popups on screen have finished, so cards are always drawn before infections are shown.
 - A popup tells the player when their hand is over the limit and how many cards to discard.
+- The infection-rate and outbreak markers are bigger and cover their symbols.
 - Infection popups show "Infect <city>" above the card, in large letters, like the card-draw popup.
 - Players pick their own starting city (from their starting hand) during setup. The host only starts the game and has no special authority in play: undo needs no approval, and every action must come from the seat's own player.
 - The turn chime plays only for the player whose turn starts. Players are always shown by name and role, never by number.
