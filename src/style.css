@@ -273,4 +273,5 @@ aside .hand.idle:hover{opacity:.9}
 #actionHeading{display:none}
 .actHead{justify-content:flex-end}
 .actHead:has(#undo[hidden]){display:none}
-.handTitle .turnState{font-weight:700;color:#1f5a3a;white-space:nowrap}
+.hand.active .handTitle{flex-wrap:wrap;white-space:normal}
+.handTitle .turnState{flex:0 0 100%;font-weight:700;color:#1f5a3a}
