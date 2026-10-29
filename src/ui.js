@@ -268,9 +268,12 @@ function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[
  let hold=JSON.parse(JSON.stringify(from));for(let [cid,k] of adds)hold[cid][k]=hold[cid][k]||0;cubeView=hold;paint();
  adds.forEach(([cid,k,j],i)=>{let [tx,ty]=cubeSpot(cid,k,j,next),img=asset('tokens/cube-'+k),node;
   if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:'cube-'+k},g);else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},g);
-  let [ox,oy]=src0,delay=i*step;last=Math.max(last,delay+dur);
-  let mx=(ox+tx)/2,my=Math.min(oy,ty)-80;
-  node.animate([{transform:`translate(${ox}px,${oy}px) scale(${f.kind==='outbreak'?1.2:3})`,opacity:0},{transform:`translate(${ox}px,${oy}px) scale(${f.kind==='outbreak'?1.4:3.2})`,opacity:1,offset:.12},{transform:`translate(${mx}px,${my}px) scale(1.9)`,opacity:1,offset:.55},{transform:`translate(${tx}px,${ty}px) scale(.85)`,opacity:1,offset:.9},{transform:`translate(${tx}px,${ty}px) scale(1)`,opacity:1}],{duration:dur,delay,easing:'ease-in-out',fill:'both'});
+  let [ox,oy]=src0;
+  // one smooth arc at constant speed: a quadratic curve sampled by arc length, linear easing, size easing down to 1
+  let cx=(ox+tx)/2,cy=Math.min(oy,ty)-170,P=[],cum=[0];for(let n=0;n<=60;n++){let u=n/60,a=(1-u)*(1-u),b=2*(1-u)*u,c=u*u;P.push([a*ox+b*cx+c*tx,a*oy+b*cy+c*ty]);if(n)cum.push(cum[n-1]+Math.hypot(P[n][0]-P[n-1][0],P[n][1]-P[n-1][1]))}
+  let s0=f.kind==='outbreak'?1.4:3,frames=[],N=28;for(let q=0;q<=N;q++){let fr=q/N,d=fr*cum[60],m=1;while(m<60&&cum[m]<d)m++;let w=cum[m]>cum[m-1]?(d-cum[m-1])/(cum[m]-cum[m-1]):0,x=P[m-1][0]+(P[m][0]-P[m-1][0])*w,y=P[m-1][1]+(P[m][1]-P[m-1][1])*w;frames.push({transform:`translate(${x}px,${y}px) scale(${s0+(1-s0)*fr})`,opacity:Math.min(1,fr*12),offset:fr})}
+  let delay=i*step;last=Math.max(last,delay+dur);
+  node.animate(frames,{duration:dur,delay,easing:'linear',fill:'both'});
   setTimeout(()=>{if(flyTarget!==next)return;playSound('cube');cubeView[cid][k]=Math.max(cubeView[cid][k]||0,j+1);node.remove();paint()},delay+dur)});
  flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;$('flyers').replaceChildren();cubeView=flyTarget;flyTarget=null;paint();settleCubes()},last+30)}
 function resetFx(){turnFlash=false;holdActive=null;clearTimeout(fxTimer);trackView=null;fxQueue=[];fxCurrent=null;if(flyTimer){clearTimeout(flyTimer);flyTimer=null}flyTarget=null;$('flyers').replaceChildren();cubeView=null;$('fx').replaceChildren();$('fx').className=''}
