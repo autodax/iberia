@@ -213,26 +213,28 @@ function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=docu
  else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));aside.style.display='';R.style.display='none'}
  ringOpen=false;if(typeof state!=='undefined'&&state)setTimeout(render,0)}
 function ringAvail(){return bmOn&&state.status==='playing'&&state.phase==='actions'&&holdActive==null&&mine(state.active)&&!inLobby()&&!fxCurrent&&!fxQueue.length&&!mapPick&&!mode}
+function lastIsDiscard(){let c=commands[commands.length-1];return !!c&&c.type==='discard'&&history.length>0}
+function ruStyle(ru,x,y,w){ru.style.cssText=`position:absolute;left:${x-w/2}px;top:${y+26}px;width:${w}px;height:32px;padding:0 6px;font-size:13px;pointer-events:auto;border-radius:16px;border:2px solid ${PAWN[state.players[state.active].role]||'#555'};box-shadow:0 2px 8px #0008;margin:0;display:${ru.hidden?'none':''}`}
 function positionRing(){let ring=$('ring'),np=$('nextPhase'),un=$('undo');if(!ring)return;
  let re=$('ringEnd'),ru=$('ringUndo');if(!re){re=el('button',{id:'ringEnd',type:'button',onclick:()=>$('nextPhase').click()},ring);ru=el('button',{id:'ringUndo',type:'button',textContent:'Undo',onclick:()=>$('undo').click()},ring)}
  $('app').classList.toggle('inMode',!!mode);
  {let infOk=bmOn&&state.status==='playing'&&['infection','epidemic'].includes(state.phase)&&mine(state.active)&&!np.hidden&&!inLobby();$('app').classList.toggle('ringInf',infOk);
-  if(infOk){ringOpen=false;ring.hidden=false;re.textContent=np.textContent;re.disabled=np.disabled;re.classList.add('primary');for(let b of [...$('actionButtons').children,ru])b.style.display='none';re.style.display='';
-   let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,bw=Math.max(190,Math.min(260,np.textContent.length*8.2)),x=Math.max(bw/2+4,Math.min(w-bw/2-4,fx)),y=Math.min(h-30,fy+34),lines=$('ringLines');lines.replaceChildren();lines.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none');
+  if(infOk){ringOpen=false;ring.hidden=false;re.textContent=np.textContent;re.disabled=np.disabled;re.classList.add('primary');for(let b of $('actionButtons').children)b.style.display='none';re.style.display='';let dU=lastIsDiscard()&&!un.hidden;ru.hidden=!dU;ru.disabled=un.disabled;ru.textContent='Undo discard';
+   let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,bw=Math.max(190,Math.min(260,np.textContent.length*8.2)),x=Math.max(bw/2+4,Math.min(w-bw/2-4,fx)),y=Math.min(h-(dU?78:30),fy+34),lines=$('ringLines');lines.replaceChildren();lines.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none');
    svg('line',{x1:fx,y1:fy+2,x2:x,y2:y-18,stroke:PAWN[state.players[state.active].role]||'#555','stroke-width':2,'stroke-opacity':.6},lines);
-   re.style.cssText=`position:absolute;left:${x-bw/2}px;top:${y-18}px;width:${bw}px;height:38px;padding:0 10px;font-size:14px;font-weight:600;pointer-events:auto;border-radius:19px;border:2px solid #1d4f33;background:#2f5d46;color:#fff;box-shadow:0 2px 10px #000a;margin:0`;return}
+   re.style.cssText=`position:absolute;left:${x-bw/2}px;top:${y-18}px;width:${bw}px;height:38px;padding:0 10px;font-size:14px;font-weight:600;pointer-events:auto;border-radius:19px;border:2px solid #1d4f33;background:#2f5d46;color:#fff;box-shadow:0 2px 10px #000a;margin:0`;ruStyle(ru,x,y,120);return}
   re.classList.remove('primary')}
  let ok=ringAvail();if(!ok)ringOpen=false;
- if(ok&&state.actions===0){ringOpen=false;ring.hidden=false;re.textContent=np.textContent;re.disabled=np.disabled;ru.hidden=un.hidden;ru.disabled=un.disabled;re.classList.add('primary');for(let b of $('actionButtons').children)b.style.display='none';
+ if(ok&&state.actions===0){ringOpen=false;ring.hidden=false;re.textContent=np.textContent;re.disabled=np.disabled;ru.hidden=un.hidden;ru.disabled=un.disabled;ru.textContent=lastIsDiscard()?'Undo discard':'Undo';re.classList.add('primary');for(let b of $('actionButtons').children)b.style.display='none';
   let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,bw=Math.max(190,Math.min(260,np.textContent.length*8.2)),x=Math.max(bw/2+4,Math.min(w-bw/2-4,fx)),y=Math.min(h-(ru.hidden?30:78),fy+34),lines=$('ringLines');lines.replaceChildren();lines.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none');
   svg('line',{x1:fx,y1:fy+2,x2:x,y2:y-18,stroke:PAWN[state.players[state.active].role]||'#555','stroke-width':2,'stroke-opacity':.6},lines);
   re.style.cssText=`position:absolute;left:${x-bw/2}px;top:${y-18}px;width:${bw}px;height:38px;padding:0 10px;font-size:14px;font-weight:600;pointer-events:auto;border-radius:19px;border:2px solid #1d4f33;background:#2f5d46;color:#fff;box-shadow:0 2px 10px #000a;margin:0;display:''`;
-  ru.style.cssText=`position:absolute;left:${x-45}px;top:${y+26}px;width:90px;height:32px;padding:0 6px;font-size:13px;pointer-events:auto;border-radius:16px;border:2px solid ${PAWN[state.players[state.active].role]||'#555'};box-shadow:0 2px 8px #0008;margin:0;display:${ru.hidden?'none':''}`;return}
+  ruStyle(ru,x,y,lastIsDiscard()?120:90);return}
  re.classList.remove('primary');let show=ok&&ringOpen;ring.hidden=!show;if(!show)return;
- re.textContent=np.textContent;re.disabled=np.disabled;ru.hidden=un.hidden;ru.disabled=un.disabled;
+ re.textContent=np.textContent;re.disabled=np.disabled;ru.hidden=un.hidden;ru.disabled=un.disabled;ru.textContent=lastIsDiscard()?'Undo discard':'Undo';
  let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-6-BOARD_FIT[1])/BOARD_FIT[3]*h,items=[...(canAct()?[...$('actionButtons').children]:[]),...(ru.hidden?[]:[ru]),re],n=items.length,pc=PAWN[state.players[state.active].role]||'#555';
  for(let b of [...$('actionButtons').children,ru,re])b.style.display=items.includes(b)?'':'none';
- let ws=items.map(b=>b===re?(state.players[state.active].role==='time_traveler'?170:150):b===ru?70:112),H=32,rx=140,ry=104,pos;
+ let ws=items.map(b=>b===re?(state.players[state.active].role==='time_traveler'?170:150):b===ru?(lastIsDiscard()?104:70):112),H=32,rx=140,ry=104,pos;
  let layout=()=>items.map((b,i)=>{let a=-Math.PI/2+i*2*Math.PI/n;return n===1?[0,-70]:[Math.cos(a)*rx,Math.sin(a)*ry]}),clash=ps=>{for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)if(Math.abs(ps[i][0]-ps[j][0])<(ws[i]+ws[j])/2+6&&Math.abs(ps[i][1]-ps[j][1])<H+6)return true;return false};
  pos=layout();while(clash(pos)&&rx<300){rx+=10;ry+=7;pos=layout()}
  let cx=Math.max(rx+ws[0]/2+4,Math.min(w-rx-ws[0]/2-4,fx)),cy=Math.max(ry+H/2+4,Math.min(h-ry-H/2-4,fy)),lines=$('ringLines');lines.replaceChildren();lines.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none');
