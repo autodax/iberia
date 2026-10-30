@@ -83,9 +83,9 @@ async function loadAssets(files){for(let u of Object.values(ASSETS))URL.revokeOb
  let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC);$('assetStatus').textContent=n?n+' files loaded from your folder'+(b?' (including board image).':'.'):'No local files loaded. '+REPO_STATUS;render()}
 const BOARD_SRC=document.getElementById('boardImage').getAttribute('href');
 /* ---------- sounds (assets/sounds/*.mp3; a local folder or the repo can replace them) ---------- */
-const SND_VOL={blocked:.9,move:.95,draw:.9,cube:.95,outbreak:1,epidemic:1,win:.95,lose:.95,turn:.9,water:.95,choo:1,research:.95,marker:1},SND_BOOST=2,SND_KEY='iberia-sound';
+const SND_VOL={blocked:.9,move:.95,draw:.55,cube:.95,outbreak:1,epidemic:1,win:.95,lose:.95,turn:.9,water:.95,choo:1,research:.95,marker:1},SND_BOOST=2,SND_KEY='iberia-sound';
 let sndCtx=null,sndBuf={},sndLast={},sndPrefs={on:false,vol:.7};try{Object.assign(sndPrefs,JSON.parse(localStorage.getItem(SND_KEY)||'{}'))}catch(e){}
-const SND_REV='6';
+const SND_REV='7';
 function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'tokens/'+name]){k=norm(k);for(let src of [ASSETS,REPO,typeof EMBED!=='undefined'?EMBED:{}]){let u=src[k];if(u&&src===REPO&&/^https?:|^assets\//.test(u))u+='?r='+SND_REV;if(u&&!out.includes(u))out.push(u)}}return out}
 function soundUrl(name){return soundUrls(name)[0]||null}
 function saveSound(){try{localStorage.setItem(SND_KEY,JSON.stringify(sndPrefs))}catch(e){}}
@@ -211,7 +211,7 @@ function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=docu
  let R=$('rightStrip');if(!R){R=el('div',{id:'rightStrip'});main.appendChild(R)}
  app.classList.toggle('bm',on);$('ringToggle').onclick=toggleRing;
  let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',textContent:'v'+UI_VERSION},bf);svg('svg',{id:'ringLines'},ring)}
- for(let id of ['rulesLink','guideLink','muteButton','logButton','onlineButton','menuButton'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
+ for(let id of ['rulesLink','guideLink','logButton','onlineButton','menuButton'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
  if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));aside.style.display='none';R.style.display=''}
  else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));aside.style.display='';R.style.display='none'}
  ringOpen=false;if(typeof state!=='undefined'&&state)setTimeout(render,0)}
@@ -239,11 +239,11 @@ function positionRing(){let ring=$('ring'),np=$('nextPhase'),un=$('undo');if(!ri
  re.textContent=np.textContent;re.disabled=np.disabled;ru.hidden=un.hidden;ru.disabled=un.disabled;ru.textContent=lastIsDiscard()?'Undo discard':'Undo';
  let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-6-BOARD_FIT[1])/BOARD_FIT[3]*h,items=[...(canAct()?[...$('actionButtons').children]:[]),...(ru.hidden?[]:[ru]),re],n=items.length,pc=PAWN[state.players[state.active].role]||'#555';
  for(let b of [...$('actionButtons').children,ru,re])b.style.display=items.includes(b)?'':'none';
- let ws=items.map(b=>b===re?(state.players[state.active].role==='time_traveler'?170:150):b===ru?(lastIsDiscard()?104:70):46),H=46,rx=140,ry=104,pos;
+ let ws=items.map(b=>b===re?(state.players[state.active].role==='time_traveler'?170:150):b===ru?(lastIsDiscard()?104:70):46),H=46,rx=92,ry=66,pos;
  let layout=()=>items.map((b,i)=>{let a=-Math.PI/2+i*2*Math.PI/n;return n===1?[0,-70]:[Math.cos(a)*rx,Math.sin(a)*ry]}),clash=ps=>{for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)if(Math.abs(ps[i][0]-ps[j][0])<(ws[i]+ws[j])/2+6&&Math.abs(ps[i][1]-ps[j][1])<H+6)return true;return false};
  pos=layout();while(clash(pos)&&rx<300){rx+=10;ry+=7;pos=layout()}
  let cx=Math.max(rx+ws[0]/2+4,Math.min(w-rx-ws[0]/2-4,fx)),cy=Math.max(ry+H/2+4,Math.min(h-ry-H/2-4,fy)),lines=$('ringLines');lines.replaceChildren();lines.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none');
- items.forEach((b,i)=>{let x=cx+pos[i][0],y=cy+pos[i][1];svg('line',{x1:fx,y1:fy,x2:x,y2:y,stroke:pc,'stroke-width':2,'stroke-opacity':.55},lines);
+ items.forEach((b,i)=>{let x=cx+pos[i][0],y=cy+pos[i][1];svg('line',{x1:fx,y1:fy,x2:x,y2:y,stroke:pc,'stroke-width':3,'stroke-opacity':.8,'stroke-linecap':'round'},lines);
   b.style.cssText=`position:absolute;left:${x-ws[i]/2}px;top:${y-(b===re||b===ru?32:H)/2}px;width:${ws[i]}px;height:${b===re||b===ru?32:H}px;padding:0 6px;font-size:12.5px;line-height:1.1;pointer-events:auto;border-radius:${b===re||b===ru?16:23}px;border:2px solid ${b===re?'#1d4f33':pc};box-shadow:0 2px 8px #0008;margin:0;${b===re?'background:#2f5d46;color:#fff;':''}`})}
 function tokTip(node,tok,n,wide){node.onmouseenter=e=>{if(!bmOn)return;let t=$('tokTip'),bf=$('boardFrame').getBoundingClientRect();t.replaceChildren();el('img',{src:tokenImg(tok),className:wide?'wide':''},t);el('b',{textContent:n()+' remaining'},t);t.hidden=false;t.style.left=(e.clientX-bf.left+14)+'px';t.style.top=(e.clientY-bf.top-34)+'px'};node.onmousemove=e=>{let bf=$('boardFrame').getBoundingClientRect(),t=$('tokTip');t.style.left=(e.clientX-bf.left+14)+'px';t.style.top=(e.clientY-bf.top-34)+'px'};node.onmouseleave=()=>{let t=$('tokTip');if(t)t.hidden=true};return node}
 function toggleRing(){if(mode==='peek')return;if(mode){mode='';selectedCards=[];ringOpen=true;render();return}ringOpen=!ringOpen;positionRing()}
@@ -442,7 +442,7 @@ function drawSetup(){let box=$('startFields');box.replaceChildren();let online=N
  $('firstHint').textContent=(online&&!done?'Waiting for every player to choose a starting city. ':'')+(sug?'Oldest city in hand goes first (rulebook): '+C[sug.k].name+', founded '+fmtYear(sug.y)+(ties>1?'. Tied with another player, so choose between them.':'.')+' You can still change the first player.':'No City cards in hand, so choose the first player.')}
 const ICON={carriage:'icons/carriage',train:'icons/train',ship:'icons/ship',build:'tokens/railroad',treat:'tokens/cube-red',hospital:'tokens/hospital-red',purify:'tokens/purification',agronomist:'tokens/purification',research:'tokens/research-blue',share:'icons/share',pgive:'icons/share',pswap:'icons/share',peek:'icons/look',attract:'tokens/cube-red',htreat:'tokens/hospital-red',ttswap:'icons/look',profdraw:'icons/drawcard',stbuild:'tokens/railroad',stwater:'tokens/purification',sttreat:'tokens/cube-red'};
 // Moving, railroads and water are done by pointing at the map, so they get no ring buttons.
-const MAP_ACTIONS=new Set(['carriage','train','ship','build','purify']);
+const MAP_ACTIONS=new Set(['carriage','train','ship','build','purify','treat']);
 const ROLE_ACTION=new Set(['agronomist','pgive','pswap','peek','attract','htreat','ttswap','profdraw','stbuild','stwater','sttreat']);
 // In the board layout the action buttons are small picture buttons; the words show as a tooltip.
 function iconize(b,t){if(!bmOn)return b;let img=asset(ICON[t]);if(!img)return b;b.textContent='';b.classList.add('iconBtn');b.dataset.tip=LABEL[t];b.title=LABEL[t];b.setAttribute('aria-label',LABEL[t]);el('img',{src:img,alt:'',className:'ico'},b);if(ROLE_ACTION.has(t)){let pa=roleAsset('pawns/pawn-',state.players[state.active].role);if(pa)el('img',{src:pa,alt:'',className:'badge'},b)}return b}
@@ -645,7 +645,7 @@ $('undo').onclick=undo;
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'&&!document.querySelector('dialog[open]')&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||'')){e.preventDefault();undo()}});
 $('assetButton').onclick=()=>$('assetFiles').click();$('assetFiles').onchange=()=>loadAssets([...$('assetFiles').files]);$('assetClear').onclick=()=>{loadAssets([]);$('assetStatus').textContent=REPO_STATUS};
 $('showRegions').onchange=()=>{paint();saveSettings()};$('showNames').onchange=()=>{paint();saveSettings()};$('fxSpeed').addEventListener('change',saveSettings);try{applySettings(JSON.parse(localStorage.getItem(SET_KEY)||'null'))}catch(e){}window.addEventListener('resize',fitLayout);
-$('muteButton').onclick=e=>{e.stopPropagation();setSound(!sndPrefs.on)};$('sound').onchange=()=>setSound($('sound').checked);$('volume').oninput=()=>{sndPrefs.vol=+$('volume').value/100;saveSound()};$('volume').addEventListener('change',saveSettings);$('volume').onchange=()=>playSound('cube');syncSoundUI();
+$('sound').onchange=()=>setSound($('sound').checked);$('volume').oninput=()=>{sndPrefs.vol=+$('volume').value/100;saveSound()};$('volume').addEventListener('change',saveSettings);$('volume').onchange=()=>playSound('cube');syncSoundUI();
 /* ---------- online play (v0.10) ---------- */
 // Everything network-related lives in net.js. This section connects it to the page: which seats are yours,
 // the Online dialog (host, join, seats, people), and the hooks net.js uses to run commands on this page.
