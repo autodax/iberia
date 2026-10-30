@@ -371,3 +371,6 @@ aside #phaseLabel{display:none}
 #eventDialog.sideDialog{position:fixed;left:auto;right:6px;top:6px;margin:0;width:calc(var(--stripW,214px) - 4px);max-height:calc(100vh - 12px);overflow:auto;z-index:30;box-sizing:border-box;padding:10px}
 #eventDialog.sideDialog .close{float:right}
 #eventDialog.sideDialog .mapFld .action.chosen{background:#ffd54a;color:#222}
+
+#choiceDialog.yesno{width:min(380px,92vw);max-width:380px}#choiceDialog.yesno #choiceOptions{grid-template-columns:1fr 1fr}#choiceDialog.yesno #choiceOptions button{text-align:center}#choiceDialog.yesno .dialogButtons{display:none}
+#app.bm .peekList{margin-bottom:16px}
