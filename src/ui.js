@@ -484,7 +484,7 @@ const DECK_SLOTS={infDeck:[987,27,240,172],infDisc:[1256,24,250,173],plDeck:[112
 function drawDecks(T){
  let put=(slot,href,n,label,dim)=>{let [x,y,w,h]=DECK_SLOTS[slot];if(!href||!n)return;let g=svg('g',{class:'deckArt'},T);svg('title',{},g).textContent=label+': '+n;
   svg('image',{href,x,y,width:w,height:h,preserveAspectRatio:'xMidYMid slice','clip-path':'inset(0 round 10px)',...(dim?{style:'opacity:.55;filter:saturate(.7) brightness(.9)'}:{})},g);
-  svg('circle',{cx:x+w-20,cy:y+h-20,r:19,fill:'#fff',stroke:'#444','stroke-width':1.5},g);let t=svg('text',{x:x+w-20,y:y+h-13,'text-anchor':'middle','font-size':21,'font-weight':700,fill:'#222'},g);t.textContent=n};
+  let bw=14+9.5*String(n).length;svg('rect',{x:x+w-bw-6,y:y+h-28,width:bw,height:22,rx:11,fill:'#fff',stroke:'#444','stroke-width':1.1},g);let t=svg('text',{x:x+w-6-bw/2,y:y+h-12,'text-anchor':'middle','font-size':15.5,'font-weight':700,'font-family':'system-ui, sans-serif',fill:'#222',stroke:'none','stroke-width':0,style:'stroke:none;fill:#222;font:700 15.5px system-ui,sans-serif'},g);t.textContent=n};
  let ib=asset('tokens/infection-back'),cb=asset('tokens/city-back');
  put('infDeck',ib,state.infectionDeck.length,'Infection deck');
  put('plDeck',cb,state.playerDeck.length,'Player deck');
