@@ -366,3 +366,8 @@ aside #phaseLabel{display:none}
 
 .outRing{transform-box:fill-box;transform-origin:center;animation:outRing .9s ease-out both;opacity:0}
 @keyframes outRing{0%{opacity:.95;transform:scale(.5);stroke-width:7}100%{opacity:0;transform:scale(4.2);stroke-width:1.5}}
+
+.edgeCand .edgeGlow{opacity:.32}.edgeOn .edgeGlow{opacity:.95}.edgeCand:hover .edgeGlow{opacity:.85}
+#eventDialog.sideDialog{position:fixed;left:auto;right:6px;top:6px;margin:0;width:calc(var(--stripW,214px) - 4px);max-height:calc(100vh - 12px);overflow:auto;z-index:30;box-sizing:border-box;padding:10px}
+#eventDialog.sideDialog .close{float:right}
+#eventDialog.sideDialog .mapFld .action.chosen{background:#ffd54a;color:#222}
