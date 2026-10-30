@@ -386,6 +386,8 @@ aside #phaseLabel{display:none}
 #app.bm #setupPanel{background:#f3e6c8;border-radius:10px;padding:10px 12px;color:#2e4339;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 #app.bm #setupPanel h2,#app.bm #setupPanel .label{color:#2e4339}
 #app.bm #setupPanel p,#app.bm #firstHint{color:#4a5a50}
+
+button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap:balance}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <filter id="cubeBlackFx" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
@@ -1368,7 +1370,8 @@ function soundBeep(url,vol,delay){setTimeout(()=>{try{let a=new Audio(url);a.vol
 let sndMaster=null;
 function masterOut(){if(!sndMaster||sndMaster.ctx!==sndCtx){sndMaster=sndCtx.createDynamicsCompressor();sndMaster.ctx=sndCtx;sndMaster.threshold.value=-8;sndMaster.ratio.value=6;sndMaster.connect(sndCtx.destination)}return sndMaster}
 function preloadSounds(){if(!sndCtx||sndCtx.state!=='running')return;for(let n of Object.keys(SND_VOL))for(let u of soundUrls(n)){decodeUrl(u);break}}
-function playSound(name,delay=0){if(!sndPrefs.on)return;let url=soundUrl(name);if(!url)return;let now=performance.now()+delay;if(sndLast[name]&&Math.abs(now-sndLast[name])<45)return;sndLast[name]=now;
+let sndSeqNext=0;
+function playSound(name,delay=0){if(!sndPrefs.on)return;let url=soundUrl(name);if(!url)return;if(name!=='cube'&&name!=='move'){let t=Math.max(performance.now()+delay,sndSeqNext);sndSeqNext=t+450;delay=Math.max(0,t-performance.now())}let now=performance.now()+delay;if(sndLast[name]&&Math.abs(now-sndLast[name])<45)return;sndLast[name]=now;
  let vol=sndPrefs.vol*(SND_VOL[name]??.9);(window.soundLog=window.soundLog||[]).push(name);unlockSound();
  let viaBuffer=()=>soundBuffer(name).then(b=>{if(!b||!sndCtx||sndCtx.state!=='running'){soundBeep(url,vol,0);return}let s=sndCtx.createBufferSource(),g=sndCtx.createGain();s.buffer=b;s.playbackRate.value=name==='cube'?0.94+Math.random()*.12:1;g.gain.value=vol*SND_BOOST;s.connect(g).connect(masterOut());s.start(sndCtx.currentTime+Math.max(0,delay)/1000)});
  if(!sndCtx){soundBeep(url,vol,delay);return}
@@ -1438,13 +1441,15 @@ function quickMoves(){let m=new Map();if(mode||!canAct()||state.phase!=='actions
 async function quickMove(to){let q=quickMoves().get(to);if(!q)return;if(q.type==='carriage'){let c=(legal.carriage||[]).find(x=>x.to===to);await perform({...c});return}mode=q.type;sel.to=to;sel.to2='';delete sel.passenger;selectedCards=[];render();autoGo()}
 let chooseQueue=Promise.resolve();
 function choose(title,options,labels,noCancel){let p=chooseQueue.then(()=>chooseNow(title,options,labels,noCancel));chooseQueue=p.catch(()=>{});return p}
-function chooseNow(title,options,labels,noCancel){return new Promise(res=>{let d=$('choiceDialog');d.classList.toggle('noCancel',!!noCancel);$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();
+let dlgClosedAt=0;
+async function dialogGap(){let t0=Date.now();while((fxCurrent||fxQueue.length)&&Date.now()-t0<20000)await new Promise(r=>setTimeout(r,150));let w=450-(Date.now()-dlgClosedAt);if(w>0&&dlgClosedAt)await new Promise(r=>setTimeout(r,w))}
+function chooseNow(title,options,labels,noCancel){return dialogGap().then(()=>new Promise(res=>{let d=$('choiceDialog');d.classList.toggle('noCancel',!!noCancel);$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();
  let kind=options.length&&options.every(o=>typeof o==='string'&&R[o])?'region':options.length&&options.every(o=>typeof o==='string'&&C[o])?'city':null;
- let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();d.classList.remove('mapPick');if(mapPick){mapPick=null;paint()}res(v)};
+ let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();dlgClosedAt=Date.now();d.classList.remove('mapPick');if(mapPick){mapPick=null;paint()}res(v)};
  box.classList.toggle('mapOnly',!!kind&&options.length>8);
  options.forEach((o,i)=>{let b=el('button',{textContent:labels?.[i]??o,onclick:()=>finish(o)},box);if(kind){b.onmouseenter=()=>{if(mapPick){mapPick.hover=o;paint()}};b.onmouseleave=()=>{if(mapPick){mapPick.hover=null;paint()}}}});
  $('choiceCancel').onclick=()=>finish(null);d.oncancel=e=>{e.preventDefault();if(!noCancel)finish(null)};
- if(kind){mapPick={kind,options:new Set(options),pick:finish,hover:null};d.classList.add('mapPick');el('p',{className:'mapHint',textContent:'Or click a highlighted '+(kind==='region'?'region':'city')+' on the map.'},box);d.show();paint()}else d.showModal()})}
+ if(kind){mapPick={kind,options:new Set(options),pick:finish,hover:null};d.classList.add('mapPick');el('p',{className:'mapHint',textContent:'Or click a highlighted '+(kind==='region'?'region':'city')+' on the map.'},box);d.show();paint()}else d.showModal()}))}
 async function ask(q){return (await choose(q,['yes','no'],['Yes — agreed','No']))==='yes'}
 
 /* ---------- layout ---------- */
@@ -1622,6 +1627,8 @@ function flashActive(){if(!Net.active||mine(state.active))playSound('turn');if(s
 function pawnPing(i){if(matchMedia('(prefers-reduced-motion: reduce)').matches||!bmOn||!state.players[i])return;let [x,y]=pawnPos(i,state),col=PAWN[state.players[i].role]||'#fff',F=$('flyers');for(let n=0;n<3;n++){let c=svg('ellipse',{cx:x,cy:y-14,rx:16,ry:22,fill:'none',stroke:col,'stroke-width':4,class:'pawnPing','pointer-events':'none',style:'animation-delay:'+n*.35+'s'},F);setTimeout(()=>c.remove(),2000+n*350)}}
 function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';let done=fxCurrent;if(done&&done.kind==='research'){fxDoneMicro.add(done.color);flyMicro(done.color)}if(done&&done.after)applyCubes(done.after,done);if(done&&done.blocked)showBlocked(done.blocked);fxCurrent=fxQueue.shift()||null;
  while(fxCurrent&&fxCurrent.silent){applyCubes(fxCurrent.after,null);fxCurrent=fxQueue.shift()||null}
+ if(fxCurrent&&done&&done.kind!=='gap'&&fxCurrent.kind!=='gap'&&+$('fxSpeed').value>=0&&!(fxCurrent.kind==='outbreak'&&fxCurrent.chainTotal>1&&fxCurrent.chainIndex>1)){fxQueue.unshift(fxCurrent);fxCurrent={kind:'gap'}}
+ if(fxCurrent&&fxCurrent.kind==='gap'){fxTimer=setTimeout(nextFx,600);return}
  if(!fxCurrent){if(trackView){trackView=null;paint()}settleCubes();releaseHold();{let q=afterFx;afterFx=[];q.forEach(fn=>fn())}if(holdActive==null)render();if(turnFlash){turnFlash=false;if(holdActive==null)flashActive()}return}let f=fxCurrent;if(trackView&&(f.kind==='outbreak'||f.kind==='epidemic')){if(f.kind==='outbreak')trackView.o=f.count;else if(f.rateIndex!=null)trackView.r=f.rateIndex;paint();if(f.kind==='outbreak')markerAlert('out',f.count);else if(f.rateIndex!=null)markerAlert('rate',f.rateIndex)}f=fxCurrent;if(f.kind==='outbreak'&&f.chainTotal>1&&f.chainIndex>1){let wait=()=>{if(flyTimer)fxTimer=setTimeout(wait,80);else nextFx()};wait();return}let speed=+$('fxSpeed').value,dur=3000,b=el('div',{className:'fxBox'},box);
  if(f.kind==='playerDraw'&&f.start&&state.active===f.seat){holdActive=null;turnFlash=false;render();flashActive()}
  if(f.kind==='playerDraw'){let who=el('div',{className:'fxWho'},b);pawnIcon(state.players[f.seat].role,who,26);el('span',{textContent:plabel(f.seat)+' draws'},who);let row=el('div',{className:'fxRow'},b);for(let k of f.cards)row.appendChild(cardFace(k));dur=3500;playSound('draw')}

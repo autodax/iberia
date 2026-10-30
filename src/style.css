@@ -386,3 +386,5 @@ aside #phaseLabel{display:none}
 #app.bm #setupPanel{background:#f3e6c8;border-radius:10px;padding:10px 12px;color:#2e4339;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 #app.bm #setupPanel h2,#app.bm #setupPanel .label{color:#2e4339}
 #app.bm #setupPanel p,#app.bm #firstHint{color:#4a5a50}
+
+button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap:balance}
