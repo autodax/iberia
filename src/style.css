@@ -393,3 +393,5 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #helpCards img{max-height:44vh;max-width:44vw;border-radius:8px;box-shadow:0 6px 24px #000a}
 #helpCards img.portrait{max-height:80vh;max-width:30vw}
 #helpCards .helpNote{position:absolute;bottom:2vmin;left:0;right:0;text-align:center;color:#fff;font:600 14px system-ui}
+
+.actLeft{color:#1f7a3a;font-weight:700;font-size:13px;line-height:17px;margin:-1px 0 4px 20px}
