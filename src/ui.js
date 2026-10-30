@@ -188,8 +188,9 @@ function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pa
  let boardH=Math.max(200,H-2*pad-bar-gap),boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];
  // Wide windows (a Mac): the board fills the height and the hands live in strips on both sides.
  let free=W-2*pad-2*gap-boardW,wantBM=!LEGACY_SIDEBAR_LAYOUT;
- if(wantBM){boardH=Math.max(200,H-2*pad-gap);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];free=W-2*pad-2*gap-boardW;if(free<330){boardW=W-2*pad-2*gap-330;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2];free=330}let leftW=Math.round(Math.min(270,free*.6)),rightW=Math.floor(free-leftW),st2=$('app').style;
-  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--leftW':leftW,'--rightW':rightW,'--appW':W,'--appH':H,'--tw':54,'--aw':Math.max(90,Math.min(168,leftW-50))}))st2.setProperty(k,v+'px');setBoardMode(true);return}
+ if(wantBM){let strip=214;boardH=Math.max(200,H-2*pad);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];if(boardW>W-2*pad-gap-strip){boardW=W-2*pad-gap-strip;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
+  let stripW=Math.floor(Math.min(270,W-2*pad-gap-boardW)),aw=Math.max(84,Math.min(168,stripW-46,(H-330)/3.6)),st2=$('app').style;
+  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--stripW':stripW,'--appW':W,'--appH':H,'--aw':aw}))st2.setProperty(k,v+'px');setBoardMode(true);return}
  setBoardMode(false);
  if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
  let side=Math.min(maxSide,Math.max(minSide,W-2*pad-gap-boardW));
@@ -204,12 +205,12 @@ let bmOn=false,ringOpen=false;
 const ASIDE_IDS=['turnStatus','phaseLabel','turnBox','hands','message','setupPanel','cityList','resources'];
 function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=document.querySelector('main'),aside=document.querySelector('aside'),ring=$('ring');
  if(!ring){ring=el('div',{id:'ring'},$('boardFrame'))}
- let L=$('leftStrip'),R=$('rightStrip');if(!L){L=el('div',{id:'leftStrip'});R=el('div',{id:'rightStrip'});main.insertBefore(L,$('playArea'));main.appendChild(R)}
+ let R=$('rightStrip');if(!R){R=el('div',{id:'rightStrip'});main.appendChild(R)}
  app.classList.toggle('bm',on);$('ringToggle').onclick=toggleRing;
  let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',textContent:'v'+UI_VERSION},bf);svg('svg',{id:'ringLines'},ring)}
  for(let id of ['rulesLink','guideLink','muteButton','logButton','onlineButton','menuButton'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
- if(on){for(let id of ['turnStatus','turnBox','message','setupPanel'])L.appendChild($(id));for(let id of ['hands','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));aside.style.display='none';L.style.display=R.style.display=''}
- else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));aside.style.display='';L.style.display=R.style.display='none'}
+ if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));aside.style.display='none';R.style.display=''}
+ else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));aside.style.display='';R.style.display='none'}
  ringOpen=false;if(typeof state!=='undefined'&&state)setTimeout(render,0)}
 function positionRing(){let ring=$('ring'),np=$('nextPhase'),un=$('undo');if(!ring)return;
  $('app').classList.toggle('inMode',!!mode);let inRing=bmOn&&state.phase==='actions'&&state.actions>0&&state.status==='playing';
@@ -298,7 +299,7 @@ function startPawnFlights(list){if(!list.length)return;let L=document.getElement
  paint()}
 function stopPawnFlights(){for(let f of pawnFlights.values()){clearTimeout(f.t);f.g.remove()}pawnFlights.clear();pawnFlying.clear()}
 function commit(resolved,n,remote){let before=state;state=n;commands.push(resolved);if(REVEALS.has(resolved.type)||state.status!=='playing'||(Net.active&&!Net.isHost))history=[];else{let fresh=state.log.slice(before.log.length);history.push({state:before,commands:commands.length-1,label:fresh[fresh.length-1]||resolved.type});if(history.length>60)history.shift()}selectedCards=[];let pm=pawnMoves(before,resolved.type),nr=state.rails.filter(k=>!before.rails.includes(k));if(+$('fxSpeed').value>=0)nr.forEach(k=>railHide.add(k));let nrs=state.research.filter(c=>!before.research.includes(c));if(+$('fxSpeed').value>=0)nrs.forEach(c=>microHide.add(c));recompute();render();autosave();notice(state.status==='playing'?(remote?state.log[state.log.length-1]:'Done.'):state.status);if(MOVES.has(resolved.type))playSound('move');if(Object.keys(state.water).some(r=>state.water[r]>before.water[r]))playSound('water');queueFx(state.fx);animAfterFx(()=>{startPawnFlights(pm);startRailFlights(nr);nrs.forEach(c=>{if(microHide.has(c)&&!fxDoneMicro.has(c))flyMicro(c)})});{let was=new Set(fullHands(before));let extra=fullHands(state).filter(i=>!was.has(i)&&state.status==='playing').map(i=>({kind:'handLimit',seat:i,count:state.players[i].hand.length,limit:handLimit(state.players[i])}));if(extra.length)queueFx(extra)}if(state.status==='playing'&&state.phase!=='setup'&&before.phase!=='setup'&&before.active!==state.active&&(fxCurrent||fxQueue.length)){holdActive=before.active;render();releaseHold()}if(state.status==='playing'&&state.phase!=='setup'&&(before.active!==state.active||before.phase==='setup')){if(fxCurrent||fxQueue.length)turnFlash=true;else flashActive()}}
-async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);if(Net.active){let r=await Net.submit(resolved);if(!r.ok){notice(r.error,true);return false}return true}commit(resolved,n,false);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
+async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);if(Net.active){let r=await Net.submit(resolved);if(!r.ok){notice(r.error,true);return false}if(bmOn){mode='';selectedCards=[];render()}return true}mode='';selectedCards=[];commit(resolved,n,false);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
 
 /* ---------- reveal & alert overlay ---------- */
 const fxDoneMicro=new Set();let fxQueue=[],fxTimer=null,fxCurrent=null,turnFlash=false;const MOVES=new Set(['carriage','train','ship','start']);

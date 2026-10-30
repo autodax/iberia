@@ -291,8 +291,8 @@ aside #phaseLabel{display:none}
 .ttCards.thumbs .bigCard,.ttCards.thumbs .bigCard.art{width:100%;height:auto;aspect-ratio:724/510;border-radius:6px;border-width:1px;box-shadow:0 2px 5px #0005;flex:none}
 
 /* ---- board view (wide windows) ---- */
-#app.bm main{grid-template-columns:var(--leftW) var(--boardW) var(--rightW);gap:6px;align-items:start}
-#leftStrip,#rightStrip{display:flex;flex-direction:column;gap:6px;min-width:0;overflow:auto;max-height:var(--appH)}
+#app.bm main{grid-template-columns:var(--boardW) var(--stripW);gap:6px;align-items:start}
+#rightStrip{display:flex;flex-direction:column;gap:6px;min-width:0;overflow:auto;max-height:var(--appH)}
 #app.bm #cityList,#app.bm #resources,#app.bm #turnStatus,#app.bm #message,#app.bm #actionHeading,#app.bm #ringToggle{display:none}
 #app.bm .turnState{display:none}#app.bm:not(.inMode) #actionHint{display:none}
 #app.bm #turnBox{width:auto}
@@ -302,7 +302,7 @@ aside #phaseLabel{display:none}
 #app.bm button.card.thumb.disc{color:#fff;font-size:22px;text-shadow:0 0 4px #000,0 0 4px #000}
 /* the active player's hand: one overlapped column of larger cards */
 #app.bm .hand.active .handCards{display:flex;flex-direction:column;align-items:center;padding:4px 0 10px;gap:0}
-#app.bm .hand.active button.card.thumb{width:var(--aw,168px);flex:none;border-radius:8px;box-shadow:0 3px 8px #0009;margin-top:calc(var(--aw,168px)*-1.5 + 64px)}
+#app.bm .hand.active button.card.thumb{width:var(--aw,168px);flex:none;border-radius:8px;box-shadow:0 3px 8px #0009;margin-top:calc(var(--aw,168px)*-1.14)}
 #app.bm .hand.active button.card.thumb:first-child{margin-top:0}
 #app.bm .hand.active button.card.thumb.disc{font-size:18px;text-align:right;padding-right:8px;align-items:flex-start;line-height:30px}
 #app.bm .holdRow{display:flex;gap:6px;padding:4px 2px}#app.bm .holdRow img{height:26px}#app.bm .holdRow img.wide{height:20px}
@@ -327,6 +327,15 @@ aside #phaseLabel{display:none}
 #verTag{position:absolute;left:13.4%;top:95.6%;font:600 11px system-ui;color:#000;z-index:3;pointer-events:none;opacity:.85}
 #app:not(.bm) #verTag{display:none}
 #app.bm .cancelMode{margin-top:6px;width:100%}
+
+/* other players: a condensed fan of small cards */
+#app.bm #hands .hand{padding:4px 6px 6px;margin:0}
+#app.bm #hands .handCards{display:flex;flex-wrap:nowrap;gap:0;padding:2px 0 0}
+#app.bm #hands button.card.thumb{flex:none;width:42px;margin-left:-21px;border-radius:4px;box-shadow:0 1px 3px #0008}
+#app.bm #hands button.card.thumb:first-child{margin-left:0}
+#app.bm #hands button.card.thumb:hover{z-index:5;transform:translateY(-3px)}
+#app.bm #hands .handTitle{font-size:12.5px}
+#app.bm #bar{display:none}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <filter id="cubeBlackFx" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
@@ -1393,8 +1402,9 @@ function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pa
  let boardH=Math.max(200,H-2*pad-bar-gap),boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];
  // Wide windows (a Mac): the board fills the height and the hands live in strips on both sides.
  let free=W-2*pad-2*gap-boardW,wantBM=!LEGACY_SIDEBAR_LAYOUT;
- if(wantBM){boardH=Math.max(200,H-2*pad-gap);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];free=W-2*pad-2*gap-boardW;if(free<330){boardW=W-2*pad-2*gap-330;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2];free=330}let leftW=Math.round(Math.min(270,free*.6)),rightW=Math.floor(free-leftW),st2=$('app').style;
-  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--leftW':leftW,'--rightW':rightW,'--appW':W,'--appH':H,'--tw':54,'--aw':Math.max(90,Math.min(168,leftW-50))}))st2.setProperty(k,v+'px');setBoardMode(true);return}
+ if(wantBM){let strip=214;boardH=Math.max(200,H-2*pad);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];if(boardW>W-2*pad-gap-strip){boardW=W-2*pad-gap-strip;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
+  let stripW=Math.floor(Math.min(270,W-2*pad-gap-boardW)),aw=Math.max(84,Math.min(168,stripW-46,(H-330)/3.6)),st2=$('app').style;
+  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--stripW':stripW,'--appW':W,'--appH':H,'--aw':aw}))st2.setProperty(k,v+'px');setBoardMode(true);return}
  setBoardMode(false);
  if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
  let side=Math.min(maxSide,Math.max(minSide,W-2*pad-gap-boardW));
@@ -1409,12 +1419,12 @@ let bmOn=false,ringOpen=false;
 const ASIDE_IDS=['turnStatus','phaseLabel','turnBox','hands','message','setupPanel','cityList','resources'];
 function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=document.querySelector('main'),aside=document.querySelector('aside'),ring=$('ring');
  if(!ring){ring=el('div',{id:'ring'},$('boardFrame'))}
- let L=$('leftStrip'),R=$('rightStrip');if(!L){L=el('div',{id:'leftStrip'});R=el('div',{id:'rightStrip'});main.insertBefore(L,$('playArea'));main.appendChild(R)}
+ let R=$('rightStrip');if(!R){R=el('div',{id:'rightStrip'});main.appendChild(R)}
  app.classList.toggle('bm',on);$('ringToggle').onclick=toggleRing;
  let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',textContent:'v'+UI_VERSION},bf);svg('svg',{id:'ringLines'},ring)}
  for(let id of ['rulesLink','guideLink','muteButton','logButton','onlineButton','menuButton'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
- if(on){for(let id of ['turnStatus','turnBox','message','setupPanel'])L.appendChild($(id));for(let id of ['hands','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));aside.style.display='none';L.style.display=R.style.display=''}
- else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));aside.style.display='';L.style.display=R.style.display='none'}
+ if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));aside.style.display='none';R.style.display=''}
+ else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));aside.style.display='';R.style.display='none'}
  ringOpen=false;if(typeof state!=='undefined'&&state)setTimeout(render,0)}
 function positionRing(){let ring=$('ring'),np=$('nextPhase'),un=$('undo');if(!ring)return;
  $('app').classList.toggle('inMode',!!mode);let inRing=bmOn&&state.phase==='actions'&&state.actions>0&&state.status==='playing';
@@ -1503,7 +1513,7 @@ function startPawnFlights(list){if(!list.length)return;let L=document.getElement
  paint()}
 function stopPawnFlights(){for(let f of pawnFlights.values()){clearTimeout(f.t);f.g.remove()}pawnFlights.clear();pawnFlying.clear()}
 function commit(resolved,n,remote){let before=state;state=n;commands.push(resolved);if(REVEALS.has(resolved.type)||state.status!=='playing'||(Net.active&&!Net.isHost))history=[];else{let fresh=state.log.slice(before.log.length);history.push({state:before,commands:commands.length-1,label:fresh[fresh.length-1]||resolved.type});if(history.length>60)history.shift()}selectedCards=[];let pm=pawnMoves(before,resolved.type),nr=state.rails.filter(k=>!before.rails.includes(k));if(+$('fxSpeed').value>=0)nr.forEach(k=>railHide.add(k));let nrs=state.research.filter(c=>!before.research.includes(c));if(+$('fxSpeed').value>=0)nrs.forEach(c=>microHide.add(c));recompute();render();autosave();notice(state.status==='playing'?(remote?state.log[state.log.length-1]:'Done.'):state.status);if(MOVES.has(resolved.type))playSound('move');if(Object.keys(state.water).some(r=>state.water[r]>before.water[r]))playSound('water');queueFx(state.fx);animAfterFx(()=>{startPawnFlights(pm);startRailFlights(nr);nrs.forEach(c=>{if(microHide.has(c)&&!fxDoneMicro.has(c))flyMicro(c)})});{let was=new Set(fullHands(before));let extra=fullHands(state).filter(i=>!was.has(i)&&state.status==='playing').map(i=>({kind:'handLimit',seat:i,count:state.players[i].hand.length,limit:handLimit(state.players[i])}));if(extra.length)queueFx(extra)}if(state.status==='playing'&&state.phase!=='setup'&&before.phase!=='setup'&&before.active!==state.active&&(fxCurrent||fxQueue.length)){holdActive=before.active;render();releaseHold()}if(state.status==='playing'&&state.phase!=='setup'&&(before.active!==state.active||before.phase==='setup')){if(fxCurrent||fxQueue.length)turnFlash=true;else flashActive()}}
-async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);if(Net.active){let r=await Net.submit(resolved);if(!r.ok){notice(r.error,true);return false}return true}commit(resolved,n,false);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
+async function perform(cmd){if(busy)return false;busy=true;let choices=[];try{while(true){try{let resolved={...cmd,choices},n=transact(state,resolved);if(Net.active){let r=await Net.submit(resolved);if(!r.ok){notice(r.error,true);return false}if(bmOn){mode='';selectedCards=[];render()}return true}mode='';selectedCards=[];commit(resolved,n,false);return true}catch(e){if(!e.needChoice){notice(e.message,true);return false}let a=await choose(e.needChoice.description,e.needChoice.options,e.needChoice.labels);if(a===null){notice('Cancelled — nothing changed.');return false}choices.push(a)}}}finally{busy=false}}
 
 /* ---------- reveal & alert overlay ---------- */
 const fxDoneMicro=new Set();let fxQueue=[],fxTimer=null,fxCurrent=null,turnFlash=false;const MOVES=new Set(['carriage','train','ship','start']);
