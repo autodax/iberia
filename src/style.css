@@ -363,3 +363,6 @@ aside #phaseLabel{display:none}
 #app.bm #nextPhase,#app.bm #undo{display:none}
 .pawnPing{transform-box:fill-box;transform-origin:center;animation:pawnPing 1.3s ease-out both;opacity:0}
 @keyframes pawnPing{0%{opacity:.95;transform:scale(.7);stroke-width:6}100%{opacity:0;transform:scale(3.6);stroke-width:1.5}}
+
+.outRing{transform-box:fill-box;transform-origin:center;animation:outRing .9s ease-out both;opacity:0}
+@keyframes outRing{0%{opacity:.95;transform:scale(.5);stroke-width:7}100%{opacity:0;transform:scale(4.2);stroke-width:1.5}}
