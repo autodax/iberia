@@ -352,7 +352,7 @@ aside #phaseLabel{display:none}
 #app.bm.inMode .edgeBuild:hover .edgeGlow{opacity:.9}
 
 .pileTray{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.pileTray .label{width:100%}
-#app.bm .pileTray .thumb,#app.bm .peekOne .thumb{width:56px;aspect-ratio:2/3;height:auto;min-height:0;box-sizing:border-box;border-width:1px;border-left-width:1px;margin:0;padding:0;flex:none;background-size:cover;background-position:center;border-radius:4px;font-size:9px}
+#app.bm .pileTray .thumb,#app.bm .peekOne .thumb{width:56px;aspect-ratio:2/3;height:auto;min-height:0;box-sizing:border-box;border:1px solid rgba(40,30,15,.45)!important;margin:0;padding:0;flex:none;background-size:cover;background-position:center;border-radius:4px;font-size:9px}
 #app.bm .peekThumbs{display:flex;gap:8px;justify-content:center;align-items:flex-start}#app.bm .peekOne{display:flex;flex-direction:column;align-items:center;gap:2px}#app.bm .peekBtns{display:flex;gap:2px;justify-content:center}#app.bm .peekBtns button{padding:0 5px;min-width:28px}
 
 #app.bm.ringInf #nextPhase{display:none}
