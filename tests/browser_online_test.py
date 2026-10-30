@@ -53,7 +53,7 @@ async def main():
       async def page(name):
         pg=await ctx.new_page();pg.on('pageerror',lambda e:errs.append(name+': '+str(e)));pg.on('console',lambda m:m.type=='error' and errs.append(name+': '+m.text));return pg
       A=await page('host');B=await page('guest')
-      await A.goto(f'http://localhost:{PORT}/index.html');await B.goto(f'http://localhost:{PORT}/index.html')
+      await A.goto(f'http://localhost:{PORT}/index.html?layout=sidebar');await B.goto(f'http://localhost:{PORT}/index.html?layout=sidebar')
       await A.wait_for_timeout(400)
       # --- host a room
       await A.click('#onlineButton');await A.fill('#onName','Ana')

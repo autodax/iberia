@@ -1,6 +1,6 @@
 import asyncio,sys,json
 from playwright.async_api import async_playwright
-F=''+__import__('pathlib').Path(__file__).resolve().parents[1].joinpath('index.html').as_uri()+''
+F=''+__import__('pathlib').Path(__file__).resolve().parents[1].joinpath('index.html').as_uri()+'?layout=sidebar'
 res=[];errs=[]
 def ok(c,m):res.append((bool(c),m))
 async def main():

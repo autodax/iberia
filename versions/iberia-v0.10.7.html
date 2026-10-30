@@ -1388,8 +1388,8 @@ async function ask(q){return (await choose(q,['yes','no'],['Yes — agreed','No'
 function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pad=6,gap=6,bar=34,minSide=W>=1600?370:W>=1200?322:290,maxSide=560;
  let boardH=Math.max(200,H-2*pad-bar-gap),boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];
  // Wide windows (a Mac): the board fills the height and the hands live in strips on both sides.
- let free=W-2*pad-2*gap-boardW,wantBM=free>=330&&W>=1300;
- if(wantBM){boardH=Math.max(200,H-2*pad-24-gap);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];free=W-2*pad-2*gap-boardW;let leftW=Math.round(Math.min(270,free*.6)),rightW=Math.floor(free-leftW),st2=$('app').style;
+ let free=W-2*pad-2*gap-boardW,wantBM=!LEGACY_SIDEBAR_LAYOUT;
+ if(wantBM){boardH=Math.max(200,H-2*pad-24-gap);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];free=W-2*pad-2*gap-boardW;if(free<330){boardW=W-2*pad-2*gap-330;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2];free=330}let leftW=Math.round(Math.min(270,free*.6)),rightW=Math.floor(free-leftW),st2=$('app').style;
   for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--leftW':leftW,'--rightW':rightW,'--appW':W,'--appH':H,'--tw':54,'--aw':Math.max(90,Math.min(168,leftW-50))}))st2.setProperty(k,v+'px');setBoardMode(true);return}
  setBoardMode(false);
  if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
@@ -1399,6 +1399,8 @@ function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pa
  let st=$('app').style;for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--sideW':side,'--appW':appW,'--appH':appH}))st.setProperty(k,v+'px')}
 
 /* ---------- board view (wide windows): hands in side strips, actions in a ring around the pawn ---------- */
+// Set to true to bring back the old sidebar layout (kept in the code, never shipped by default).
+const LEGACY_SIDEBAR_LAYOUT=/[?&]layout=sidebar/.test(location.search);
 let bmOn=false,ringOpen=false;
 const ASIDE_IDS=['turnStatus','phaseLabel','turnBox','hands','message','setupPanel','cityList','resources'];
 function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=document.querySelector('main'),aside=document.querySelector('aside'),ring=$('ring');
