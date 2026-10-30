@@ -190,7 +190,7 @@ function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pa
  let free=W-2*pad-2*gap-boardW,wantBM=!LEGACY_SIDEBAR_LAYOUT;
  if(wantBM){let strip=214;boardH=Math.max(200,H-2*pad);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];if(boardW>W-2*pad-gap-strip){boardW=W-2*pad-gap-strip;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
   let stripW=Math.floor(Math.min(270,W-2*pad-gap-boardW)),aw=Math.max(84,Math.min(168,stripW-46,(H-330)/3.6)),st2=$('app').style;
-  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--stripW':stripW,'--appW':W,'--appH':H,'--aw':aw}))st2.setProperty(k,v+'px');setBoardMode(true);return}
+  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--stripW':stripW,'--appW':W,'--appH':H,'--aw':aw}))st2.setProperty(k,v+'px');st2.setProperty('--bs',String(+(boardW/1478).toFixed(4)));setBoardMode(true);return}
  setBoardMode(false);
  if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
  let side=Math.min(maxSide,Math.max(minSide,W-2*pad-gap-boardW));
@@ -213,6 +213,7 @@ function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=docu
  else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));aside.style.display='';R.style.display='none'}
  ringOpen=false;if(typeof state!=='undefined'&&state)setTimeout(render,0)}
 function ringAvail(){return bmOn&&state.status==='playing'&&state.phase==='actions'&&holdActive==null&&mine(state.active)&&!inLobby()&&!fxCurrent&&!fxQueue.length&&!mapPick&&!mode}
+let ringWait=0,ringWaitT=0;
 function lastIsDiscard(){let c=commands[commands.length-1];return !!c&&c.type==='discard'&&history.length>0}
 function ruStyle(ru,x,y,w){ru.style.cssText=`position:absolute;left:${x-w/2}px;top:${y+26}px;width:${w}px;height:32px;padding:0 6px;font-size:13px;pointer-events:auto;border-radius:16px;border:2px solid ${PAWN[state.players[state.active].role]||'#555'};box-shadow:0 2px 8px #0008;margin:0;display:${ru.hidden?'none':''}`}
 function positionRing(){let ring=$('ring'),np=$('nextPhase'),un=$('undo');if(!ring)return;
@@ -225,8 +226,9 @@ function positionRing(){let ring=$('ring'),np=$('nextPhase'),un=$('undo');if(!ri
    re.style.cssText=`position:absolute;left:${x-bw/2}px;top:${y-18}px;width:${bw}px;height:38px;padding:0 10px;font-size:14px;font-weight:600;pointer-events:auto;border-radius:19px;border:2px solid #1d4f33;background:#2f5d46;color:#fff;box-shadow:0 2px 10px #000a;margin:0`;ruStyle(ru,x,y,120);return}
   re.classList.remove('primary')}
  let ok=ringAvail();if(!ok)ringOpen=false;
- if(ok&&state.actions===0){ringOpen=false;ring.hidden=false;re.textContent=np.textContent;re.disabled=np.disabled;ru.hidden=un.hidden;ru.disabled=un.disabled;ru.textContent=lastIsDiscard()?'Undo discard':'Undo';re.classList.add('primary');for(let b of $('actionButtons').children)b.style.display='none';
-  let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,bw=Math.max(190,Math.min(260,np.textContent.length*8.2)),x=Math.max(bw/2+4,Math.min(w-bw/2-4,fx)),y=Math.min(h-(ru.hidden?30:78),fy+34),lines=$('ringLines');lines.replaceChildren();lines.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none');
+ if(!(ok&&state.actions===0))ringWait=0;
+ if(ok&&state.actions===0){ringOpen=false;if(!ringWait)ringWait=Date.now();let rem=500-(Date.now()-ringWait);if(rem>0){ring.hidden=true;clearTimeout(ringWaitT);ringWaitT=setTimeout(positionRing,rem+15);return}ring.hidden=false;re.textContent=np.textContent;re.disabled=np.disabled;ru.hidden=un.hidden;ru.disabled=un.disabled;ru.textContent=lastIsDiscard()?'Undo discard':'Undo';re.classList.add('primary');for(let b of $('actionButtons').children)b.style.display='none';
+  let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,bw=Math.max(190,Math.min(260,np.textContent.length*8.2)),x=Math.max(bw/2+4,Math.min(w-bw/2-4,fx)),y=Math.min(h-(ru.hidden?30:78),fy+50),lines=$('ringLines');lines.replaceChildren();lines.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none');
   svg('line',{x1:fx,y1:fy+2,x2:x,y2:y-18,stroke:PAWN[state.players[state.active].role]||'#555','stroke-width':2,'stroke-opacity':.6},lines);
   re.style.cssText=`position:absolute;left:${x-bw/2}px;top:${y-18}px;width:${bw}px;height:38px;padding:0 10px;font-size:14px;font-weight:600;pointer-events:auto;border-radius:19px;border:2px solid #1d4f33;background:#2f5d46;color:#fff;box-shadow:0 2px 10px #000a;margin:0;display:''`;
   ruStyle(ru,x,y,lastIsDiscard()?120:90);return}
