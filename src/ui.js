@@ -506,7 +506,7 @@ function drawCityList(){let box=$('cityList');if(!box)return;box.replaceChildren
 let prevEl=null,prevPinned=false;
 document.addEventListener('click',e=>{if(prevPinned&&!e.target.closest('.card.thumb,.roleLink')){hidePreview(true)}else if(prevPinned&&prevEl&&prevEl.contains(e.target))hidePreview(true)},true);
 function hidePreview(force){if(prevPinned&&!force)return;prevPinned=false;if(prevEl){prevEl.remove();prevEl=null}}
-// The ship at the lower left of the board opens the three reminder cards (what each action does, and the turn order).
+// The "Play" steps printed on the board (right side) open the three reminder cards (what each action does, and the turn order).
 function showHelpCards(){if($('helpCards'))return closeHelpCards();let ov=el('div',{id:'helpCards',onclick:closeHelpCards},document.body);for(let k of ['actions-1','actions-2','actions-3']){let a=asset('instruction-cards/'+k);if(a)el('img',{src:a,className:k==='actions-3'?'portrait':'',alt:'Reminder card'},ov)}el('div',{className:'helpNote',textContent:'Click anywhere to close'},ov)}
 function closeHelpCards(){$('helpCards')?.remove()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelpCards()});

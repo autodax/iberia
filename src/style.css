@@ -390,8 +390,8 @@ aside #phaseLabel{display:none}
 button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap:balance}
 
 #helpCards{position:fixed;inset:0;z-index:60;background:#000a;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:2vmin;padding:3vmin;cursor:pointer}
-#helpCards img{max-height:44vh;max-width:44vw;border-radius:8px;box-shadow:0 6px 24px #000a}
-#helpCards img.portrait{max-height:80vh;max-width:30vw}
+#helpCards img{width:min(386px,44vw);height:auto;border-radius:8px;box-shadow:0 6px 24px #000a}
+#helpCards img.portrait{width:min(270px,30vw)}
 #helpCards .helpNote{position:absolute;bottom:2vmin;left:0;right:0;text-align:center;color:#fff;font:600 14px system-ui}
 
 .actLeft{color:#1f7a3a;font-weight:700;font-size:13px;line-height:17px;margin:-1px 0 4px 20px}
@@ -402,3 +402,8 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #ring button.iconBtn .ico{width:32px;height:32px;object-fit:contain;pointer-events:none}
 #ring button.iconBtn .badge{position:absolute;right:-5px;bottom:-5px;width:20px;height:28px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 1px #0008)}
 #ring button.iconBtn:hover::after{content:attr(data-tip);position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:5px;white-space:nowrap;background:#2b2b2b;color:#fff;padding:3px 9px;border-radius:6px;font-size:12px;font-weight:600;z-index:5;pointer-events:none}
+
+/* choice popups shrink to their content; short options sit side by side when they fit */
+#choiceDialog:not(.mapPick):not(.yesno){width:fit-content;min-width:min(300px,92vw);max-width:min(560px,94vw)}
+#choiceDialog:not(.mapPick):not(.yesno) #choiceOptions{display:flex;flex-wrap:wrap;gap:6px}
+#choiceDialog:not(.mapPick):not(.yesno) #choiceOptions button{flex:1 1 auto;text-align:center}
