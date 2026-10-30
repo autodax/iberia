@@ -407,3 +407,5 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #choiceDialog:not(.mapPick):not(.yesno){width:fit-content;min-width:min(300px,92vw);max-width:min(560px,94vw)}
 #choiceDialog:not(.mapPick):not(.yesno) #choiceOptions{display:flex;flex-wrap:wrap;gap:6px}
 #choiceDialog:not(.mapPick):not(.yesno) #choiceOptions button{flex:1 1 auto;text-align:center}
+
+.edgeBuild.armed .ghostRail{opacity:.85}.edgeBuild.armed .edgeGlow{opacity:.85}
