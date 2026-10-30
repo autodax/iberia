@@ -795,7 +795,7 @@ $('onName').addEventListener('change',()=>{let n=onlineName();if(Net.active)Net.
 $('onCopy').onclick=async()=>{try{await navigator.clipboard.writeText(roomLink());showOnlineMsg('Link copied. Send it to the other players.')}catch(e){showOnlineMsg('Copy this link: '+roomLink())}};
 $('onStartGame').onclick=()=>{let r=Net.start();if(!r.ok)showOnlineMsg(r.error,true)};
 $('onBack').onclick=async()=>{if(await ask('Take everyone back to the lobby to start a new game? The current game ends.')){let r=Net.backToLobby();if(!r.ok)showOnlineMsg(r.error,true)}};
-$('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room? Everyone is disconnected. The board stays on this page as a game you can keep playing here.':'Leave this room? The board stays on this page as a local game.'))return;Net.leave();$('onlineDialog').close();render();notice('You left the online room.')};
+$('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room for good? Everyone is disconnected and the room can NOT be resumed later. The board stays on this page as a one-screen game. (To pause instead, just close this window; you can use Resume hosting later.)':'Leave this room? The board stays on this page as a local game.'))return;Net.leave();$('onlineDialog').close();render();notice('You left the online room.')};
 {let r=/[?&]relay=([^&]+)/.exec(location.search);if(r){try{let v=decodeURIComponent(r[1]).trim();if(/^(https?|wss?):\/\/[^\s]+$/i.test(v))linkRelay=v}catch(e){}}
  let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
 

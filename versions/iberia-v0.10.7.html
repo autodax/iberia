@@ -412,6 +412,8 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 .statsBox{background:#fff6dc;border:1px solid var(--tanBorder);border-radius:8px;padding:8px 12px;margin:0 0 12px}.statsBox.final{border:2px solid #2f5d46;background:#eef6e6}
 .statsBox h3{margin:0 0 6px}.statRow{display:flex;gap:10px;font-size:13px;line-height:1.5}.statRow b{min-width:150px;flex:none}.statsBox button{margin-top:8px}
+
+.onHelp{margin:8px 0;background:#fff6dc;border:1px solid var(--tanBorder);border-radius:8px;padding:6px 12px}.onHelp summary{cursor:pointer;font-weight:700}.onHelp h3{margin:10px 0 4px}.onHelp ol,.onHelp ul{margin:4px 0 4px 18px;padding:0;font-size:13px;line-height:1.5}.onHelp p{margin:4px 0}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <filter id="cubeBlackFx" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
@@ -446,6 +448,23 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 <dialog id="onlineDialog"><button class="close">Close</button><h2>Play online</h2>
 <div id="onlineStart">
 <p>One player hosts and shares a room code or link. Everyone else joins from their own browser. No account is needed. Moves are passed along by a small relay server, so it works on any network.</p>
+<details id="onHow" class="onHelp"><summary>How to host, join and resume</summary>
+<h3>Start a new game (host)</h3>
+<ol><li>Type your name and click <b>Host a new game</b>. You get a room code and an invite link.</li>
+<li>Send the link or code to the others. They open this page, click <b>Online</b>, type their name and the code, and click <b>Join</b>.</li>
+<li>In the lobby, choose the number of players and Epidemics. Give each seat a role (the role menu) and a person (the person menu). Players can also click <b>Take this seat</b>.</li>
+<li>When every seat has a person, click <b>Start game</b>. Roles can only be set here, before the game starts.</li></ol>
+<h3>Join a game</h3>
+<p>Type your name and the room code (or just open the invite link), then click <b>Join</b>. Pick a seat if you have not been given one. If your connection drops, the page reconnects by itself and you keep your seat.</p>
+<h3>Resume a game that was interrupted</h3>
+<ol><li>The host opens this page <b>in the same browser on the same device</b> that was hosting, then clicks <b>Online</b>.</li>
+<li>Click <b>Resume hosting</b> (not Host a new game). The same room code comes back and the game continues where it stopped.</li>
+<li>Everyone else clicks <b>Join</b> with the same code or link. They get their seats back by name.</li></ol>
+<h3>Good to know</h3>
+<ul><li><b>Host a new game</b> always starts a fresh room and a fresh game. Use it only for a new game.</li>
+<li>Only the host's browser can resume, and it remembers one room at a time. Hosting a new room replaces the remembered one.</li>
+<li>Never open the same room as host in two windows or devices at once. They push each other out and the game keeps dropping.</li>
+<li>The host's page runs the game, so the host should keep it open and awake (no sleeping laptop or locked iPad).</li></ul></details>
 <label>Your name<input id="onName" maxlength="20" autocomplete="nickname" placeholder="Shown to the other players"></label>
 <div class="dialogButtons"><button id="onHost" class="primary" style="width:auto">Host a new game</button></div>
 <div id="onResume" hidden><p id="onResumeText"></p><div class="dialogButtons"><button id="onResumeBtn">Resume hosting</button></div></div>
@@ -462,6 +481,11 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 </div>
 <div id="onlineRoom" hidden>
 <p id="onStatus" class="detail"></p>
+<details class="onHelp"><summary>Leaving versus closing the window</summary>
+<ul><li><b>Closing the window, refreshing, or losing your connection</b> only pauses you. Guests can reconnect to their seat. The host can reopen this page and click <b>Online</b> then <b>Resume hosting</b> to bring the same room and game back.</li>
+<li><b>Leave room as the host closes the room for good.</b> Everyone is disconnected and it cannot be resumed. The board stays on your page as a one-screen game.</li>
+<li><b>Leave room as a guest</b> gives up your connection. Join again with the code to come back, and click your seat or ask the host to give it back.</li>
+<li><b>Back to lobby</b> (host) ends the current game for everyone so you can start a new one.</li></ul></details>
 <div class="onCodeRow"><div><div class="detail">Room code</div><div id="onCodeBig" class="onCodeBig"></div></div><div id="onShare" class="dialogButtons"><button id="onCopy">Copy invite link</button></div></div>
 <div id="onSettings"></div>
 <h3>Seats</h3><div id="onSeats"></div>
@@ -2100,7 +2124,7 @@ $('onName').addEventListener('change',()=>{let n=onlineName();if(Net.active)Net.
 $('onCopy').onclick=async()=>{try{await navigator.clipboard.writeText(roomLink());showOnlineMsg('Link copied. Send it to the other players.')}catch(e){showOnlineMsg('Copy this link: '+roomLink())}};
 $('onStartGame').onclick=()=>{let r=Net.start();if(!r.ok)showOnlineMsg(r.error,true)};
 $('onBack').onclick=async()=>{if(await ask('Take everyone back to the lobby to start a new game? The current game ends.')){let r=Net.backToLobby();if(!r.ok)showOnlineMsg(r.error,true)}};
-$('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room? Everyone is disconnected. The board stays on this page as a game you can keep playing here.':'Leave this room? The board stays on this page as a local game.'))return;Net.leave();$('onlineDialog').close();render();notice('You left the online room.')};
+$('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room for good? Everyone is disconnected and the room can NOT be resumed later. The board stays on this page as a one-screen game. (To pause instead, just close this window; you can use Resume hosting later.)':'Leave this room? The board stays on this page as a local game.'))return;Net.leave();$('onlineDialog').close();render();notice('You left the online room.')};
 {let r=/[?&]relay=([^&]+)/.exec(location.search);if(r){try{let v=decodeURIComponent(r[1]).trim();if(/^(https?|wss?):\/\/[^\s]+$/i.test(v))linkRelay=v}catch(e){}}
  let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
 

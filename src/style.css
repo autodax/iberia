@@ -412,3 +412,5 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 .statsBox{background:#fff6dc;border:1px solid var(--tanBorder);border-radius:8px;padding:8px 12px;margin:0 0 12px}.statsBox.final{border:2px solid #2f5d46;background:#eef6e6}
 .statsBox h3{margin:0 0 6px}.statRow{display:flex;gap:10px;font-size:13px;line-height:1.5}.statRow b{min-width:150px;flex:none}.statsBox button{margin-top:8px}
+
+.onHelp{margin:8px 0;background:#fff6dc;border:1px solid var(--tanBorder);border-radius:8px;padding:6px 12px}.onHelp summary{cursor:pointer;font-weight:700}.onHelp h3{margin:10px 0 4px}.onHelp ol,.onHelp ul{margin:4px 0 4px 18px;padding:0;font-size:13px;line-height:1.5}.onHelp p{margin:4px 0}
