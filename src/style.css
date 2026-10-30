@@ -374,3 +374,6 @@ aside #phaseLabel{display:none}
 
 #choiceDialog.yesno{width:min(380px,92vw);max-width:380px}#choiceDialog.yesno #choiceOptions{grid-template-columns:1fr 1fr}#choiceDialog.yesno #choiceOptions button{text-align:center}#choiceDialog.yesno .dialogButtons{display:none}
 #app.bm .peekList{margin-bottom:16px}
+
+#app.bm #hands .handCards{align-items:flex-start}
+#app.bm .overNote{font-size:11.5px;line-height:1.3;margin-top:4px;color:var(--warn,#8a3b12)}
