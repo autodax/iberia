@@ -359,3 +359,7 @@ aside #phaseLabel{display:none}
 #ringEnd.primary:not(:disabled){animation:ringPulse 1.4s ease-in-out infinite}
 @keyframes ringPulse{0%,100%{box-shadow:0 2px 10px #000a,0 0 0 0 #ffd54a88}50%{box-shadow:0 2px 10px #000a,0 0 0 7px #ffd54a00}}
 @media (prefers-reduced-motion:reduce){#ringEnd.primary:not(:disabled){animation:none}}
+
+#app.bm #nextPhase,#app.bm #undo{display:none}
+.pawnPing{transform-box:fill-box;transform-origin:center;animation:pawnPing 1.3s ease-out both;opacity:0}
+@keyframes pawnPing{0%{opacity:.95;transform:scale(.7);stroke-width:6}100%{opacity:0;transform:scale(3.6);stroke-width:1.5}}
