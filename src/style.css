@@ -310,7 +310,7 @@ aside #phaseLabel{display:none}
 #app.bm #nextPhase:not([style]){width:100%}
 #app.bm #bar{height:24px;font-size:11px;gap:6px}#app.bm #bar strong{font-size:12px}
 #boardFrame{position:relative}
-#topBtns{position:absolute;left:21.4%;top:2%;transform:translateX(-50%);width:auto;display:flex;gap:9px;align-items:center;justify-content:center;z-index:4;padding:7px 12px;border-radius:20px;background:rgba(236,224,196,.5);box-shadow:0 2px 8px rgba(40,30,10,.25),inset 0 0 0 1px rgba(255,255,255,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#topBtns{position:absolute;left:22.5%;top:2%;transform:translateX(-50%) scale(.8);transform-origin:center center;width:auto;display:flex;gap:9px;align-items:center;justify-content:center;z-index:4;padding:7px 12px;border-radius:20px;background:rgba(236,224,196,.5);box-shadow:0 2px 8px rgba(40,30,10,.25),inset 0 0 0 1px rgba(255,255,255,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 #topBtns[hidden],#cubeCounts[hidden],#tokTip[hidden]{display:none}
 #topBtns .btn,#topBtns button{font-size:18px;padding:3px 12px;border-radius:15px;height:auto;white-space:nowrap}
 #cubeCounts{position:absolute;left:83.6%;top:20.5%;width:15.1%;display:flex;justify-content:space-around;align-items:center;z-index:3;pointer-events:none}
