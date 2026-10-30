@@ -1,3 +1,7 @@
+## Latest
+- Actions left shown beside the active player's name in the side panel (number on the pawn removed).
+- All 48 city cards, 15 events, 7 roles re-made from the new photos with white balance from the paper; three reminder cards added, opened by clicking the ship on the board.
+
 # v0.10.7
 - Events now use the map in the new layout: New Rails and Ring Railroads (click railway lines), Hospital Founding, Ships Arrive, Travel Day and Night, Government Mobilization, Overseas Migration and Science Triumph (click cities). The side panel says what to click and how many.
 - Red rings flash at a city before an outbreak; the active pawn pings in its colour at the start of a turn.
