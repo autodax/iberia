@@ -409,3 +409,6 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #choiceDialog:not(.mapPick):not(.yesno) #choiceOptions button{flex:1 1 auto;text-align:center}
 
 .edgeBuild.armed .ghostRail{opacity:.85}.edgeBuild.armed .edgeGlow{opacity:.85}
+
+.statsBox{background:#fff6dc;border:1px solid var(--tanBorder);border-radius:8px;padding:8px 12px;margin:0 0 12px}.statsBox.final{border:2px solid #2f5d46;background:#eef6e6}
+.statsBox h3{margin:0 0 6px}.statRow{display:flex;gap:10px;font-size:13px;line-height:1.5}.statRow b{min-width:150px;flex:none}.statsBox button{margin-top:8px}

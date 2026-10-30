@@ -90,7 +90,7 @@ function spend(s,p,card){let i=p.hand.indexOf(card);requireRule(i>=0,'Card not i
 function take(p,card){let i=p.hand.indexOf(card);requireRule(i>=0,'Card not in hand');p.hand.splice(i,1);return card}
 function fullHands(s){return s.players.map((p,i)=>p.hand.length>handLimit(p)?i:-1).filter(i=>i>=0)}
 function railReach(s,start){let seen=new Set([start]),again=true;while(again){again=false;for(let k of s.rails){let [a,b]=k.split('|');if(seen.has(a)&&!seen.has(b)){seen.add(b);again=true}if(seen.has(b)&&!seen.has(a)){seen.add(a);again=true}}}seen.delete(start);return seen}
-function choice(ctx,options,description,labels){if(options.length===1)return options[0];let v=ctx.choices[ctx.index++];if(v===undefined){let e=Error(description);e.needChoice={options,description,labels:labels||options};throw e}requireRule(options.includes(v),'Invalid choice: '+v);return v}
+function choice(ctx,options,description,labels,meta){if(options.length===1)return options[0];let v=ctx.choices[ctx.index++];if(v===undefined){let e=Error(description);e.needChoice={options,description,labels:labels||options,...(meta||{})};throw e}requireRule(options.includes(v),'Invalid choice: '+v);return v}
 function regionLabel(r){return r+' — '+R[r].adjacent_cities.map(k=>C[k].name).join(', ')}
 // Move any pawn. The Nurse re-places her prevention token; the Palliative Care Nurse may carry a cube; the Civil Engineer stands on a connection (to + a neighbour).
 function relocate(s,seat,to,ctx,withCity,allowed){let q=s.players[seat],from=q.city;
@@ -100,12 +100,24 @@ function relocate(s,seat,to,ctx,withCity,allowed){let q=s.players[seat],from=q.c
  if(q.role==='nurse'){let opts=C[to].region_ids.slice();s.prevention=choice(ctx,opts,'Nurse: choose the region for the prevention token next to '+C[to].name,opts.map(regionLabel));s.log.push('Prevention token → '+s.prevention)}}
 // Record a prevented cube on the alert that caused it (shown in the popup, then animated on the board).
 function noteBlocked(s,b){let f=s.fx&&s.fx[s.fx.length-1];if(!f)return;let list=f.blocked=f.blocked||[],e=list.find(x=>x.city===b.city&&x.by===b.by&&x.region===b.region);if(e){e.n++;e.left=b.left}else list.push({...b,n:1})}
+// One plain sentence per action; disease colours are named so the log shows which disease a hospital, cure or cube was about.
+function actionLog(s,p,cmd,from){let n=p.name,cn=k=>C[k]?C[k].name:k,col=k=>k?k[0].toUpperCase()+k.slice(1):'',t=cmd.type;
+ if(t==='carriage')return n+' moves by carriage/boat to '+cn(cmd.to);
+ if(t==='train')return n+' moves by train to '+cn(cmd.to);
+ if(t==='ship')return n+' sails to '+cn(cmd.to)+(cmd.card&&C[cmd.card]?' (discards '+cn(cmd.card)+', '+col(C[cmd.card].color)+')':'');
+ if(t==='build')return n+' builds a railroad '+(p.city2?cn(p.city)+' – '+cn(p.city2):cn(from)+' – '+cn(cmd.to)+(cmd.to2?' – '+cn(cmd.to2):''));
+ if(t==='treat')return n+' treats a '+col(cmd.color)+' cube in '+cn(from)+(cmd.extra?' and a '+col(cmd.extra.color)+' cube in '+cn(cmd.extra.city):'');
+ if(t==='hospital')return n+' builds a '+col(C[from].color)+' hospital in '+cn(from);
+ if(t==='research')return n+' researches the '+col(cmd.color)+' disease (hospital in '+cn(from)+')';
+ if(t==='purify'||t==='agronomist')return n+' places purification token(s) in '+regionLabel(cmd.region)+(cmd.card&&C[cmd.card]?' (discards '+cn(cmd.card)+', '+col(C[cmd.card].color)+')':'');
+ if(t==='share')return n+(cmd.direction==='take'?' takes ':' gives ')+cn(from)+' ('+col(C[from].color)+') '+(cmd.direction==='take'?'from ':'to ')+s.players[cmd.other].name;
+ return n+': '+t+(cmd.to?' → '+cn(cmd.to):'')}
 function protectedByNurse(s,id){return !!(s.prevention&&R[s.prevention].adjacent_cities.includes(id))}
 function placeCube(s,id,color,ctx,erupted,pend,from){
  if(erupted.has(id))return null;
  if(protectedByNurse(s,id)){s.log.push('Prevention token protects '+C[id].name);noteBlocked(s,{city:id,by:'nurse',region:s.prevention});return 'blocked'}
  let water=C[id].region_ids.filter(r=>s.water[r]>0);
- if(water.length){let r=choice(ctx,water,'Choose which purification token protects '+C[id].name,water.map(x=>regionLabel(x)+' (×'+s.water[x]+')'));s.water[r]--;s.waterSupply++;s.log.push('Purification in '+regionLabel(r)+' protects '+C[id].name);noteBlocked(s,{city:id,by:'water',region:r,left:s.water[r]});return 'blocked'}
+ if(water.length){let r=choice(ctx,water,'Choose which purification token protects '+C[id].name,water.map(x=>regionLabel(x)+' (×'+s.water[x]+')'),{block:id});s.water[r]--;s.waterSupply++;s.log.push('Purification in '+regionLabel(r)+' protects '+C[id].name);noteBlocked(s,{city:id,by:'water',region:r,left:s.water[r]});return 'blocked'}
  if(s.cubes[id][color]===3){if(!pend.some(p=>p[0]===id))pend.push([id,from]);return 'full'}
  if(s.supply[color]===0){lose(s,'no '+color+' cubes left');return null}
  s.cubes[id][color]++;s.supply[color]--;return 'placed'}
@@ -161,7 +173,7 @@ function movePawn(s,seat,m,ctx,free){let q=s.players[seat],from=q.city;if(q.role
 function playEvent(s,seat,card,a,ctx,fromDiscard){let q=s.players[seat];a=a||{};
  if(card==='good_season'){if(s.revealed&&s.revealed.length&&s.infectionDrawn===0){s.infectionDeck.unshift(...s.revealed);s.revealed=[s.infectionDeck.pop()];if(s.phase==='infection')s.infectionRemaining=1;s.log.push('Good Season: only one Infection card, from the bottom')}else if(s.phase==='infection'&&s.infectionDrawn===0){s.infectionRemaining=1;s.infectionFromBottom=true;s.log.push('Good Season applies to this infection step')}else s.goodSeason=true}
  else if(card==='government_mobilization'){let moves=a.moves||[];requireRule(Array.isArray(moves),'Invalid moves');let seen=new Set();for(let m of moves){if(!m)continue;requireRule(seatOk(s,m.seat)&&!seen.has(m.seat),'Each player moves at most once');seen.add(m.seat);requireRule(['carriage','train','ship'].includes(m.type),'Choose carriage, train or ship');movePawn(s,m.seat,{type:m.type,to:m.to,card:m.card},ctx,true)}}
- else if(card==='hospital_founding'){requireRule(C[a.city],'Choose a city');s.hospitals[C[a.city].color]=a.city}
+ else if(card==='hospital_founding'){requireRule(C[a.city],'Choose a city');s.hospitals[C[a.city].color]=a.city;s.log.push(C[a.city].color[0].toUpperCase()+C[a.city].color.slice(1)+' hospital now in '+C[a.city].name)}
  else if(card==='mail_correspondence'){requireRule(seatOk(s,a.seatA)&&seatOk(s,a.seatB)&&a.seatA!==a.seatB,'Choose two different players');requireRule(a.consent===true,'Both players must agree');let A=s.players[a.seatA],B=s.players[a.seatB];requireRule(A.hand.includes(a.cardA)&&B.hand.includes(a.cardB),'Each player must offer a card from hand');requireRule(!(a.seatA===seat&&a.cardA===card)&&!(a.seatB===seat&&a.cardB===card),'Cannot swap the Event being played');take(A,a.cardA);take(B,a.cardB);A.hand.push(a.cardB);B.hand.push(a.cardA)}
  else if(card==='new_rails'||card==='ring_railroads'){let max=card==='new_rails'?2:3,routes=a.routes||[];requireRule(Array.isArray(routes)&&routes.length>=1&&routes.length<=max&&new Set(routes).size===routes.length,'Choose 1 to '+max+' different routes');requireRule(routes.length<=s.railSupply,'Not enough railroad tokens');for(let k of routes){if(card==='ring_railroads'){let [x,y]=k.split('|');requireRule(C[x]?.port&&C[y]?.port,'Ring Railroads must connect two port cities')}buildRail(s,k)}}
  else if(card==='one_more_day'){requireRule(s.phase==='actions','One More Day must be played during the action step');s.actions+=2}
@@ -216,6 +228,6 @@ function transact(state,cmd){let s=CP(state),ctx={choices:cmd.choices||[],index:
    else{if(p.city2&&cmd.type!=='build'){let ok=locs(p).filter(c=>{let t=CP(s);try{act(t,t.players[t.active],cmd,c,{choices:[],index:0});return true}catch(e){return !!e.needChoice}});if(ok.length)from=ok.length===1?ok[0]:choice(ctx,ok,'Civil Engineer: act in which city?',ok.map(k=>C[k].name))}
     act(s,p,cmd,from,ctx)}
    if(!FREE.has(cmd.type))s.actions--;
-   s.log.push(p.name+': '+cmd.type+(cmd.to?' → '+C[cmd.to].name:''))}}
+   s.log.push(actionLog(s,p,cmd,from))}}
  s.fx.forEach((f,i)=>f.after=i+1<s.fx.length?s.fx[i+1].pre:JSON.parse(JSON.stringify(s.cubes)));invariant(s);return s}
 if(typeof module!=='undefined')module.exports={VERSION,handLimit,locs,inCity,COLORS,RATE,C,R,EDGES,ADJ,ROLES,ROLE_TEXT,EVENTS,EVENT_TEXT,SETUP,HAND_LIMIT,edgeKey,initial,invariant,transact,railReach,fullHands,cardName,CP,hash};
