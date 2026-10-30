@@ -284,6 +284,16 @@ async def main():
     await pg.evaluate("mode='treat';render()");await pg.wait_for_timeout(200)
     ok(await pg.evaluate("document.querySelectorAll('.choiceGroup[data-for=disease] .chip img, .choiceGroup[data-for=disease] .chip i').length>=1&&!/red|blue|yellow|black/.test(document.querySelector('.choiceGroup[data-for=disease]').innerText)"),'disease buttons show cubes, not color names')
     await pg.evaluate("setSound(false)");ok(await pg.evaluate("!sndPrefs.on"),'mute again')
+    r=await pg.evaluate("""(async()=>{ask=async()=>true;startGameLocal('rw1',4,['sailor','agronomist','politician']);
+     let step=cmd=>{let ch=[];for(;;){try{let r={...cmd,choices:ch};state=transact(state,r);commands.push(r);return}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}};
+     step({type:'start',cities:state.players.map(p=>p.hand.find(k=>C[k])||'c22'),first:0});
+     let g=0;while(state.turn<7&&state.status==='playing'&&g++<400){let full=fullHands(state),p=state.players[state.active];
+      if(full.length&&state.phase!=='epidemic'){let q=state.players[full[0]];step({type:'discard',seat:full[0],card:q.hand.find(k=>C[k])||q.hand[0]})}
+      else if(state.phase==='actions'){if(state.actions>0&&g%2){let o=ADJ[p.city];step({type:'carriage',to:o[g%o.length]})}else step({type:'draw'})}
+      else if(state.phase==='epidemic')step({type:'epidemic'});else step({type:'infect'})}
+     let full=JSON.stringify(state);await rewindToLine(state.log.findIndex(l=>/^Turn 4/.test(l)));
+     let a=[state.turn,state.actions,state.phase];undoRewind();return [a,JSON.stringify(state)===full]})()""")
+    ok(r[0]==[4,4,'actions'],'going back in time returns to the start of that turn');ok(r[1],'undo going back restores the later game exactly')
     await b.close()
 asyncio.run(main())
 for c,m in res:print(('PASS ' if c else 'FAIL ')+m)

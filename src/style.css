@@ -414,3 +414,6 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .statsBox h3{margin:0 0 6px}.statRow{display:flex;gap:10px;font-size:13px;line-height:1.5}.statRow b{min-width:150px;flex:none}.statsBox button{margin-top:8px}
 
 .onHelp{margin:8px 0;background:#fff6dc;border:1px solid var(--tanBorder);border-radius:8px;padding:6px 12px}.onHelp summary{cursor:pointer;font-weight:700}.onHelp h3{margin:10px 0 4px}.onHelp ol,.onHelp ul{margin:4px 0 4px 18px;padding:0;font-size:13px;line-height:1.5}.onHelp p{margin:4px 0}
+
+.logL .rewindBtn{float:right;font-size:11.5px;padding:1px 7px;margin:-1px 0 0 8px;font-weight:600}
+.statsBox button+button{margin-left:6px}
