@@ -417,3 +417,18 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 .logL .rewindBtn{float:right;font-size:11.5px;padding:1px 7px;margin:-1px 0 0 8px;font-weight:600}
 .statsBox button+button{margin-left:6px}
+
+.alert.cure{position:relative;overflow:hidden;min-width:470px;padding:18px 26px 20px;border:4px solid #e8a317;background:radial-gradient(circle at 50% 42%,#fffbe8 0%,#f6e8cd 55%,color-mix(in srgb,var(--dc) 22%,#f6e8cd) 100%);box-shadow:0 0 0 3px var(--dc),0 0 46px 8px #ffd54acc,0 14px 40px #000a;animation:cureIn .6s cubic-bezier(.2,1.5,.4,1) both}
+.alert.cure>*{position:relative;z-index:1}
+.alert.cure h3{color:var(--dc);font-size:28px;line-height:1.1;margin:6px 0 4px;text-shadow:0 2px 0 #fff8,0 0 14px #ffd54a99}
+.alert.cure .cureStar{font:800 15px Georgia,serif;letter-spacing:.3em;color:#a9700a;animation:cureShine 1.4s ease-in-out infinite}
+.alert.cure .cureTok{width:96px;height:96px;display:block;margin:6px auto 2px;filter:drop-shadow(0 4px 8px #0006) drop-shadow(0 0 12px #ffd54a);animation:cureTok .9s .15s cubic-bezier(.2,1.6,.4,1) both}
+.alert.cure .cureRays{position:absolute;z-index:0;left:50%;top:48%;width:560px;height:560px;margin:-280px 0 0 -280px;background:repeating-conic-gradient(from 0deg,#ffd54a55 0 8deg,#0000 8deg 24deg);border-radius:50%;-webkit-mask:radial-gradient(circle,#000 10%,#0000 68%);mask:radial-gradient(circle,#000 10%,#0000 68%);animation:cureSpin 14s linear infinite}
+.alert.cure .confetti{position:absolute;left:50%;top:45%;width:0;height:0;z-index:2;pointer-events:none}
+.alert.cure .confetti i{position:absolute;left:0;top:0;background:var(--c);border-radius:2px;opacity:0;animation:confetti 1.7s cubic-bezier(.15,.7,.3,1) forwards}
+@keyframes cureIn{from{transform:scale(.4) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes cureTok{from{transform:scale(0) rotate(-120deg)}to{transform:none}}
+@keyframes cureSpin{to{transform:rotate(360deg)}}
+@keyframes cureShine{50%{color:#e8a317;text-shadow:0 0 10px #ffd54a}}
+@keyframes confetti{0%{transform:translate(0,0) rotate(0);opacity:1}70%{opacity:1}100%{transform:translate(var(--x),calc(var(--y) + 90px)) rotate(var(--r));opacity:0}}
+@media(prefers-reduced-motion:reduce){.alert.cure,.alert.cure *{animation:none!important}.alert.cure .confetti{display:none}}
