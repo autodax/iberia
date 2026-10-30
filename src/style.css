@@ -395,3 +395,10 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #helpCards .helpNote{position:absolute;bottom:2vmin;left:0;right:0;text-align:center;color:#fff;font:600 14px system-ui}
 
 .actLeft{color:#1f7a3a;font-weight:700;font-size:13px;line-height:17px;margin:-1px 0 4px 20px}
+
+.edgeBuild .ghostRail{opacity:0;pointer-events:none;transition:opacity .12s}.edgeBuild:hover .ghostRail{opacity:.85}
+#ring button.iconBtn{padding:0;display:flex;align-items:center;justify-content:center;position:absolute;background:#f6e8cd}
+#ring button.iconBtn.chosen{background:#ffe9a8}
+#ring button.iconBtn .ico{width:32px;height:32px;object-fit:contain;pointer-events:none}
+#ring button.iconBtn .badge{position:absolute;right:-5px;bottom:-5px;width:20px;height:28px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 1px #0008)}
+#ring button.iconBtn:hover::after{content:attr(data-tip);position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:5px;white-space:nowrap;background:#2b2b2b;color:#fff;padding:3px 9px;border-radius:6px;font-size:12px;font-weight:600;z-index:5;pointer-events:none}
