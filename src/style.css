@@ -345,3 +345,8 @@ aside #phaseLabel{display:none}
 #cubeCounts .cc{width:46px;height:44px}#cubeCounts img{width:38px;height:38px}
 #cubeCounts b{font-size:14px;padding:0 6px;border-radius:11px;right:-4px;bottom:-3px}
 .deckCount circle{fill:#fff}
+
+.edgeBuild .edgeGlow{opacity:0;transition:opacity .12s;pointer-events:none}
+.edgeBuild:hover .edgeGlow{opacity:.85}
+#app.bm.inMode .edgeBuild .edgeGlow{opacity:.35}
+#app.bm.inMode .edgeBuild:hover .edgeGlow{opacity:.9}
