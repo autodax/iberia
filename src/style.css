@@ -323,3 +323,7 @@ aside #phaseLabel{display:none}
 .hotPulse{animation:hotPulse 1.3s ease-in-out infinite}
 @keyframes hotPulse{0%,100%{opacity:.45}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){.hotPulse{animation:none;opacity:.75}}
+#app.bm #bar{display:none}
+#verTag{position:absolute;left:13.4%;top:95.6%;font:600 11px system-ui;color:#000;z-index:3;pointer-events:none;opacity:.85}
+#app:not(.bm) #verTag{display:none}
+#app.bm .cancelMode{margin-top:6px;width:100%}
