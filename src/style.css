@@ -337,7 +337,7 @@ aside #phaseLabel{display:none}
 #app.bm #hands .handTitle{font-size:12.5px}
 #app.bm #bar{display:none}
 
-#app.bm button.card.thumb.pick{outline:3px solid #ffd54a;box-shadow:0 0 12px #ffd54a;z-index:3}
+#app.bm button.card.thumb.pick{outline:3px solid #ffd54a;box-shadow:0 0 12px #ffd54a}
 #app.bm button.card.thumb.dim{opacity:.4;filter:grayscale(.6)}
 #app.bm button.card.thumb.selected{outline:4px solid #fff;box-shadow:0 0 14px #fff}
 /* bigger on-board counts */
@@ -380,3 +380,9 @@ aside #phaseLabel{display:none}
 
 #cubeCounts .cc{width:calc(46px*var(--bs,1));height:calc(44px*var(--bs,1))}#cubeCounts img{width:calc(38px*var(--bs,1));height:calc(38px*var(--bs,1))}
 #cubeCounts b{font-size:calc(14px*var(--bs,1));padding:0 calc(6px*var(--bs,1));border-radius:calc(11px*var(--bs,1));right:calc(-4px*var(--bs,1));bottom:calc(-3px*var(--bs,1))}
+
+#app.bm button.card.thumb:disabled{opacity:1}
+#choiceDialog.noCancel .dialogButtons{display:none}
+#app.bm #setupPanel{background:#f3e6c8;border-radius:10px;padding:10px 12px;color:#2e4339;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+#app.bm #setupPanel h2,#app.bm #setupPanel .label{color:#2e4339}
+#app.bm #setupPanel p,#app.bm #firstHint{color:#4a5a50}
