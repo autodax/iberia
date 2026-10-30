@@ -99,6 +99,8 @@ export class Room {
 
   gone(ws, code) {
     const tags = this.state.getTags(ws);
+    // An old host socket closing because a new host took over must not send the guests home.
+    if (tags.includes('host') && this.state.getWebSockets('host').some(s => s !== ws)) return;
     try { ws.close(code && code !== 1005 && code !== 1006 ? code : 1000, 'bye'); } catch (e) {}
     if (tags.includes('host')) {
       // The host left: send everyone home. Guests try to reconnect by themselves.

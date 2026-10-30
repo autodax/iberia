@@ -592,7 +592,7 @@ function createNet(cfg){
   /* ---------- host ---------- */
   async function openRoom(code,tries){
     for(let i=0;;i++){
-      try{return await T.host(code,onGuestConnection)}
+      try{const h=await T.host(code,onGuestConnection);if(h&&typeof h==='object')h.onreplaced=()=>{if(leaving)return;net.status='closed';net.error='This room is now hosted from another window or device, so this one stopped.';emit()};return h}
       catch(e){
         // after a refresh the signalling server may still hold the old registration for a few seconds
         if(e&&e.code==='taken'&&i<tries){await new Promise(r=>setTimeout(r,3000));continue}
@@ -999,7 +999,7 @@ function wsTransport(baseUrl,opts){
     },
     host(code,onConnection){
       return new Promise((ok,no)=>{
-        let ws=null,closed=false,settled=false,tries=0;const conns=new Map();
+        let ws=null,closed=false,settled=false,tries=0,short=0;const conns=new Map();
         const ping=keepAlive(()=>ws);
         const handle={close(){closed=true;clearInterval(ping);const old=[...conns.values()];conns.clear();for(const c of old)fire(c);try{ws&&ws.close()}catch(e){}}};
         function makeConn(g){
@@ -1010,28 +1010,31 @@ function wsTransport(baseUrl,opts){
         }
         function connect(){
           try{ws=openSocket(code,'host')}catch(e){if(!settled){settled=true;no(e)}return}
-          const mine=ws;let gotReady=false,over=false;
+          const mine=ws;let gotReady=false,over=false,upSince=0;
           const timer=setTimeout(()=>{if(!gotReady){try{mine.close()}catch(e){}lost()}},CONNECT_MS);
           mine.onmessage=ev=>{
             const raw=typeof ev.data==='string'?ev.data:String(ev.data);if(raw==='pong')return;
             let m;try{m=JSON.parse(raw)}catch(e){return}
-            if(m.t==='ready'){gotReady=true;clearTimeout(timer);tries=0;if(!settled){settled=true;ok(handle)}return}
+            if(m.t==='ready'){gotReady=true;upSince=Date.now();clearTimeout(timer);if(!settled){settled=true;ok(handle)}return}
             if(m.t==='error'){clearTimeout(timer);if(!settled){settled=true;closed=true;clearInterval(ping);no(m.code==='taken'?Object.assign(Error('That room code is already in use'),{code:'taken'}):netErr(noRelay))}return}
             if(m.t==='open'){const c=makeConn(m.g);conns.set(m.g,c);onConnection(c);return}
             if(m.t==='close'){const c=conns.get(m.g);if(c){conns.delete(m.g);fire(c)}return}
             if(typeof m.g==='string'&&typeof m.d==='string'){const c=conns.get(m.g);if(c&&c.onmessage)c.onmessage(m.d)}
           };
           mine.onerror=()=>lost();
-          mine.onclose=()=>lost();
-          function lost(){
+          mine.onclose=ev=>lost(ev);
+          function lost(ev){
             if(over)return;over=true;
             clearTimeout(timer);
             if(mine!==ws)return;
             const old=[...conns.values()];conns.clear();for(const c of old)fire(c);   // the relay link dropped: guests rejoin by themselves
             if(closed)return;
+            // Another window took over this room (relay says 'replaced'): stop here instead of fighting it, which would burn the daily request quota.
+            if(ev&&ev.code===1012&&ev.reason==='replaced'){closed=true;clearInterval(ping);try{handle.onreplaced&&handle.onreplaced()}catch(e){}return}
             if(!settled){settled=true;clearInterval(ping);no(netErr(noRelay));return}
+            const lived=gotReady?Date.now()-upSince:0;if(gotReady&&lived>=20000){tries=0;short=0}else short++;   // a link that keeps dropping quickly backs off
             if(++tries>RETRIES){closed=true;clearInterval(ping);return}
-            setTimeout(()=>{if(!closed)connect()},RETRY_MS);
+            setTimeout(()=>{if(!closed)connect()},Math.min(30000,RETRY_MS*2**Math.min(short,4)));
           }
         }
         connect();
