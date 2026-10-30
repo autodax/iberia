@@ -96,7 +96,7 @@ function createNet(cfg){
     try{store.setItem(NET_SAVE_KEY,JSON.stringify({v:1,code:net.code,idCounter,seq:net.seq,
       lobby:{phase:lobby.phase,settings:lobby.settings,seats:lobby.seats},
       people:[...people.values()].filter(p=>p.id!==NET_HOST_ID).map(p=>({id:p.id,name:p.name,token:p.token})),
-      state:lobby.phase==='playing'?H.getState():null}))}catch(e){}
+      state:lobby.phase==='playing'?H.getState():null,commands:lobby.phase==='playing'&&H.getCommands?H.getCommands():undefined}))}catch(e){}
   }
   net.savedHost=()=>{try{const o=JSON.parse(store.getItem(NET_SAVE_KEY));return o&&o.v===1&&o.code?{code:o.code,phase:o.lobby.phase,players:o.lobby.settings.players}:null}catch(e){return null}};
   function forgetHost(){try{store&&store.removeItem(NET_SAVE_KEY)}catch(e){}}
@@ -138,7 +138,7 @@ function createNet(cfg){
     net.code=snap.code;idCounter=snap.idCounter||0;net.seq=snap.seq||0;
     lobby.phase=snap.lobby.phase;lobby.settings=snap.lobby.settings;lobby.seats=snap.lobby.seats;resizeSeats();
     for(const p of snap.people)people.set(p.id,{id:p.id,name:p.name,token:p.token,conn:null,connected:false,lastSeen:0});
-    if(snap.state)H.loadState(snap.state);
+    if(snap.state)H.loadState(snap.state,snap.commands);
     net.status='connected';broadcastLobby();return net.code;
   };
   function onGuestConnection(conn){
@@ -174,6 +174,7 @@ function createNet(cfg){
         const r=hostRun(p.id,m.cmd);
         send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error});return;
       }
+      case 'rewind':return hostRewind(p.id,m.idx,m.line).then(r=>send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error}));
       case 'undo':return hostUndo(p.id).then(r=>send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error}));
       case 'ask':return hostAsk(p.id,m.seat,m.q).then(ok=>send(conn,{t:'askresult',id:m.id,ok}));
       case 'answer':{const a=asks.get(m.id);if(a&&a.owner===p.id){asks.delete(m.id);finishAsk(a,!!m.ok)}return}
@@ -228,6 +229,37 @@ function createNet(cfg){
     net.seq++;broadcast({t:'sync',seq:net.seq,state:H.getState()});persist();emit();
     return {ok:true,label:done};
   }
+  /* Going back to the start of an earlier turn. Any player may ask. The host's copy of the game is the one that counts:
+     it replays the moves from the start, and only if every other connected player agrees does it replace everyone's game. */
+  let rewinding=false;
+  async function hostRewind(pid,idx,line){
+    if(lobby.phase!=='playing')return {ok:false,error:'The game has not started yet'};
+    if(!H.rewind||!H.rewindCheck)return {ok:false,error:'Going back is not available'};
+    if(rewinding)return {ok:false,error:'Someone has already asked to go back. Wait for that answer'};
+    rewinding=true;
+    try{
+      const chk=H.rewindCheck(idx,line);if(!chk.ok)return {ok:false,error:chk.error};
+      const who=pid===NET_HOST_ID?(people.get(NET_HOST_ID)&&people.get(NET_HOST_ID).name)||'The host':(people.get(pid)&&people.get(pid).name)||'A player';
+      const text=who+' asks to go back to the start of '+chk.label+'. Everything played after that point will be undone for everyone. Agree?';
+      const asked=new Set([pid]),jobs=[];
+      lobby.seats.forEach((o,seat)=>{if(o==null||asked.has(o))return;const pp=people.get(o);if(!pp||!pp.connected)return;asked.add(o);jobs.push(hostAsk(pid,seat,text).then(ok=>({ok,name:pp.name})))});
+      const answers=await Promise.all(jobs);
+      const no=answers.find(a=>!a.ok);
+      if(no)return {ok:false,error:no.name+' did not agree, so the game was not changed'};
+      const r=H.rewind(idx,line);if(!r.ok)return {ok:false,error:r.error};
+      net.seq++;broadcast({t:'sync',seq:net.seq,state:H.getState()});broadcast({t:'notice',text:'The game went back to the start of '+chk.label+'.'});persist();emit();
+      return {ok:true};
+    }finally{rewinding=false}
+  }
+  net.rewind=function(idx,line){
+    if(!net.active)return Promise.resolve({ok:false,error:'Not in an online game'});
+    if(net.isHost)return hostRewind(NET_HOST_ID,idx,line);
+    if(!guestConn)return Promise.resolve({ok:false,error:'Not connected to the host'});
+    return new Promise(resolve=>{
+      const cid=++cidCounter,timer=setTimeout(()=>{pending.delete(cid);resolve({ok:false,error:'The host did not answer'})},NET_ASK_TIMEOUT+15000);
+      pending.set(cid,{resolve,timer});send(guestConn,{t:'rewind',cid,idx,line});
+    });
+  };
   net.undo=function(){
     if(!net.active)return Promise.resolve({ok:false,error:'Not in an online game'});
     if(net.isHost)return hostUndo(NET_HOST_ID);

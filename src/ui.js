@@ -639,25 +639,33 @@ function gameStats(){let cap=k=>k[0].toUpperCase()+k.slice(1),end=state.status!=
  let head=state.status==='won'?'Victory — all four diseases researched':state.status==='playing'?'Game in progress':'Defeat — '+state.status.replace('lost: ','');
  return {title:end?'Final results: '+head:'Game so far',rows:[['Turn',state.turn],['Outbreaks',state.outbreaks+' of 8'],['Infection rate',RATE[state.rateIndex]],['Diseases researched',state.research.length+' of 4 ('+res+')'],['Cubes left in supply',cubes],['Hospitals',COLORS.filter(k=>state.hospitals[k]).map(k=>cap(k)+' in '+C[state.hospitals[k]].name).join(' · ')||'none'],['Railroads built',state.rails.length],['Purification tokens left',state.waterSupply],['Player deck left',state.playerDeck.length],['Players',state.players.map(q=>q.name===roleName(q.role)?q.name:q.name+' ('+roleName(q.role)+')').join(' · ')],['Seed',state.seed]]}}
 const REWIND_KEY='iberia-before-rewind';
-function rewindBackup(){try{return JSON.parse(localStorage.getItem(REWIND_KEY)||'null')}catch(e){return null}}
+function rewindBackup(){try{let b=JSON.parse(localStorage.getItem(REWIND_KEY)||'null');return b&&b.state&&b.state.seed===state.seed?b:null}catch(e){return null}}
 function applyEnvelope(o){state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';selectedCards=[];resetFx();recompute();render();autosave()}
-async function rewindToLine(idx){
- if(Net.active){notice('Going back in time works in a game on this device only. Leave the online room first (a future version may allow it for the host).',true);return}
- if(busy)return;
- let line=state.log[idx]||'',m=/^Turn (\d+)/.exec(line);
- if(!await ask('Go back to the start of '+(m?'Turn '+m[1]:'this point')+'? Everything played after it is removed. The game as it is now is kept, so you can bring it back with "Undo going back" in the log.'))return;
+function computeRewind(idx,line){
+ if(!(idx>=0&&idx<state.log.length)||(line!=null&&state.log[idx]!==line))return {ok:false,error:'That point in the game is no longer there'};
+ let m=/^Turn (\d+)/.exec(state.log[idx]);if(!m)return {ok:false,error:'You can go back to the start of a turn'};
  let s,k=-1,keep=null;
  try{s=initial(state.seed,state.difficulty,state.players.map(p=>p.role));if(s.log.length>idx){k=0;keep=s}
   for(let i=0;i<commands.length;i++){s=transact(s,commands[i]);if(k<0&&s.log.length>idx){k=i+1;keep=s}}
- }catch(e){notice('Could not replay this game from the beginning: '+(e.message||'unknown problem')+'. Nothing was changed.',true);return}
- if(JSON.stringify(s)!==JSON.stringify(state)||!keep){notice('Replaying the saved moves did not reproduce this game exactly, so going back is not safe here. Nothing was changed.',true);return}
+ }catch(e){return {ok:false,error:'Could not replay this game from the beginning ('+(e.message||'unknown problem')+'). Nothing was changed.'}}
+ if(JSON.stringify(s)!==JSON.stringify(state)||!keep)return {ok:false,error:'Replaying the saved moves did not reproduce this game exactly, so going back is not safe here. Nothing was changed.'};
+ return {ok:true,keep,cmds:commands.slice(0,k),label:'Turn '+m[1]}}
+async function rewindToLine(idx){
+ if(busy)return;
+ let line=state.log[idx]||'',m=/^Turn (\d+)/.exec(line),label=m?'Turn '+m[1]:'this point';
+ if(Net.active){
+  if(!await ask('Ask everyone to go back to the start of '+label+'? Every other player will be asked to agree. If they all do, everything played after that point is undone for everyone.'))return;
+  notice('Asking the other players…');let r=await Net.rewind(idx,line);
+  if(r.ok){$('logDialog').close();notice('Went back to the start of '+label+'.')}else notice(r.error||'Could not go back.',true);return}
+ if(!await ask('Go back to the start of '+label+'? Everything played after it is removed. The game as it is now is kept, so you can bring it back with "Undo going back" in the log.'))return;
+ let r=computeRewind(idx,line);if(!r.ok){notice(r.error,true);return}
  try{localStorage.setItem(REWIND_KEY,JSON.stringify(envelope()))}catch(e){}
- let cmds=commands.slice(0,k);invariant(keep);applyEnvelope({state:keep,commands:cmds});$('logDialog').close();
- notice('Went back to the start of '+(m?'Turn '+m[1]:'that point')+'. Open the log and choose "Undo going back" to return to the later game.')}
+ invariant(r.keep);applyEnvelope({state:r.keep,commands:r.cmds});$('logDialog').close();
+ notice('Went back to the start of '+label+'. Open the log and choose "Undo going back" to return to the later game.')}
 function undoRewind(){let b=rewindBackup();if(!b){notice('Nothing to undo.',true);return}applyEnvelope(b);try{localStorage.removeItem(REWIND_KEY)}catch(e){}$('logDialog').close();notice('Returned to the game as it was before going back.')}
 function logText(){let g=gameStats();return 'Iberia game log\n'+g.title+'\n'+g.rows.map(r=>r[0]+': '+r[1]).join('\n')+'\n\n'+state.log.join('\n')+'\n\nPlayer discard pile: '+state.discard.map(cardName).join(', ')+'\nInfection discard pile: '+state.infectionDiscard.map(cardName).join(', ')+'\n'}
 function saveLog(){let u=URL.createObjectURL(new Blob([logText()],{type:'text/plain'})),a=el('a',{href:u,download:'iberia-log-turn'+state.turn+'.txt'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-$('logButton').onclick=()=>{let box=$('logContent');box.replaceChildren();{let g=gameStats(),sb=el('div',{className:'statsBox'+(state.status!=='playing'?' final':'')},box);el('h3',{textContent:g.title},sb);for(let [k,v] of g.rows){let r=el('div',{className:'statRow'},sb);el('b',{textContent:k},r);el('span',{textContent:String(v)},r)}el('button',{type:'button',textContent:'Save log as a text file',onclick:saveLog},sb);if(!Net.active&&rewindBackup())el('button',{type:'button',textContent:'Undo going back',onclick:undoRewind},sb)}let list=el('div',{className:'logList'},box),sub=false;let base=Math.max(0,state.log.length-250);for(let [li,t] of state.log.slice(-250).map((t,j)=>[base+j,t])){let lv;if(/^(Turn \d+:|New game|First player:)/.test(t)){lv=0;sub=false}else if(/^(Infect |Epidemic)/.test(t)){lv=1;sub=true}else if(sub&&/^(Outbreak \d|Purification in|Prevention token protects)/.test(t))lv=2;else{lv=1;sub=false}let ld=el('div',{className:'logL l'+lv,textContent:t},list);if(lv===0&&/^Turn \d+/.test(t)&&li<state.log.length-1&&!Net.active)el('button',{type:'button',className:'rewindBtn',textContent:'↶ Back to here',title:'Go back to the start of this turn',onclick:()=>rewindToLine(li)},ld)}for(let [title,cards] of [['Player discard pile',state.discard],['Infection discard pile',state.infectionDiscard],['Events in this game',state.eventsInGame]]){el('h3',{textContent:title},box);el('p',{textContent:cards.map(cardName).join(' · ')||'Empty'},box)}el('h3',{textContent:'Roles'},box);for(let q of state.players)el('p',{textContent:roleName(q.role)+': '+ROLE_TEXT[q.role]},box);showDialog('logDialog');box.parentElement.scrollTop=0};
+$('logButton').onclick=()=>{let box=$('logContent');box.replaceChildren();{let g=gameStats(),sb=el('div',{className:'statsBox'+(state.status!=='playing'?' final':'')},box);el('h3',{textContent:g.title},sb);for(let [k,v] of g.rows){let r=el('div',{className:'statRow'},sb);el('b',{textContent:k},r);el('span',{textContent:String(v)},r)}el('button',{type:'button',textContent:'Save log as a text file',onclick:saveLog},sb);if(!Net.active&&rewindBackup())el('button',{type:'button',textContent:'Undo going back',onclick:undoRewind},sb)}let list=el('div',{className:'logList'},box),sub=false;let base=Math.max(0,state.log.length-250);for(let [li,t] of state.log.slice(-250).map((t,j)=>[base+j,t])){let lv;if(/^(Turn \d+:|New game|First player:)/.test(t)){lv=0;sub=false}else if(/^(Infect |Epidemic)/.test(t)){lv=1;sub=true}else if(sub&&/^(Outbreak \d|Purification in|Prevention token protects)/.test(t))lv=2;else{lv=1;sub=false}let ld=el('div',{className:'logL l'+lv,textContent:t},list);if(lv===0&&/^Turn \d+/.test(t)&&li<state.log.length-1&&state.status!=='setup'&&state.phase!=='setup')el('button',{type:'button',className:'rewindBtn',textContent:'↶ Back to here',title:'Go back to the start of this turn',onclick:()=>rewindToLine(li)},ld)}for(let [title,cards] of [['Player discard pile',state.discard],['Infection discard pile',state.infectionDiscard],['Events in this game',state.eventsInGame]]){el('h3',{textContent:title},box);el('p',{textContent:cards.map(cardName).join(' · ')||'Empty'},box)}el('h3',{textContent:'Roles'},box);for(let q of state.players)el('p',{textContent:roleName(q.role)+': '+ROLE_TEXT[q.role]},box);showDialog('logDialog');box.parentElement.scrollTop=0};
 let roleChoice=randRoles();
 function drawRoleFields(){let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++)field('Role '+(i+1),'role'+i,Object.entries(ROLES),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},box)}
 $('playerCount').onchange=drawRoleFields;
@@ -696,7 +704,10 @@ const Net=createNet({
   storage:safeStore('localStorage'),tokenStore:safeStore('sessionStorage'),newSeed,
   hooks:{
     getState:()=>state,
-    loadState:s=>{invariant(s);state=s;history=[];commands=[];mode='';selectedCards=[];resetFx();recompute();render()},
+    getCommands:()=>commands,
+    rewindCheck:(idx,line)=>{let r=computeRewind(idx,line);return r.ok?{ok:true,label:r.label}:r},
+    rewind:(idx,line)=>{let r=computeRewind(idx,line);if(!r.ok)return r;applyEnvelope({state:r.keep,commands:r.cmds});return {ok:true}},
+    loadState:(s,cmds)=>{invariant(s);state=s;history=[];commands=Array.isArray(cmds)?cmds:[];mode='';selectedCards=[];resetFx();recompute();render()},
     apply:cmd=>{let n;try{n=transact(state,cmd)}catch(e){return {ok:false,error:e.needChoice?'Incomplete choices':e.message}}try{commit(cmd,n,true)}catch(e){console.error(e)}return {ok:true,sum:netSum()}},
     checksum:netSum,
     onStart:g=>startGameLocal(g.seed,g.difficulty,g.roles),

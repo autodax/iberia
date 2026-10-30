@@ -43,6 +43,7 @@ function makePage(nw,label,opts={}){
     checksum:sum,
     onStart:g=>{page.state=initial(g.seed,g.difficulty,g.roles);page.starts++;page.game=g},
     ask:async q=>{page.asked.push(q);return page.answer},
+    getCommands:()=>[],rewindCheck:(idx,line)=>page.noRewind?{ok:false,error:'cannot replay'}:{ok:true,label:'Turn 2'},rewind:(idx,line)=>{page.rewinds=(page.rewinds||[]).concat([[idx,line]]);return {ok:true}},
     undo:()=>{if(!page.hist.length)return null;page.state=page.hist.pop();return 'move'},undoLabel:()=>page.hist.length?'move':null
   };
   page.sum=sum;
@@ -301,6 +302,27 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     ok(await guests[0].net.askSeat(2,'Host seat: ok?')===true&&host.asked.length===1,'a seat the host plays is answered by the host');
     guests[0].answer=true;
     ok(await host.net.askSeat(0,'Host asks guest 0')===true&&guests[0].asked.length===1,'host asks a guest');
+  });
+
+  await group('asking to go back to an earlier turn',async()=>{
+    const nw=makeNetwork();const {host,guests}=await startRoom(nw,2,{players:3});
+    guests[0].net.claim(0);guests[1].net.claim(1);await settle();host.net.start();await settle();
+    host.answer=true;guests[0].answer=true;guests[1].answer=true;
+    let l0=guests[1].loads;
+    let r=await guests[0].net.rewind(3,'Turn 2: Sailor');
+    ok(r.ok&&host.rewinds&&host.rewinds.length===1&&host.rewinds[0][0]===3,'a guest can ask, and the host goes back when everyone agrees');
+    ok(host.asked.length===1&&guests[1].asked.length===1&&guests[0].asked.length===0,'the other players are asked, not the person who asked');
+    ok(/Ana|Player|G/.test(host.asked[0])||host.asked[0].includes('Turn 2'),'the question names the turn');
+    ok(guests[1].loads>l0,'everyone receives the new game state');
+    guests[1].answer=false;
+    r=await guests[0].net.rewind(3,'Turn 2: Sailor');
+    ok(!r.ok&&/did not agree/.test(r.error)&&host.rewinds.length===1,'one "no" stops it and nothing changes');
+    guests[1].answer=true;host.noRewind=true;
+    r=await guests[1].net.rewind(3,'Turn 2: Sailor');
+    ok(!r.ok&&/cannot replay/.test(r.error),'refused up front when the host copy cannot be replayed');
+    host.noRewind=false;host.answer=true;
+    r=await host.net.rewind(3,'Turn 2: Sailor');
+    ok(r.ok&&host.rewinds.length===2,'the host can ask too');
   });
 
   await group('host refresh: room can be resumed with the same code and game',async()=>{

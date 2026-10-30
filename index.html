@@ -626,7 +626,7 @@ function createNet(cfg){
     try{store.setItem(NET_SAVE_KEY,JSON.stringify({v:1,code:net.code,idCounter,seq:net.seq,
       lobby:{phase:lobby.phase,settings:lobby.settings,seats:lobby.seats},
       people:[...people.values()].filter(p=>p.id!==NET_HOST_ID).map(p=>({id:p.id,name:p.name,token:p.token})),
-      state:lobby.phase==='playing'?H.getState():null}))}catch(e){}
+      state:lobby.phase==='playing'?H.getState():null,commands:lobby.phase==='playing'&&H.getCommands?H.getCommands():undefined}))}catch(e){}
   }
   net.savedHost=()=>{try{const o=JSON.parse(store.getItem(NET_SAVE_KEY));return o&&o.v===1&&o.code?{code:o.code,phase:o.lobby.phase,players:o.lobby.settings.players}:null}catch(e){return null}};
   function forgetHost(){try{store&&store.removeItem(NET_SAVE_KEY)}catch(e){}}
@@ -668,7 +668,7 @@ function createNet(cfg){
     net.code=snap.code;idCounter=snap.idCounter||0;net.seq=snap.seq||0;
     lobby.phase=snap.lobby.phase;lobby.settings=snap.lobby.settings;lobby.seats=snap.lobby.seats;resizeSeats();
     for(const p of snap.people)people.set(p.id,{id:p.id,name:p.name,token:p.token,conn:null,connected:false,lastSeen:0});
-    if(snap.state)H.loadState(snap.state);
+    if(snap.state)H.loadState(snap.state,snap.commands);
     net.status='connected';broadcastLobby();return net.code;
   };
   function onGuestConnection(conn){
@@ -704,6 +704,7 @@ function createNet(cfg){
         const r=hostRun(p.id,m.cmd);
         send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error});return;
       }
+      case 'rewind':return hostRewind(p.id,m.idx,m.line).then(r=>send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error}));
       case 'undo':return hostUndo(p.id).then(r=>send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error}));
       case 'ask':return hostAsk(p.id,m.seat,m.q).then(ok=>send(conn,{t:'askresult',id:m.id,ok}));
       case 'answer':{const a=asks.get(m.id);if(a&&a.owner===p.id){asks.delete(m.id);finishAsk(a,!!m.ok)}return}
@@ -758,6 +759,37 @@ function createNet(cfg){
     net.seq++;broadcast({t:'sync',seq:net.seq,state:H.getState()});persist();emit();
     return {ok:true,label:done};
   }
+  /* Going back to the start of an earlier turn. Any player may ask. The host's copy of the game is the one that counts:
+     it replays the moves from the start, and only if every other connected player agrees does it replace everyone's game. */
+  let rewinding=false;
+  async function hostRewind(pid,idx,line){
+    if(lobby.phase!=='playing')return {ok:false,error:'The game has not started yet'};
+    if(!H.rewind||!H.rewindCheck)return {ok:false,error:'Going back is not available'};
+    if(rewinding)return {ok:false,error:'Someone has already asked to go back. Wait for that answer'};
+    rewinding=true;
+    try{
+      const chk=H.rewindCheck(idx,line);if(!chk.ok)return {ok:false,error:chk.error};
+      const who=pid===NET_HOST_ID?(people.get(NET_HOST_ID)&&people.get(NET_HOST_ID).name)||'The host':(people.get(pid)&&people.get(pid).name)||'A player';
+      const text=who+' asks to go back to the start of '+chk.label+'. Everything played after that point will be undone for everyone. Agree?';
+      const asked=new Set([pid]),jobs=[];
+      lobby.seats.forEach((o,seat)=>{if(o==null||asked.has(o))return;const pp=people.get(o);if(!pp||!pp.connected)return;asked.add(o);jobs.push(hostAsk(pid,seat,text).then(ok=>({ok,name:pp.name})))});
+      const answers=await Promise.all(jobs);
+      const no=answers.find(a=>!a.ok);
+      if(no)return {ok:false,error:no.name+' did not agree, so the game was not changed'};
+      const r=H.rewind(idx,line);if(!r.ok)return {ok:false,error:r.error};
+      net.seq++;broadcast({t:'sync',seq:net.seq,state:H.getState()});broadcast({t:'notice',text:'The game went back to the start of '+chk.label+'.'});persist();emit();
+      return {ok:true};
+    }finally{rewinding=false}
+  }
+  net.rewind=function(idx,line){
+    if(!net.active)return Promise.resolve({ok:false,error:'Not in an online game'});
+    if(net.isHost)return hostRewind(NET_HOST_ID,idx,line);
+    if(!guestConn)return Promise.resolve({ok:false,error:'Not connected to the host'});
+    return new Promise(resolve=>{
+      const cid=++cidCounter,timer=setTimeout(()=>{pending.delete(cid);resolve({ok:false,error:'The host did not answer'})},NET_ASK_TIMEOUT+15000);
+      pending.set(cid,{resolve,timer});send(guestConn,{t:'rewind',cid,idx,line});
+    });
+  };
   net.undo=function(){
     if(!net.active)return Promise.resolve({ok:false,error:'Not in an online game'});
     if(net.isHost)return hostUndo(NET_HOST_ID);
@@ -1986,25 +2018,33 @@ function gameStats(){let cap=k=>k[0].toUpperCase()+k.slice(1),end=state.status!=
  let head=state.status==='won'?'Victory — all four diseases researched':state.status==='playing'?'Game in progress':'Defeat — '+state.status.replace('lost: ','');
  return {title:end?'Final results: '+head:'Game so far',rows:[['Turn',state.turn],['Outbreaks',state.outbreaks+' of 8'],['Infection rate',RATE[state.rateIndex]],['Diseases researched',state.research.length+' of 4 ('+res+')'],['Cubes left in supply',cubes],['Hospitals',COLORS.filter(k=>state.hospitals[k]).map(k=>cap(k)+' in '+C[state.hospitals[k]].name).join(' · ')||'none'],['Railroads built',state.rails.length],['Purification tokens left',state.waterSupply],['Player deck left',state.playerDeck.length],['Players',state.players.map(q=>q.name===roleName(q.role)?q.name:q.name+' ('+roleName(q.role)+')').join(' · ')],['Seed',state.seed]]}}
 const REWIND_KEY='iberia-before-rewind';
-function rewindBackup(){try{return JSON.parse(localStorage.getItem(REWIND_KEY)||'null')}catch(e){return null}}
+function rewindBackup(){try{let b=JSON.parse(localStorage.getItem(REWIND_KEY)||'null');return b&&b.state&&b.state.seed===state.seed?b:null}catch(e){return null}}
 function applyEnvelope(o){state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';selectedCards=[];resetFx();recompute();render();autosave()}
-async function rewindToLine(idx){
- if(Net.active){notice('Going back in time works in a game on this device only. Leave the online room first (a future version may allow it for the host).',true);return}
- if(busy)return;
- let line=state.log[idx]||'',m=/^Turn (\d+)/.exec(line);
- if(!await ask('Go back to the start of '+(m?'Turn '+m[1]:'this point')+'? Everything played after it is removed. The game as it is now is kept, so you can bring it back with "Undo going back" in the log.'))return;
+function computeRewind(idx,line){
+ if(!(idx>=0&&idx<state.log.length)||(line!=null&&state.log[idx]!==line))return {ok:false,error:'That point in the game is no longer there'};
+ let m=/^Turn (\d+)/.exec(state.log[idx]);if(!m)return {ok:false,error:'You can go back to the start of a turn'};
  let s,k=-1,keep=null;
  try{s=initial(state.seed,state.difficulty,state.players.map(p=>p.role));if(s.log.length>idx){k=0;keep=s}
   for(let i=0;i<commands.length;i++){s=transact(s,commands[i]);if(k<0&&s.log.length>idx){k=i+1;keep=s}}
- }catch(e){notice('Could not replay this game from the beginning: '+(e.message||'unknown problem')+'. Nothing was changed.',true);return}
- if(JSON.stringify(s)!==JSON.stringify(state)||!keep){notice('Replaying the saved moves did not reproduce this game exactly, so going back is not safe here. Nothing was changed.',true);return}
+ }catch(e){return {ok:false,error:'Could not replay this game from the beginning ('+(e.message||'unknown problem')+'). Nothing was changed.'}}
+ if(JSON.stringify(s)!==JSON.stringify(state)||!keep)return {ok:false,error:'Replaying the saved moves did not reproduce this game exactly, so going back is not safe here. Nothing was changed.'};
+ return {ok:true,keep,cmds:commands.slice(0,k),label:'Turn '+m[1]}}
+async function rewindToLine(idx){
+ if(busy)return;
+ let line=state.log[idx]||'',m=/^Turn (\d+)/.exec(line),label=m?'Turn '+m[1]:'this point';
+ if(Net.active){
+  if(!await ask('Ask everyone to go back to the start of '+label+'? Every other player will be asked to agree. If they all do, everything played after that point is undone for everyone.'))return;
+  notice('Asking the other players…');let r=await Net.rewind(idx,line);
+  if(r.ok){$('logDialog').close();notice('Went back to the start of '+label+'.')}else notice(r.error||'Could not go back.',true);return}
+ if(!await ask('Go back to the start of '+label+'? Everything played after it is removed. The game as it is now is kept, so you can bring it back with "Undo going back" in the log.'))return;
+ let r=computeRewind(idx,line);if(!r.ok){notice(r.error,true);return}
  try{localStorage.setItem(REWIND_KEY,JSON.stringify(envelope()))}catch(e){}
- let cmds=commands.slice(0,k);invariant(keep);applyEnvelope({state:keep,commands:cmds});$('logDialog').close();
- notice('Went back to the start of '+(m?'Turn '+m[1]:'that point')+'. Open the log and choose "Undo going back" to return to the later game.')}
+ invariant(r.keep);applyEnvelope({state:r.keep,commands:r.cmds});$('logDialog').close();
+ notice('Went back to the start of '+label+'. Open the log and choose "Undo going back" to return to the later game.')}
 function undoRewind(){let b=rewindBackup();if(!b){notice('Nothing to undo.',true);return}applyEnvelope(b);try{localStorage.removeItem(REWIND_KEY)}catch(e){}$('logDialog').close();notice('Returned to the game as it was before going back.')}
 function logText(){let g=gameStats();return 'Iberia game log\n'+g.title+'\n'+g.rows.map(r=>r[0]+': '+r[1]).join('\n')+'\n\n'+state.log.join('\n')+'\n\nPlayer discard pile: '+state.discard.map(cardName).join(', ')+'\nInfection discard pile: '+state.infectionDiscard.map(cardName).join(', ')+'\n'}
 function saveLog(){let u=URL.createObjectURL(new Blob([logText()],{type:'text/plain'})),a=el('a',{href:u,download:'iberia-log-turn'+state.turn+'.txt'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-$('logButton').onclick=()=>{let box=$('logContent');box.replaceChildren();{let g=gameStats(),sb=el('div',{className:'statsBox'+(state.status!=='playing'?' final':'')},box);el('h3',{textContent:g.title},sb);for(let [k,v] of g.rows){let r=el('div',{className:'statRow'},sb);el('b',{textContent:k},r);el('span',{textContent:String(v)},r)}el('button',{type:'button',textContent:'Save log as a text file',onclick:saveLog},sb);if(!Net.active&&rewindBackup())el('button',{type:'button',textContent:'Undo going back',onclick:undoRewind},sb)}let list=el('div',{className:'logList'},box),sub=false;let base=Math.max(0,state.log.length-250);for(let [li,t] of state.log.slice(-250).map((t,j)=>[base+j,t])){let lv;if(/^(Turn \d+:|New game|First player:)/.test(t)){lv=0;sub=false}else if(/^(Infect |Epidemic)/.test(t)){lv=1;sub=true}else if(sub&&/^(Outbreak \d|Purification in|Prevention token protects)/.test(t))lv=2;else{lv=1;sub=false}let ld=el('div',{className:'logL l'+lv,textContent:t},list);if(lv===0&&/^Turn \d+/.test(t)&&li<state.log.length-1&&!Net.active)el('button',{type:'button',className:'rewindBtn',textContent:'↶ Back to here',title:'Go back to the start of this turn',onclick:()=>rewindToLine(li)},ld)}for(let [title,cards] of [['Player discard pile',state.discard],['Infection discard pile',state.infectionDiscard],['Events in this game',state.eventsInGame]]){el('h3',{textContent:title},box);el('p',{textContent:cards.map(cardName).join(' · ')||'Empty'},box)}el('h3',{textContent:'Roles'},box);for(let q of state.players)el('p',{textContent:roleName(q.role)+': '+ROLE_TEXT[q.role]},box);showDialog('logDialog');box.parentElement.scrollTop=0};
+$('logButton').onclick=()=>{let box=$('logContent');box.replaceChildren();{let g=gameStats(),sb=el('div',{className:'statsBox'+(state.status!=='playing'?' final':'')},box);el('h3',{textContent:g.title},sb);for(let [k,v] of g.rows){let r=el('div',{className:'statRow'},sb);el('b',{textContent:k},r);el('span',{textContent:String(v)},r)}el('button',{type:'button',textContent:'Save log as a text file',onclick:saveLog},sb);if(!Net.active&&rewindBackup())el('button',{type:'button',textContent:'Undo going back',onclick:undoRewind},sb)}let list=el('div',{className:'logList'},box),sub=false;let base=Math.max(0,state.log.length-250);for(let [li,t] of state.log.slice(-250).map((t,j)=>[base+j,t])){let lv;if(/^(Turn \d+:|New game|First player:)/.test(t)){lv=0;sub=false}else if(/^(Infect |Epidemic)/.test(t)){lv=1;sub=true}else if(sub&&/^(Outbreak \d|Purification in|Prevention token protects)/.test(t))lv=2;else{lv=1;sub=false}let ld=el('div',{className:'logL l'+lv,textContent:t},list);if(lv===0&&/^Turn \d+/.test(t)&&li<state.log.length-1&&state.status!=='setup'&&state.phase!=='setup')el('button',{type:'button',className:'rewindBtn',textContent:'↶ Back to here',title:'Go back to the start of this turn',onclick:()=>rewindToLine(li)},ld)}for(let [title,cards] of [['Player discard pile',state.discard],['Infection discard pile',state.infectionDiscard],['Events in this game',state.eventsInGame]]){el('h3',{textContent:title},box);el('p',{textContent:cards.map(cardName).join(' · ')||'Empty'},box)}el('h3',{textContent:'Roles'},box);for(let q of state.players)el('p',{textContent:roleName(q.role)+': '+ROLE_TEXT[q.role]},box);showDialog('logDialog');box.parentElement.scrollTop=0};
 let roleChoice=randRoles();
 function drawRoleFields(){let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++)field('Role '+(i+1),'role'+i,Object.entries(ROLES),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},box)}
 $('playerCount').onchange=drawRoleFields;
@@ -2043,7 +2083,10 @@ const Net=createNet({
   storage:safeStore('localStorage'),tokenStore:safeStore('sessionStorage'),newSeed,
   hooks:{
     getState:()=>state,
-    loadState:s=>{invariant(s);state=s;history=[];commands=[];mode='';selectedCards=[];resetFx();recompute();render()},
+    getCommands:()=>commands,
+    rewindCheck:(idx,line)=>{let r=computeRewind(idx,line);return r.ok?{ok:true,label:r.label}:r},
+    rewind:(idx,line)=>{let r=computeRewind(idx,line);if(!r.ok)return r;applyEnvelope({state:r.keep,commands:r.cmds});return {ok:true}},
+    loadState:(s,cmds)=>{invariant(s);state=s;history=[];commands=Array.isArray(cmds)?cmds:[];mode='';selectedCards=[];resetFx();recompute();render()},
     apply:cmd=>{let n;try{n=transact(state,cmd)}catch(e){return {ok:false,error:e.needChoice?'Incomplete choices':e.message}}try{commit(cmd,n,true)}catch(e){console.error(e)}return {ok:true,sum:netSum()}},
     checksum:netSum,
     onStart:g=>startGameLocal(g.seed,g.difficulty,g.roles),
