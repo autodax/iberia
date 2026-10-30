@@ -1,4 +1,5 @@
 # v0.10.7
+- Wide windows (Mac): board-first layout. The board fills the window height; the active player's hand is an overlapped column of card thumbnails on the left, the other players' hands are thumbnails on the right (hover shows the full card). Actions appear in a ring around your pawn (click the pawn to show or hide); End actions and Undo are in the ring. Rules/Guide/Log/Online/Menu sit on the board's top edge, cube counts under the infection discard, and rail/water supply show when hovering a token. Cities with three cubes glow (pulsing, blurred) under the cube pile, and the active pawn glows. Narrower windows keep the sidebar layout.
 
 - No phrase starts with a numeral any more: "Actions left: 3", "Cities: 9 · Cubes: 18", "Chain of 3 outbreaks", and so on. The yellow microscope sits 6 px further right.
 - The active player's box is outlined in their pawn color, and "actions left" appears only once the new turn has started (after the turn chime).

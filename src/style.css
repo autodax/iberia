@@ -289,3 +289,37 @@ aside #phaseLabel{display:none}
 .ttBox{display:block}
 .ttCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:6px -6px 0}
 .ttCards.thumbs .bigCard,.ttCards.thumbs .bigCard.art{width:100%;height:auto;aspect-ratio:724/510;border-radius:6px;border-width:1px;box-shadow:0 2px 5px #0005;flex:none}
+
+/* ---- board view (wide windows) ---- */
+#app.bm main{grid-template-columns:var(--leftW) var(--boardW) var(--rightW);gap:6px;align-items:start}
+#leftStrip,#rightStrip{display:flex;flex-direction:column;gap:6px;min-width:0;overflow:auto;max-height:var(--appH)}
+#app.bm #cityList,#app.bm #resources,#app.bm #turnStatus,#app.bm #message,#app.bm #actionHeading,#app.bm #ringToggle{display:none}
+#app.bm .turnState{display:none}#app.bm:not(.inMode) #actionHint{display:none}
+#app.bm #turnBox{width:auto}
+#app.bm .hand .handCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--tw,56px),1fr));gap:4px}
+#app.bm button.card.thumb{width:100%;height:auto;aspect-ratio:2/3;min-height:0;padding:0;border-left-width:1px;background-size:cover;background-position:center;position:relative;border-radius:5px}
+#app.bm button.card.thumb.selected{outline:3px solid #fff}
+#app.bm button.card.thumb.disc{color:#fff;font-size:22px;text-shadow:0 0 4px #000,0 0 4px #000}
+/* the active player's hand: one overlapped column of larger cards */
+#app.bm .hand.active .handCards{display:flex;flex-direction:column;align-items:center;padding:4px 0 10px;gap:0}
+#app.bm .hand.active button.card.thumb{width:var(--aw,168px);flex:none;border-radius:8px;box-shadow:0 3px 8px #0009;margin-top:calc(var(--aw,168px)*-1.5 + 64px)}
+#app.bm .hand.active button.card.thumb:first-child{margin-top:0}
+#app.bm .hand.active button.card.thumb.disc{font-size:18px;text-align:right;padding-right:8px;align-items:flex-start;line-height:30px}
+#app.bm .holdRow{display:flex;gap:6px;padding:4px 2px}#app.bm .holdRow img{height:26px}#app.bm .holdRow img.wide{height:20px}
+#app.bm .ttBox>div:first-child{display:none}
+#app.bm #nextPhase:not([style]){width:100%}
+#app.bm #bar{height:24px;font-size:11px;gap:6px}#app.bm #bar strong{font-size:12px}
+#boardFrame{position:relative}
+#topBtns{position:absolute;left:9.9%;top:2.4%;width:23%;height:30px;display:flex;gap:6px;align-items:center;justify-content:center;z-index:4}
+#topBtns[hidden],#cubeCounts[hidden],#tokTip[hidden]{display:none}
+#topBtns .btn,#topBtns button{font-size:12px;padding:2px 8px;border-radius:10px;height:auto}
+#cubeCounts{position:absolute;left:83.6%;top:20.5%;width:15.1%;display:flex;justify-content:space-around;align-items:center;z-index:3;pointer-events:none}
+#cubeCounts .cc{position:relative;width:34px;height:34px}#cubeCounts img{width:28px;height:28px;filter:drop-shadow(0 1px 2px #000a)}
+#cubeCounts b{position:absolute;right:-3px;bottom:-2px;background:#fff;color:#222;border-radius:9px;font:700 11px system-ui;padding:0 4px;border:1px solid #444}
+#tokTip{position:absolute;z-index:8;background:#fff;border-radius:8px;padding:3px 8px;display:flex;gap:6px;align-items:center;font:700 14px system-ui;pointer-events:none;box-shadow:0 2px 8px #0006}
+#tokTip img{height:26px}#tokTip img.wide{height:20px}
+#ring{position:absolute;inset:0;pointer-events:none;z-index:5}
+#ring[hidden]{display:none}
+.hotPulse{animation:hotPulse 1.3s ease-in-out infinite}
+@keyframes hotPulse{0%,100%{opacity:.45}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.hotPulse{animation:none;opacity:.75}}
