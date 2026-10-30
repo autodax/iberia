@@ -1777,7 +1777,7 @@ const ICON={carriage:'icons/carriage',train:'icons/train',ship:'icons/ship',buil
 const MAP_ACTIONS=new Set(['carriage','train','ship','build','purify','treat']);
 const ROLE_ACTION=new Set(['agronomist','pgive','pswap','peek','attract','htreat','ttswap','profdraw','stbuild','stwater','sttreat']);
 // In the board layout the action buttons are small picture buttons; the words show as a tooltip.
-function iconize(b,t){if(!bmOn)return b;let img=asset(ICON[t]);if(!img)return b;b.textContent='';b.classList.add('iconBtn');b.dataset.tip=LABEL[t];b.title=LABEL[t];b.setAttribute('aria-label',LABEL[t]);el('img',{src:img,alt:'',className:'ico'},b);if(ROLE_ACTION.has(t)){let pa=roleAsset('pawns/pawn-',state.players[state.active].role);if(pa)el('img',{src:pa,alt:'',className:'badge'},b)}return b}
+function iconize(b,t){if(!bmOn)return b;let hc=t==='hospital'?C[state.players[state.active].city]?.color:null,img=asset(hc?'tokens/hospital-'+hc:ICON[t]);if(!img)return b;b.textContent='';b.classList.add('iconBtn');b.dataset.tip=LABEL[t];b.title=LABEL[t];b.setAttribute('aria-label',LABEL[t]);el('img',{src:img,alt:'',className:'ico'},b);if(ROLE_ACTION.has(t)){let pa=roleAsset('pawns/pawn-',state.players[state.active].role);if(pa)el('img',{src:pa,alt:'',className:'badge'},b)}return b}
 // Touch screens have no hover: the first tap on a hoverable target shows its ghost, a second tap on the same target confirms.
 let armed=null,armList=[];
 const TOUCHY=()=>window.__touch!==undefined?window.__touch:matchMedia('(hover: none)').matches;
