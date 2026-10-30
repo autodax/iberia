@@ -336,3 +336,12 @@ aside #phaseLabel{display:none}
 #app.bm #hands button.card.thumb:hover{z-index:5;transform:translateY(-3px)}
 #app.bm #hands .handTitle{font-size:12.5px}
 #app.bm #bar{display:none}
+
+#app.bm button.card.thumb.pick{outline:3px solid #ffd54a;box-shadow:0 0 12px #ffd54a;z-index:3}
+#app.bm button.card.thumb.dim{opacity:.4;filter:grayscale(.6)}
+#app.bm button.card.thumb.selected{outline:4px solid #fff;box-shadow:0 0 14px #fff}
+/* bigger on-board counts */
+#cubeCounts{top:20.2%}
+#cubeCounts .cc{width:46px;height:44px}#cubeCounts img{width:38px;height:38px}
+#cubeCounts b{font-size:14px;padding:0 6px;border-radius:11px;right:-4px;bottom:-3px}
+.deckCount circle{fill:#fff}
