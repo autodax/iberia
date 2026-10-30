@@ -225,7 +225,7 @@ function transact(state,cmd){let s=CP(state),ctx={choices:cmd.choices||[],index:
   else if(cmd.type==='infect'){requireRule(s.phase==='infection'&&s.infectionRemaining>0,'No infection due');let id=s.revealed&&s.revealed.length?s.revealed.shift():s.infectionFromBottom?s.infectionDeck.pop():s.infectionDeck.shift();pushFx(s,{kind:'infection',city:id});resolveInfection(s,id,1,ctx);s.infectionDiscard.push(id);s.infectionRemaining--;s.infectionDrawn++;if(s.status==='playing'&&s.infectionRemaining===0)endTurn(s,ctx)}
   else{requireRule(s.phase==='actions'&&s.actions>0,'No action available');let from=p.city;
    if(['carriage','train','ship'].includes(cmd.type))movePawn(s,s.active,cmd,ctx,false);
-   else{if(p.city2&&cmd.type!=='build'){let ok=locs(p).filter(c=>{let t=CP(s);try{act(t,t.players[t.active],cmd,c,{choices:[],index:0});return true}catch(e){return !!e.needChoice}});if(ok.length)from=ok.length===1?ok[0]:choice(ctx,ok,'Civil Engineer: act in which city?',ok.map(k=>C[k].name))}
+   else{if(p.city2&&cmd.type!=='build'){let ok=locs(p).filter(c=>{let t=CP(s);try{act(t,t.players[t.active],cmd,c,{choices:[],index:0});return true}catch(e){return !!e.needChoice}});if(ok.length)from=ok.length===1?ok[0]:ok.includes(cmd.at)?cmd.at:choice(ctx,ok,'Civil Engineer: act in which city?',ok.map(k=>C[k].name))}
     act(s,p,cmd,from,ctx)}
    if(!FREE.has(cmd.type))s.actions--;
    s.log.push(actionLog(s,p,cmd,from))}}
