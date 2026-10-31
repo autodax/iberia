@@ -1,4 +1,5 @@
 ## Latest
+- Event map-pick prompts (Science Triumph, Purify Water) now show the Event card and sit in a board corner away from the choices instead of over the middle of the map.
 - iPad/touch: tapping a city a second time now completes the move (the larger tap areas I added earlier were cancelling the first tap).
 - The Event card kept on the University Professor card now appears in his hand as a normal card (still not counted toward the hand limit); drawn cards make a soft draw sound as they slide in.
 - Cube-drop animations (e.g. the 3 cubes after an Epidemic) now finish before the next popup opens, instead of playing behind it.

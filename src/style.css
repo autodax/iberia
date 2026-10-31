@@ -473,3 +473,4 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #cubeCounts .tc.water img{transform:translateX(calc(-3px*var(--bs,1)))}#cubeCounts .tc.rail img{max-width:calc(44px*var(--bs,1));transform:translateX(calc(-3px*var(--bs,1)))}
 @keyframes handSlide{0%{transform:translateX(-140px);opacity:0}100%{transform:none;opacity:1}}.handCards .card.slideIn{animation:handSlide .9s cubic-bezier(.2,.8,.25,1) both}@media (prefers-reduced-motion:reduce){.handCards .card.slideIn{animation:none}}
 .fxInf .bigCard.art.landscape{width:calc(var(--aw,120px)*1.46*var(--cs,1.4)*.8)}.fxInf .bigCard.landscape:not(.art){width:176px;height:120px}
+#choiceDialog.pawnAlert.withCardAlert #choiceCard{display:flex;justify-content:center;margin:0 0 8px}#choiceDialog.pawnAlert.withCardAlert #choiceCard[hidden]{display:none}#choiceDialog.pawnAlert.withCardAlert #choiceCard .bigCard.art{width:min(210px,70%)}#choiceDialog.pawnAlert.withCardAlert{width:min(280px,90vw)}
