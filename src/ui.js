@@ -199,7 +199,7 @@ let chooseQueue=Promise.resolve();
 function choose(title,options,labels,noCancel,card){let p=chooseQueue.then(()=>chooseNow(title,options,labels,noCancel,card));chooseQueue=p.catch(()=>{});return p}
 let dlgClosedAt=0;
 async function dialogGap(){let t0=Date.now();while((fxCurrent||fxQueue.length)&&Date.now()-t0<20000)await new Promise(r=>setTimeout(r,150));let w=450-(Date.now()-dlgClosedAt);if(w>0&&dlgClosedAt)await new Promise(r=>setTimeout(r,w))}
-function chooseNow(title,options,labels,noCancel,card){return dialogGap().then(()=>new Promise(res=>{let d=$('choiceDialog');d.classList.toggle('noCancel',!!noCancel);let cc=$('choiceCard');cc.replaceChildren();cc.hidden=!card;d.classList.toggle('withCard',!!card);if(card)cc.appendChild(cardFace(card));$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();
+function chooseNow(title,options,labels,noCancel,card){return dialogGap().then(()=>new Promise(res=>{let d=$('choiceDialog');dragOff.dlg=[0,0];d.style.translate='';d.classList.toggle('noCancel',!!noCancel);let cc=$('choiceCard');cc.replaceChildren();cc.hidden=!card;d.classList.toggle('withCard',!!card);if(card)cc.appendChild(cardFace(card));$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();
  let kind=options.length&&options.every(o=>typeof o==='string'&&R[o])?'region':options.length&&options.every(o=>typeof o==='string'&&C[o])?'city':null;
  let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();dlgClosedAt=Date.now();d.classList.remove('mapPick','pawnAlert','btnAlert','withCardAlert');if($('panelLine'))pawnLine(0,0,null);d.style.left=d.style.top=d.style.right=d.style.bottom='';if(mapPick){mapPick=null;paint()}res(v)};
  box.classList.toggle('mapOnly',!!kind&&(options.length>8||bmOn));
@@ -250,7 +250,7 @@ function placeNear(rw,rh,fx,fy,w,h,shapes){let sx=w/BOARD_FIT[2],sy=h/BOARD_FIT[
  for(let r=0;r<=420;r+=16){for(let a of dirs){let x=clampX(fx+Math.cos(a)*(rw/2+24+r)-rw/2),y=clampY(fy+Math.sin(a)*(rh/2+30+r*.7)-rh/2),c=cost(x,y);if(!best||c<best.c){best={c,x,y};if(c===0)return [x,y]}}}
  return [best.x,best.y]}
 function pawnLine(fx,fy,x,y,rw,rh,pc){let bf=$('boardFrame'),L=$('panelLine');if(!L){L=svg('svg',{id:'panelLine',style:'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5'});bf.appendChild(L)}L.replaceChildren();if(x==null)return;let tx=Math.max(x,Math.min(x+rw,fx)),ty=Math.max(y,Math.min(y+rh,fy));if(Math.hypot(tx-fx,ty-fy)<8)return;svg('line',{x1:fx,y1:fy+2,x2:tx,y2:ty,stroke:pc,'stroke-width':3,'stroke-opacity':.8,'stroke-linecap':'round'},L)}
-function positionPawnPanel(){let pp=$('pawnPanel');if(!pp)return;
+function positionPawnPanel(){let pp=$('pawnPanel');if(!pp)return;addGrips();
  let fh=typeof fullHands==='function'&&state&&state.status==='playing'&&!['epidemic','setup','ended'].includes(state.phase)?fullHands(state):[],who=fh.length?fh[0]:state.active,q=state.players[who];
  let note=$('pawnNote'),over=fh.length&&q&&mine(who)?q.hand.length-handLimit(q):0,form=$('actionForm'),hasForm=!!mode&&!!form.children.length&&canAct();
  note.textContent=over>0?(who!==state.active?plabel(who)+': ':'')+'Too many cards: discard '+over+' ('+q.hand.length+' in hand, limit '+handLimit(q)+'). Click a card in the hand to discard it, or play an Event.':'';note.style.display=over>0?'':'none';
@@ -260,7 +260,13 @@ function positionPawnPanel(){let pp=$('pawnPanel');if(!pp)return;
  pp.title=compact?($('actionHint').textContent||''):'';
  pp.style.cssText=compact?`position:absolute;left:0;top:0;border-color:${pc};--pc:${pc}`:`position:absolute;width:${pw}px;left:0;top:0;border-color:${pc};--pc:${pc}`;
  let rw=pp.offsetWidth,rh=pp.offsetHeight,[x,y]=placeNear(rw,rh,fx,fy,w,h,hasForm?avoidShapes:{cities:[],polys:[]});
- pp.style.left=x+'px';pp.style.top=y+'px';pawnLine(fx,fy,x,y,rw,rh,pc)}
+ let dk=mode+'|'+who+'|'+hasForm+'|'+over;if(dragOff.pk!==dk){dragOff.pk=dk;dragOff.pp=[0,0]}let o=dragOff.pp||[0,0];x=Math.max(0,Math.min(w-rw,x+o[0]));y=Math.max(0,Math.min(h-rh,y+o[1]));pp.style.left=x+'px';pp.style.top=y+'px';pawnLine(fx,fy,x,y,rw,rh,pc)}
+var dragOff={cn:{}};
+function toCorner(t,isPP){let bf=$('boardFrame').getBoundingClientRect(),r=t.getBoundingClientRect(),k=isPP?'pp':'dlg',o=dragOff[k]||[0,0],i=((dragOff.cn[k]??-1)+1)%4;dragOff.cn[k]=i;let m=8,bx=r.left-bf.left,by=r.top-bf.top,tx=i%2?bf.width-r.width-m:m,ty=i<2?bf.height-r.height-m:m;
+ if(isPP){dragOff.pp=[o[0]+tx-bx,o[1]+ty-by];positionPawnPanel()}else{dragOff.dlg=[o[0]+tx-bx,o[1]+ty-by];t.style.translate=dragOff.dlg[0]+'px '+dragOff.dlg[1]+'px'}}
+function addGrips(){for(let id of ['pawnPanel','choiceDialog']){let t=$(id);if(t&&!t.querySelector(':scope>.winGrip'))el('span',{className:'winGrip',title:'Drag to move this window, or click to send it to the next corner',textContent:'✥'},t)}}
+addGrips();
+(function(){let cur=null;document.addEventListener('pointerdown',e=>{let t=e.target.closest&&e.target.closest('#choiceDialog,#pawnPanel');if(!t||e.button>0||e.target.closest('button,input,select,a,textarea'))return;let isPP=t.id==='pawnPanel';cur={t,isPP,x:e.clientX,y:e.clientY,moved:false,grip:!!e.target.closest('.winGrip'),o:(isPP?dragOff.pp:dragOff.dlg)||[0,0]};try{t.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault()});document.addEventListener('pointermove',e=>{if(!cur)return;if(Math.hypot(e.clientX-cur.x,e.clientY-cur.y)>4)cur.moved=true;let o=[cur.o[0]+e.clientX-cur.x,cur.o[1]+e.clientY-cur.y];if(cur.isPP){dragOff.pp=o;positionPawnPanel()}else{dragOff.dlg=o;cur.t.style.translate=o[0]+'px '+o[1]+'px'}});let up=()=>{if(cur&&cur.grip&&!cur.moved)toCorner(cur.t,cur.isPP);cur=null};document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up)})();
 function positionRing(){let ring=$('ring'),np=$('nextPhase'),un=$('undo');if(!ring)return;
  positionPawnPanel();
  let re=$('ringEnd'),ru=$('ringUndo');if(!re){re=el('button',{id:'ringEnd',type:'button',onclick:()=>$('nextPhase').click()},ring);ru=el('button',{id:'ringUndo',type:'button',textContent:'Undo',onclick:()=>$('undo').click()},ring)}

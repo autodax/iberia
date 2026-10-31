@@ -1,5 +1,7 @@
 ## Latest
 
+- Floating windows (action buttons under the pawn, map-pick and event popups) are now movable: drag the small ✥ handle on the corner, or click it to send the window to the next corner of the board.
+
 - Fixed Research disease: when you hold more than 5 cards of the colour, 5 are now preselected so Confirm is enabled (tap cards to change the pick). The research ring icon now matches the disease colour, and the disabled Confirm is easier to see.
 - The play-or-discard question for an Event card shows the card (readable) again.
 - Map-input boxes now sit as close to the pawn as possible without covering anything you need to click (highlighted regions and cities), joined to the pawn by a line. Cancel/confirm-only boxes shrink to a pair of ring-style buttons.
