@@ -1,4 +1,5 @@
 ## Latest
+- The Event card kept on the University Professor card now appears in his hand as a normal card (still not counted toward the hand limit); drawn cards make a soft draw sound as they slide in.
 - Cube-drop animations (e.g. the 3 cubes after an Epidemic) now finish before the next popup opens, instead of playing behind it.
 - Fixed the slide-in of drawn cards (a second redraw was cancelling it); infection card popups are 20% smaller.
 - Other players' small hand cards no longer shimmer (moire): they use a gently shrunk copy of the card picture.
