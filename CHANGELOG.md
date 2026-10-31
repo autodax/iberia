@@ -1,4 +1,5 @@
 ## Latest
+- Fixed the slide-in of drawn cards (a second redraw was cancelling it); infection card popups are 20% smaller.
 - Other players' small hand cards no longer shimmer (moire): they use a gently shrunk copy of the card picture.
 - Drawn cards now appear in your hand after the draw popup closes, sliding in from the left.
 - Water-token and railroad-token counters on the board under the blue cube; hover counts on those tokens removed.
