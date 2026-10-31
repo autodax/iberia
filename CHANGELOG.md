@@ -1,4 +1,5 @@
 ## Latest
+- Moving: bigger click targets around each destination city and on its printed name; the ring now only fades (no size change).
 - Reachable cities glow bright yellow and pulse; University Professor card art replaced again (brighter).
 - Board cube counters are darker and more muted with a subtle wood grain; remaining blue-green highlights (turn pulse, water-by ring, notice edge) are now gold.
 - New role-card art and pawn colours for the five extra characters (Civil Engineer grey, Palliative Care Nurse lilac, Student purple, Time Traveler orange, University Professor gold); base-role pawn colours now match the printed cards.

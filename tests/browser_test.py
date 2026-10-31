@@ -183,7 +183,7 @@ async def main():
     # settings saved with the game
     await pg.evaluate("localStorage.removeItem('iberia-settings')");await pg.reload();await pg.wait_for_timeout(300)
     ok(await pg.evaluate("$('fxSpeed').value==='0.5'"),'default reveal speed is Fast')
-    await pg.evaluate("if(state.phase==='setup'){$('begin').click()}");await pg.wait_for_timeout(200)
+    await pg.evaluate("if(state.phase==='setup'){$('begin').click()}");await pg.wait_for_function("state.phase!=='setup'",timeout=5000);await pg.wait_for_timeout(300)
     await pg.evaluate("$('fxSpeed').value='0';$('fxSpeed').dispatchEvent(new Event('change'));$('showNames').checked=true;$('showNames').dispatchEvent(new Event('change'))")
     env=await pg.evaluate("envelope().settings")
     ok(env['fxSpeed']=='0' and env['showNames'] is True,'settings included in the save '+str(env))

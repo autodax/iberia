@@ -447,6 +447,6 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #cubeCounts img{filter:url(#cubeWoodFx) drop-shadow(0 1px 2px #000a)}
 #cubeSupply img{filter:url(#cubeWoodFx)}
 
-.reachDot{fill:none;fill-opacity:0;stroke:#ffd93a;stroke-width:3px;transform-box:fill-box;transform-origin:center;filter:drop-shadow(0 0 2px #0009) drop-shadow(0 0 3px #ffc800);animation:reachPulse 3s ease-in-out infinite}
-@keyframes reachPulse{0%,100%{transform:scale(.9);stroke-opacity:.55}50%{transform:scale(1.25);stroke-opacity:1}}
+.reachDot{fill:none;fill-opacity:0;stroke:#ffd93a;stroke-width:3px;filter:drop-shadow(0 0 2px #0009) drop-shadow(0 0 3px #ffc800);animation:reachPulse 3s ease-in-out infinite}
+@keyframes reachPulse{0%,100%{stroke-opacity:.3}50%{stroke-opacity:1}}
 @media (prefers-reduced-motion:reduce){.reachDot{animation:none;stroke-opacity:.9}}
