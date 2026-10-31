@@ -1,4 +1,5 @@
 ## Latest
+- Cube-drop animations (e.g. the 3 cubes after an Epidemic) now finish before the next popup opens, instead of playing behind it.
 - Fixed the slide-in of drawn cards (a second redraw was cancelling it); infection card popups are 20% smaller.
 - Other players' small hand cards no longer shimmer (moire): they use a gently shrunk copy of the card picture.
 - Drawn cards now appear in your hand after the draw popup closes, sliding in from the left.
