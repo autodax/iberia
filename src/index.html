@@ -8,6 +8,17 @@
 <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn"/>
 <feMerge><feMergeNode in="lift"/><feMergeNode in="specIn"/></feMerge>
 </filter>
+<filter id="cubeWoodFx" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+<feColorMatrix in="SourceGraphic" type="saturate" values=".72" result="sat"/>
+<feComponentTransfer in="sat" result="mute"><feFuncR type="linear" slope=".7"/><feFuncG type="linear" slope=".7"/><feFuncB type="linear" slope=".7"/></feComponentTransfer>
+<feTurbulence type="fractalNoise" baseFrequency=".02 .3" numOctaves="4" seed="11" result="n"/>
+<feColorMatrix in="n" type="matrix" values=".5 0 0 0 .68  .5 0 0 0 .68  .5 0 0 0 .68  0 0 0 0 1" result="grain"/>
+<feComposite in="mute" in2="grain" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="wood"/>
+<feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="bump"/>
+<feSpecularLighting in="bump" surfaceScale="2" specularConstant=".25" specularExponent="14" lighting-color="#f3e2c0" result="spec"><fePointLight x="-30" y="-40" z="90"/></feSpecularLighting>
+<feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn"/>
+<feMerge><feMergeNode in="wood"/><feMergeNode in="specIn"/></feMerge>
+</filter>
 <filter id="researchFx" x="-25%" y="-15%" width="150%" height="130%" color-interpolation-filters="sRGB">
 <feMorphology in="SourceAlpha" operator="dilate" radius="1.6" result="fat"/><feFlood flood-color="#f6e8cd"/><feComposite in2="fat" operator="in" result="ring"/>
 <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="sb"/><feOffset in="sb" dx="1" dy="1.5" result="sh"/><feFlood flood-color="#000" flood-opacity=".45"/><feComposite in2="sh" operator="in" result="shadow"/>

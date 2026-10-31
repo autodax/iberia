@@ -1,5 +1,5 @@
 /* Approved v05 aesthetic: muted green surroundings, parchment panels, tan buttons, cream cards with colored edge accents. */
-:root{--green:#516b60;--greenDark:#3f574d;--greenDeep:#2f453c;--parch:#ecdcb9;--parchLight:#f6e8cd;--tan:#e6cf9f;--tanHover:#dcc08a;--tanBorder:#b39463;--ink:#2e4339;--inkSoft:#5c6f62;--title:#f1dcae;--accent:#4c6b5c;--warn:#9c3b25;--cyan:#16b4c8}
+:root{--green:#516b60;--greenDark:#3f574d;--greenDeep:#2f453c;--parch:#ecdcb9;--parchLight:#f6e8cd;--tan:#e6cf9f;--tanHover:#dcc08a;--tanBorder:#b39463;--ink:#2e4339;--inkSoft:#5c6f62;--title:#f1dcae;--accent:#4c6b5c;--warn:#9c3b25;--cyan:#d9a400}
 *{box-sizing:border-box}[hidden]{display:none!important}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--greenDark);color:var(--ink);font:14px system-ui,-apple-system,Segoe UI,sans-serif}
 body{display:grid;place-items:center}
@@ -125,7 +125,7 @@ header .sndBtn.off .waves{display:none}
 header .sndBtn.off .cross{display:inline}
 #volume{width:100%;accent-color:#8a6a3a}
 /* prevented infections */
-.blocked{background:var(--parch);border:1px solid var(--tanBorder);border-left:5px solid #2f8fc9;border-radius:6px;padding:7px 12px;box-shadow:0 4px 16px #0005;color:var(--ink);max-width:420px;font-size:13.5px}
+.blocked{background:var(--parch);border:1px solid var(--tanBorder);border-left:5px solid #d9a400;border-radius:6px;padding:7px 12px;box-shadow:0 4px 16px #0005;color:var(--ink);max-width:420px;font-size:13.5px}
 .alert .blocked{box-shadow:none;margin-top:8px;text-align:left}
 .blocked .bhead{font-weight:700;font-size:14px;margin-bottom:4px}
 .blocked .brow{display:flex;align-items:center;gap:8px;margin:3px 0}
@@ -137,7 +137,7 @@ header .sndBtn.off .cross{display:inline}
 #actionHeading{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:3px 8px 3px 6px;border-left:6px solid var(--pc,#4c6b5c);background:var(--parchLight);border-radius:4px}
 #actionHeading .tp svg{display:block}#actionHeading .sub{font-size:13px;font-weight:400;color:var(--inkSoft)}
 #actionHeading.justActive,.hand.justActive{animation:turnPulse 1.6s ease-out 2}
-@keyframes turnPulse{0%{box-shadow:0 0 0 0 rgba(22,180,200,.9)}60%{box-shadow:0 0 0 10px rgba(22,180,200,0)}100%{box-shadow:0 0 0 0 rgba(22,180,200,0)}}
+@keyframes turnPulse{0%{box-shadow:0 0 0 0 rgba(217,164,0,.9)}60%{box-shadow:0 0 0 10px rgba(217,164,0,0)}100%{box-shadow:0 0 0 0 rgba(217,164,0,0)}}
 .hand.active{border-color:#1f5a3a;box-shadow:0 0 0 3px #1f5a3a inset,0 0 8px rgba(31,90,58,.4)}
 .alert.chain{border:3px solid #9c1f14;box-shadow:0 0 0 4px rgba(156,31,20,.25);animation:chainShake .5s ease-in-out 2}
 .chainTag{display:inline-block;background:#9c1f14;color:#f6e8cd;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:13px;padding:3px 12px;border-radius:3px;margin:4px 0}
@@ -156,7 +156,7 @@ aside.roomy .cardPicker .miniCard{font-size:14.5px;min-height:32px}
 #choiceDialog.mapPick{position:fixed;left:16px;bottom:16px;top:auto;right:auto;margin:0;max-width:360px;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.35)}
 #choiceDialog.mapPick #choiceOptions{display:flex;flex-wrap:wrap;gap:6px}
 #choiceDialog .mapHint{flex-basis:100%;margin:6px 0 0;font-size:13px;color:var(--inkSoft)}
-#choiceOptions button.hot{outline:3px solid #00c8d8}
+#choiceOptions button.hot{outline:3px solid #e0b000}
 #choiceDialog.mapPick{left:auto;right:16px;top:250px;bottom:auto;width:340px;max-width:340px;padding:12px 14px}
 #choiceDialog.mapPick h2{font-size:16px;margin:0 0 8px}
 #choiceDialog.mapPick #choiceOptions button{font-size:13px;padding:5px 8px;text-align:left}
@@ -443,3 +443,6 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #cardPreview.big .prevText{max-width:clamp(230px,44vh,380px);font-size:15px;line-height:1.35}
 #cardPreview .prevPlay{margin-top:8px;font-size:16px;padding:8px 18px}
 #cardPreview .prevHint{margin-top:6px;font-size:12px;color:#fffc;text-shadow:0 1px 3px #000}
+
+#cubeCounts img{filter:url(#cubeWoodFx) drop-shadow(0 1px 2px #000a)}
+#cubeSupply img{filter:url(#cubeWoodFx)}
