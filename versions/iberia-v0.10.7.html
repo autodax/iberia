@@ -439,8 +439,6 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .alert.overrun{border-color:#7e1d14;background:#f6dcc8}.alert.patient{border-color:#8a6d1d;max-width:420px}
 .alert.overrun h3,.alert.patient h3{font-size:22px}.alert.overrun img.tok,.alert.patient img.tok{width:38px;height:38px}
 
-#cardPreview.big .bigCard.art{width:calc(clamp(230px,44vh,380px)*var(--cs,1))}
-#cardPreview.big .prevText{max-width:clamp(230px,44vh,380px);font-size:15px;line-height:1.35}
 #cardPreview .prevPlay{margin-top:8px;font-size:16px;padding:8px 18px}
 #cardPreview .prevHint{margin-top:6px;font-size:12px;color:#fffc;text-shadow:0 1px 3px #000}
 
@@ -1987,7 +1985,7 @@ function showHelpCards(){if($('helpCards'))return closeHelpCards();let ov=el('di
 function closeHelpCards(){$('helpCards')?.remove()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelpCards()});
 $('shipHot').onclick=e=>{e.stopPropagation();showHelpCards()};
-function showPreview(k,pin,onPlay){if(prevPinned&&!pin)return;prevPinned=false;if(prevEl){prevEl.remove();prevEl=null}if(!cardArt(k,false))return;prevEl=el('div',{id:'cardPreview'},document.body);prevEl.appendChild(cardFace(k));if(String(k).startsWith('role:')){let r=k.slice(5);el('div',{className:'prevText',textContent:ROLE_TEXT[r]||''},prevEl)}if(EVENTS[k]){el('div',{className:'prevText',textContent:EVENTS[k]+': '+EVENT_TEXT[k]},prevEl);if(pin)prevEl.classList.add('big')}if(pin){prevPinned=true;prevEl.classList.add('pinned');if(onPlay){let pb=el('button',{className:'prevPlay primary',textContent:'Play this Event',type:'button'},prevEl);pb.onclick=e=>{e.stopPropagation();hidePreview(true);onPlay()}}if(EVENTS[k])el('div',{className:'prevHint',textContent:'Click anywhere else to close'},prevEl)}}
+function showPreview(k,pin,onPlay){if(prevPinned&&!pin)return;prevPinned=false;if(prevEl){prevEl.remove();prevEl=null}if(!cardArt(k,false))return;prevEl=el('div',{id:'cardPreview'},document.body);prevEl.appendChild(cardFace(k));if(String(k).startsWith('role:')){let r=k.slice(5);el('div',{className:'prevText',textContent:ROLE_TEXT[r]||''},prevEl)}if(pin){prevPinned=true;prevEl.classList.add('pinned');if(onPlay){let pb=el('button',{className:'prevPlay primary',textContent:'Play this Event',type:'button'},prevEl);pb.onclick=e=>{e.stopPropagation();hidePreview(true);onPlay()}}if(EVENTS[k])el('div',{className:'prevHint',textContent:'Click anywhere else to close'},prevEl)}}
 document.addEventListener('click',()=>hidePreview(true));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&bmOn&&mode&&mode!=='peek'&&!document.querySelector('dialog[open]')){mode='';selectedCards=[];render()}
  if(e.key==='Escape'&&ringOpen){ringOpen=false;positionRing()}
