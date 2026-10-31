@@ -1,4 +1,5 @@
 ## Latest
+- Other players' small hand cards no longer shimmer (moire): they use a gently shrunk copy of the card picture.
 - Drawn cards now appear in your hand after the draw popup closes, sliding in from the left.
 - Water-token and railroad-token counters on the board under the blue cube; hover counts on those tokens removed.
 - Instruction cards: back to the original pictures, now shown larger.
