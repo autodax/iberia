@@ -460,6 +460,7 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #pawnNote{text-align:center;display:flex;align-items:center;justify-content:center;margin:0 0 6px}#pawnPanel.noteOnly{padding:6px 10px}#pawnPanel.noteOnly #pawnNote{min-height:70px;margin:0}
 #cubeCounts b{background:#f3e6c8;color:#3a2f1c;border-color:#6b5a3a}
 #choiceDialog.pawnAlert{background:#f6ecd4;border:3px solid #555;border-radius:12px;padding:10px 12px;text-align:center;box-shadow:0 4px 16px #000a}#choiceDialog.pawnAlert h2,#choiceDialog.pawnAlert #choiceTitle{font-size:13.5px;font-weight:600;line-height:1.35;color:#8a3b12;margin:0 0 6px;text-align:center}#choiceDialog.pawnAlert .mapHint{margin:0 0 8px;text-align:center;color:#8a3b12;font-size:13px}#choiceDialog.pawnAlert #choiceOptions{display:block}#choiceDialog.pawnAlert .dialogButtons{display:flex;justify-content:center}#choiceDialog.pawnAlert .dialogButtons button{width:100%}
+#choiceDialog.pawnAlert.btnAlert{position:fixed;margin:0;z-index:50}#choiceDialog.pawnAlert.btnAlert #choiceOptions{display:grid;grid-template-columns:1fr;gap:6px}#choiceDialog.pawnAlert.btnAlert #choiceOptions button{width:100%;text-align:center}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <filter id="cubeBlackFx" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
@@ -1655,11 +1656,11 @@ let dlgClosedAt=0;
 async function dialogGap(){let t0=Date.now();while((fxCurrent||fxQueue.length)&&Date.now()-t0<20000)await new Promise(r=>setTimeout(r,150));let w=450-(Date.now()-dlgClosedAt);if(w>0&&dlgClosedAt)await new Promise(r=>setTimeout(r,w))}
 function chooseNow(title,options,labels,noCancel,card){return dialogGap().then(()=>new Promise(res=>{let d=$('choiceDialog');d.classList.toggle('noCancel',!!noCancel);let cc=$('choiceCard');cc.replaceChildren();cc.hidden=!card;d.classList.toggle('withCard',!!card);if(card)cc.appendChild(cardFace(card));$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();
  let kind=options.length&&options.every(o=>typeof o==='string'&&R[o])?'region':options.length&&options.every(o=>typeof o==='string'&&C[o])?'city':null;
- let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();dlgClosedAt=Date.now();d.classList.remove('mapPick','pawnAlert');d.style.left=d.style.top=d.style.right=d.style.bottom='';if(mapPick){mapPick=null;paint()}res(v)};
+ let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();dlgClosedAt=Date.now();d.classList.remove('mapPick','pawnAlert','btnAlert');d.style.left=d.style.top=d.style.right=d.style.bottom='';if(mapPick){mapPick=null;paint()}res(v)};
  box.classList.toggle('mapOnly',!!kind&&(options.length>8||bmOn));
  options.forEach((o,i)=>{let b=el('button',{textContent:labels?.[i]??o,onclick:()=>finish(o)},box);if(kind){b.onmouseenter=()=>{if(mapPick){mapPick.hover=o;paint()}};b.onmouseleave=()=>{if(mapPick){mapPick.hover=null;paint()}}}});
  $('choiceCancel').onclick=()=>finish(null);d.oncancel=e=>{e.preventDefault();if(!noCancel)finish(null)};
- if(kind){mapPick={kind,options:new Set(options),pick:finish,hover:null};d.classList.add('mapPick');el('p',{className:'mapHint',textContent:(bmOn?'Click a highlighted ':'Or click a highlighted ')+(kind==='region'?'region':'city')+' on the map.'},box);d.show();if(bmOn&&mapOnlyOk()){d.classList.add('pawnAlert');placePawnAlert(d)}paint()}else d.showModal()}))}
+ if(kind){mapPick={kind,options:new Set(options),pick:finish,hover:null};d.classList.add('mapPick');el('p',{className:'mapHint',textContent:(bmOn?'Click a highlighted ':'Or click a highlighted ')+(kind==='region'?'region':'city')+' on the map.'},box);d.show();if(bmOn&&mapOnlyOk()){d.classList.add('pawnAlert');placePawnAlert(d)}paint()}else if(bmOn&&card&&mapOnlyOk()){cc.hidden=true;d.classList.remove('withCard');d.classList.add('pawnAlert','btnAlert');d.show();placePawnAlert(d)}else d.showModal()}))}
 async function ask(q){return (await choose(q,['yes','no'],['Yes — agreed','No']))==='yes'}
 
 /* ---------- layout ---------- */

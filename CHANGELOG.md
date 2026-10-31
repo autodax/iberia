@@ -1,4 +1,5 @@
 ## Latest
+- The "play it now, or discard it" question for Event cards now appears as an alert by the active pawn.
 - Map-pick questions (which water token, which city for the Student, etc.) now appear as a centred alert by the active pawn with only a Cancel button; you choose on the map.
 - Fixed the pulsing rings under the pawn at the start of a turn, which a cube animation could wipe out.
 - Discard alerts are centred, the old hand-limit popup is gone in board mode, treating a cube makes a tiny click, and the card/cube count badges are cream.
