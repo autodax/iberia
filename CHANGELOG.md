@@ -1,4 +1,5 @@
 ## Latest
+- Instruction cards: back to the original pictures, now shown larger.
 - Sound after reloading a saved game in Safari: the audio engine is now only created on a real tap or click, and is rebuilt if Safari leaves it stuck.
 - Instruction cards (actions 1, 2 and the Play card) cleaned up: paper texture flattened so the text is easier to read.
 - The "play it now, or discard it" question for Event cards now appears as an alert by the active pawn.

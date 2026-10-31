@@ -390,8 +390,8 @@ aside #phaseLabel{display:none}
 button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap:balance}
 
 #helpCards{align-items:center;position:fixed;inset:0;z-index:60;background:#000a;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:2vmin;padding:3vmin;cursor:pointer}
-#helpCards img{width:min(386px,44vw);height:auto;border-radius:8px;box-shadow:0 6px 24px #000a}
-#helpCards img.portrait{width:min(270px,30vw)}
+#helpCards img{width:min(640px,46vw,calc(44vh*1.43));height:auto;border-radius:8px;box-shadow:0 6px 24px #000a}
+#helpCards img.portrait{width:min(440px,30vw,calc(44vh/1.43))}
 #helpCards .helpNote{position:absolute;bottom:2vmin;left:0;right:0;text-align:center;color:#fff;font:600 14px system-ui}
 
 .actLeft{color:#1f7a3a;font-weight:700;font-size:13px;line-height:17px;margin:-1px 0 4px 20px}
