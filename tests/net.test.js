@@ -325,6 +325,15 @@ const allSame=pages=>pages.every(p=>p.sum()===pages[0].sum());
     ok(r.ok&&host.rewinds.length===2,'the host can ask too');
   });
 
+  await group('challenges are chosen in the lobby and reach every player',async()=>{
+    const nw=makeNetwork();const {host,guests}=await startRoom(nw,1,{players:2});
+    ok(host.net.setSettings({challenges:{influx:true,hist:['black','red','bogus']}}).ok,'host sets challenges');
+    await settle();
+    ok(guests[0].net.lobby.settings.challenges.influx===true&&guests[0].net.lobby.settings.challenges.hist.join()==='red,black','guest sees them (unknown ones dropped)');
+    guests[0].net.claim(0);await settle();host.net.start();await settle();
+    ok(host.game&&host.game.challenges&&host.game.challenges.influx&&host.game.challenges.hist.length===2,'the game starts with them');
+  });
+
   await group('host refresh: room can be resumed with the same code and game',async()=>{
     const nw=makeNetwork();const {host,guests,code}=await startRoom(nw,1,{players:2});
     guests[0].net.claim(0);await settle();host.net.start();await settle();await hostStartsPlay(host);await settle();

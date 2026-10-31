@@ -294,6 +294,10 @@ async def main():
      let full=JSON.stringify(state);await rewindToLine(state.log.findIndex(l=>/^Turn 4/.test(l)));
      let a=[state.turn,state.actions,state.phase];undoRewind();return [a,JSON.stringify(state)===full]})()""")
     ok(r[0]==[4,4,'actions'],'going back in time returns to the start of that turn');ok(r[1],'undo going back restores the later game exactly')
+    ok(await pg.evaluate("(()=>{drawRoleFields();let b=document.querySelectorAll('#challengeBox input[type=checkbox]');return b.length===5})()"),'new-game dialog lists the challenges')
+    await pg.evaluate("ask=async()=>true;chLocal.influx=true;chLocal.hist=['red'];$('newGame').click()");await pg.wait_for_timeout(600)
+    ok(await pg.evaluate("state.challenges.influx&&state.challenges.hist.join()==='red'&&state.waterSupply===6"),'a new game starts with the chosen challenges')
+    await pg.evaluate("chLocal.influx=false;chLocal.hist=[];$('newGame').click()");await pg.wait_for_timeout(400)
     await b.close()
 asyncio.run(main())
 for c,m in res:print(('PASS ' if c else 'FAIL ')+m)

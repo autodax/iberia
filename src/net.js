@@ -42,7 +42,7 @@ function createNet(cfg){
   let people=new Map();      // host only: id -> {id,name,token,conn,connected,lastSeen}
   let idCounter=0,hostHandle=null,guestConn=null,leaving=false,fatal=false,gen=0,awaitingSync=false,lastHeard=0;
   let timers=[],pending=new Map(),cidCounter=0,askCounter=0,asks=new Map(),reconnecting=false;
-  const lobby={phase:'lobby',settings:{players:2,difficulty:4,roles:netShuffleRoles()},seats:[null,null]};
+  const lobby={phase:'lobby',settings:{players:2,difficulty:4,roles:netShuffleRoles(),challenges:{influx:false,hist:[]}},seats:[null,null]};
 
   /* ---------- small helpers ---------- */
   function emit(){for(const f of listeners.slice()){try{f(net)}catch(e){console.error(e)}}}
@@ -50,7 +50,7 @@ function createNet(cfg){
   function enc(m){return JSON.stringify(m)}
   function send(conn,m){try{conn.send(enc(m))}catch(e){}}
   function publicPeople(){return [...people.values()].map(p=>({id:p.id,name:p.name,connected:p.connected,host:p.id===NET_HOST_ID}))}
-  function publicLobby(){return {phase:lobby.phase,settings:{players:lobby.settings.players,difficulty:lobby.settings.difficulty,roles:lobby.settings.roles.slice()},seats:lobby.seats.slice(),people:publicPeople()}}
+  function publicLobby(){return {phase:lobby.phase,settings:{players:lobby.settings.players,difficulty:lobby.settings.difficulty,roles:lobby.settings.roles.slice(),challenges:{influx:!!(lobby.settings.challenges&&lobby.settings.challenges.influx),hist:((lobby.settings.challenges&&lobby.settings.challenges.hist)||[]).slice()}},seats:lobby.seats.slice(),people:publicPeople()}}
   function setLobby(l){net.lobby=l}
   function broadcast(m,exceptId){const s=enc(m);for(const p of people.values()){if(p.id===NET_HOST_ID||!p.connected||p.id===exceptId)continue;try{p.conn.send(s)}catch(e){}}}
   function broadcastLobby(){setLobby(publicLobby());broadcast({t:'lobby',lobby:net.lobby});persist();emit()}
@@ -277,6 +277,7 @@ function createNet(cfg){
     if(part.players!=null){const n=+part.players;if(!(n>=2&&n<=5))return {ok:false,error:'2 to 5 players'};s.players=n}
     if(part.difficulty!=null){const d=+part.difficulty;if(!(d>=4&&d<=6))return {ok:false,error:'4 to 6 Epidemics'};s.difficulty=d}
     if(Array.isArray(part.roles))s.roles=part.roles.slice(0,5);
+    if(part.challenges&&typeof part.challenges==='object')s.challenges={influx:!!part.challenges.influx,hist:['blue','red','yellow','black'].filter(k=>Array.isArray(part.challenges.hist)&&part.challenges.hist.includes(k))};
     resizeSeats();broadcastLobby();return {ok:true};
   };
   net.assign=function(seat,pid){
@@ -289,7 +290,7 @@ function createNet(cfg){
     if(!net.isHost||lobby.phase!=='lobby')return {ok:false,error:'Only the host can start, from the lobby'};
     if(lobby.seats.some(o=>o==null))return {ok:false,error:'Every seat needs a player first. Open seats can be taken with "Take this seat".'};
     const s=lobby.settings;
-    const game={seed:cfg.newSeed(),difficulty:s.difficulty,roles:s.roles.slice(0,s.players)};
+    const game={seed:cfg.newSeed(),difficulty:s.difficulty,roles:s.roles.slice(0,s.players),challenges:{influx:!!(s.challenges&&s.challenges.influx),hist:((s.challenges&&s.challenges.hist)||[]).slice()}};
     try{H.onStart(game)}catch(e){return {ok:false,error:e.message}}
     lobby.phase='playing';net.seq=0;
     broadcast({t:'start',game});broadcastLobby();return {ok:true};

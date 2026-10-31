@@ -432,6 +432,12 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 @keyframes cureShine{50%{color:#e8a317;text-shadow:0 0 10px #ffd54a}}
 @keyframes confetti{0%{transform:translate(0,0) rotate(0);opacity:1}70%{opacity:1}100%{transform:translate(var(--x),calc(var(--y) + 90px)) rotate(var(--r));opacity:0}}
 @media(prefers-reduced-motion:reduce){.alert.cure,.alert.cure *{animation:none!important}.alert.cure .confetti{display:none}}
+
+.challengeBox{margin:8px 0;padding:8px 10px;border:1px solid var(--tanBorder);border-radius:8px;background:#fff4;font-size:14px}
+.challengeBox h4{margin:0 0 4px;font-size:14px}.challengeBox .chSub{margin:6px 0 2px;font-weight:600;font-size:13px}
+.challengeBox .chRow{display:flex;flex-wrap:wrap;gap:2px 14px}.challengeBox .chRandom{margin-top:6px;font-size:13px}
+.alert.overrun{border-color:#7e1d14;background:#f6dcc8}.alert.patient{border-color:#8a6d1d;max-width:420px}
+.alert.overrun h3,.alert.patient h3{font-size:22px}.alert.overrun img.tok,.alert.patient img.tok{width:38px;height:38px}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <filter id="cubeBlackFx" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
@@ -458,7 +464,7 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 <dialog id="menu"><button class="close">Close</button><h2>Game menu</h2>
 <div class="dialogButtons"><button id="saveButton" title="Download the game as a file">Save Game</button><button id="loadButton" title="Open a saved game file">Restore Game</button><button id="resumeButton" title="The game saves itself in this browser after every move">Restore Last Game</button></div><p class="detail">Save Game downloads a file (usually into your Downloads folder). Restore Last Game reloads the automatic save kept inside this browser on this device, which is updated after every move; clearing the browser's site data erases it.</p><input id="loadFile" type="file" accept=".json" hidden>
 <h3>New game</h3><div class="seatRow"><label>Players<select id="playerCount"><option>2</option><option>3</option><option>4</option><option>5</option></select></label><label>Epidemics<select id="difficulty"><option value="4">Introductory (4 epidemic cards)</option><option value="5">Standard (5 epidemic cards)</option><option value="6">Heroic (6 epidemic cards)</option></select></label></div>
-<label>Shuffle seed (optional)<input id="seed" value="" placeholder="Random each game · type a seed to replay one" autocomplete="off"></label><div id="roleFields" class="rolesGrid"></div><div class="dialogButtons"><button id="randomRoles">Random roles</button><button id="newGame" class="primary" style="width:auto">Start new game</button></div>
+<label>Shuffle seed (optional)<input id="seed" value="" placeholder="Random each game · type a seed to replay one" autocomplete="off"></label><div id="roleFields" class="rolesGrid"></div><div id="challengeBox" class="challengeBox"></div><div class="dialogButtons"><button id="randomRoles">Random roles</button><button id="newGame" class="primary" style="width:auto">Start new game</button></div>
 <h3>Alerts and card reveals</h3><label>Reveal speed<select id="fxSpeed"><option value="0">Until clicked</option><option value="2">Slow</option><option value="1">Normal</option><option value="0.5" selected>Fast</option><option value="-1">Off (alerts still shown)</option></select></label><label class="check"><input id="sound" type="checkbox">Play sounds</label><label>Volume<input id="volume" type="range" min="0" max="100" step="5" value="70"></label><label title="Size of the cards that pop up when you hover or draw">Card size<input id="cardSize" type="range" min="50" max="150" step="5" value="100"><span id="cardSizeVal">100%</span></label>
 <h3>Graphics</h3><p>Graphics load from the <code>assets</code> folder of the GitHub repo by default. Optionally choose a local folder: files stay on your computer and matching names override the repo graphics for this session.</p><div class="dialogButtons"><button id="assetButton">Choose local asset folder</button><button id="assetClear">Use repo graphics</button></div><input id="assetFiles" type="file" webkitdirectory directory multiple hidden><p id="assetStatus" class="detail">Loading graphics from the GitHub repo…</p>
 <h3>Display</h3><label class="check"><input id="showRegions" type="checkbox">Show region labels</label><label class="check"><input id="showNames" type="checkbox">Show city names</label>
@@ -572,7 +578,7 @@ function createNet(cfg){
   let people=new Map();      // host only: id -> {id,name,token,conn,connected,lastSeen}
   let idCounter=0,hostHandle=null,guestConn=null,leaving=false,fatal=false,gen=0,awaitingSync=false,lastHeard=0;
   let timers=[],pending=new Map(),cidCounter=0,askCounter=0,asks=new Map(),reconnecting=false;
-  const lobby={phase:'lobby',settings:{players:2,difficulty:4,roles:netShuffleRoles()},seats:[null,null]};
+  const lobby={phase:'lobby',settings:{players:2,difficulty:4,roles:netShuffleRoles(),challenges:{influx:false,hist:[]}},seats:[null,null]};
 
   /* ---------- small helpers ---------- */
   function emit(){for(const f of listeners.slice()){try{f(net)}catch(e){console.error(e)}}}
@@ -580,7 +586,7 @@ function createNet(cfg){
   function enc(m){return JSON.stringify(m)}
   function send(conn,m){try{conn.send(enc(m))}catch(e){}}
   function publicPeople(){return [...people.values()].map(p=>({id:p.id,name:p.name,connected:p.connected,host:p.id===NET_HOST_ID}))}
-  function publicLobby(){return {phase:lobby.phase,settings:{players:lobby.settings.players,difficulty:lobby.settings.difficulty,roles:lobby.settings.roles.slice()},seats:lobby.seats.slice(),people:publicPeople()}}
+  function publicLobby(){return {phase:lobby.phase,settings:{players:lobby.settings.players,difficulty:lobby.settings.difficulty,roles:lobby.settings.roles.slice(),challenges:{influx:!!(lobby.settings.challenges&&lobby.settings.challenges.influx),hist:((lobby.settings.challenges&&lobby.settings.challenges.hist)||[]).slice()}},seats:lobby.seats.slice(),people:publicPeople()}}
   function setLobby(l){net.lobby=l}
   function broadcast(m,exceptId){const s=enc(m);for(const p of people.values()){if(p.id===NET_HOST_ID||!p.connected||p.id===exceptId)continue;try{p.conn.send(s)}catch(e){}}}
   function broadcastLobby(){setLobby(publicLobby());broadcast({t:'lobby',lobby:net.lobby});persist();emit()}
@@ -807,6 +813,7 @@ function createNet(cfg){
     if(part.players!=null){const n=+part.players;if(!(n>=2&&n<=5))return {ok:false,error:'2 to 5 players'};s.players=n}
     if(part.difficulty!=null){const d=+part.difficulty;if(!(d>=4&&d<=6))return {ok:false,error:'4 to 6 Epidemics'};s.difficulty=d}
     if(Array.isArray(part.roles))s.roles=part.roles.slice(0,5);
+    if(part.challenges&&typeof part.challenges==='object')s.challenges={influx:!!part.challenges.influx,hist:['blue','red','yellow','black'].filter(k=>Array.isArray(part.challenges.hist)&&part.challenges.hist.includes(k))};
     resizeSeats();broadcastLobby();return {ok:true};
   };
   net.assign=function(seat,pid){
@@ -819,7 +826,7 @@ function createNet(cfg){
     if(!net.isHost||lobby.phase!=='lobby')return {ok:false,error:'Only the host can start, from the lobby'};
     if(lobby.seats.some(o=>o==null))return {ok:false,error:'Every seat needs a player first. Open seats can be taken with "Take this seat".'};
     const s=lobby.settings;
-    const game={seed:cfg.newSeed(),difficulty:s.difficulty,roles:s.roles.slice(0,s.players)};
+    const game={seed:cfg.newSeed(),difficulty:s.difficulty,roles:s.roles.slice(0,s.players),challenges:{influx:!!(s.challenges&&s.challenges.influx),hist:((s.challenges&&s.challenges.hist)||[]).slice()}};
     try{H.onStart(game)}catch(e){return {ok:false,error:e.message}}
     lobby.phase='playing';net.seq=0;
     broadcast({t:'start',game});broadcastLobby();return {ok:true};
@@ -1165,6 +1172,10 @@ const ROLE_TEXT={
  professor:'Once per turn, as an action, draw 1 random Event card that was not used in the setup and keep it on this card. To play any Event you must hold a City card matching the color of a city in an adjacent region. Events you play are removed from the game.'};
 const EVENTS={good_season:'Good Season',government_mobilization:'Government Mobilization',hospital_founding:'Hospital Founding',mail_correspondence:'Mail Correspondence',new_rails:'New Rails',one_more_day:'One More Day',overseas_migration:'Overseas Migration',purify_water:'Purify Water',ring_railroads:'Ring Railroads',science_triumph:'Science Triumph',second_chance:'Second Chance',ships_arrive:'Ships Arrive',telegraph_message:'Telegraph Message',travel_day_night:'Travel Day and Night',when_plans_were_good:'When the Plans Were Good'};
 const EVENT_TEXT={good_season:'During the next infection step, draw only 1 Infection card, from the bottom of the Infection Deck.',government_mobilization:'Each player may immediately move their pawn once for free: carriage, train, or ship.',hospital_founding:'Place or move a hospital into a city matching its color.',mail_correspondence:'Two players (anywhere on the board) can swap 1 card from their hands.',new_rails:'Add 2 railroad tokens anywhere on the board (not on dashed lines).',one_more_day:'The current player may take 2 more actions this turn.',overseas_migration:'Remove up to 2 cubes from the board.',purify_water:'Put up to 2 purification tokens onto the board, in one or two different regions.',ring_railroads:'Add 3 railroad tokens between port cities (not on dashed lines).',science_triumph:'Remove up to 1 cube from each city in one region.',second_chance:'Take the City card matching your current city from the Player Discard Pile.',ships_arrive:'Select a port city. Move 1 or more player pawns there from anywhere (with permission).',telegraph_message:'One player may give 1 or 2 City cards to one other player anywhere on the board.',travel_day_night:'Move a pawn to any city on the board (with permission).',when_plans_were_good:'Take 1 Event card from the Player Discard Pile and play it immediately.'};
+const DISEASES={black:'Malaria',yellow:'Yellow fever',red:'Typhus',blue:'Cholera'};
+const HIST_TEXT={black:'Malaria — new infections are more severe: when infecting with black, whenever you would put 1 black cube into a city that has no black cubes, add 2 black cubes instead.',red:'Typhus — harder to treat in larger populations: if there is more than 1 red cube in a city, removing a red cube from it costs 2 actions.',blue:'Cholera — when blue outbreaks, in addition to a blue cube in each city 1 connection away, place a blue cube in each city 2 connections away that has no cubes (of any color).',yellow:'Yellow fever — when a yellow cube is placed in a port city, also place a yellow cube in every adjacent port city.'};
+const hist=(s,c)=>!!(s.challenges&&s.challenges.hist&&s.challenges.hist.includes(c));
+const influx=s=>!!(s.challenges&&s.challenges.influx);
 const SETUP={2:{events:4,hand:4},3:{events:5,hand:3},4:{events:6,hand:2},5:{events:8,hand:2}};
 const HAND_LIMIT=7;
 const handLimit=p=>p&&p.role==='time_traveler'?9:HAND_LIMIT;
@@ -1179,7 +1190,8 @@ function cardName(k){return C[k]?C[k].name:EVENTS[k]||(String(k).startsWith('epi
 function roleName(r){return ROLES[r]||r}
 function playerLabel(s,i){return roleName(s.players[i].role)}
 
-function initial(seed='iberia',difficulty=4,roles=['sailor','agronomist']){
+function initial(seed='iberia',difficulty=4,roles=['sailor','agronomist'],opts){
+ opts=opts||{};let hs=Array.isArray(opts.hist)?opts.hist:[];requireRule(hs.every(c=>COLORS.includes(c))&&new Set(hs).size===hs.length,'Unknown historical disease');
  requireRule([4,5,6].includes(difficulty),'Difficulty must be 4, 5 or 6');
  requireRule(Array.isArray(roles)&&roles.length>=2&&roles.length<=5,'Choose 2 to 5 players');
  requireRule(roles.every(r=>ROLES[r])&&new Set(roles).size===roles.length,'Each player needs a different standard role');
@@ -1189,8 +1201,9 @@ function initial(seed='iberia',difficulty=4,roles=['sailor','agronomist']){
   research:[],hospitals:Object.fromEntries(COLORS.map(c=>[c,null])),rails:[],railSupply:20,
   water:Object.fromEntries(MAP.regions.map(r=>[r.id,0])),waterSupply:14,prevention:null,
   cubes:Object.fromEntries(MAP.cities.map(c=>[c.id,Object.fromEntries(COLORS.map(k=>[k,0]))])),supply:Object.fromEntries(COLORS.map(c=>[c,24])),
-  outbreaks:0,rateIndex:0,infectionRemaining:0,infectionDrawn:0,infectionFromBottom:false,goodSeason:false,doubleRailUsed:false,revealed:[],gone:[],profUsed:false,ttStart:false,
+  outbreaks:0,rateIndex:0,challenges:{influx:!!opts.influx,hist:COLORS.filter(c=>hs.includes(c))},infectionRemaining:0,infectionDrawn:0,infectionFromBottom:false,goodSeason:false,doubleRailUsed:false,revealed:[],gone:[],profUsed:false,ttStart:false,
   pendingEpidemics:[],removed:[],discard:[],infectionDiscard:[],eventsInGame:[],unusedEvents:[],log:[],fx:[]};
+ if(s.challenges.influx){s.hospWater=Object.fromEntries(COLORS.map(c=>[c,2]));s.waterSupply=6}
  s.infectionDeck=shuffle(s,MAP.cities.map(c=>c.id));
  for(let amount of [3,2,1])for(let j=0;j<3;j++){let id=s.infectionDeck.shift();s.infectionDiscard.push(id);s.cubes[id][C[id].color]=amount;s.supply[C[id].color]-=amount}
  let ev=shuffle(s,Object.keys(EVENTS));s.eventsInGame=ev.slice(0,cfg.events).sort();s.unusedEvents=ev.slice(cfg.events);
@@ -1209,11 +1222,11 @@ function invariant(s){
  requireRule(Number.isInteger(s.actions)&&s.actions>=0&&s.actions<=40,'Invalid action budget');
  requireRule(Number.isInteger(s.outbreaks)&&s.outbreaks>=0&&s.outbreaks<=8,'Invalid outbreaks');
  requireRule(Number.isInteger(s.rateIndex)&&s.rateIndex>=0&&s.rateIndex<=6,'Invalid infection rate');
- let held=s.players.map(p=>p.hold).filter(Boolean);requireRule(s.waterSupply>=0&&s.waterSupply+Object.values(s.water).reduce((a,b)=>a+b,0)+held.reduce((a,h)=>a+h.water,0)===14,'Water conservation failure');
+ let held=s.players.map(p=>p.hold).filter(Boolean);requireRule(s.waterSupply>=0&&s.waterSupply+Object.values(s.water).reduce((a,b)=>a+b,0)+held.reduce((a,h)=>a+h.water,0)+Object.values(s.hospWater||{}).reduce((a,b)=>a+b,0)===14,'Water conservation failure');
  for(let h of held)requireRule((h.rail===0||h.rail===1)&&(h.water===0||h.water===1)&&Array.isArray(h.cubes)&&new Set(h.cubes).size===h.cubes.length&&h.cubes.every(c=>COLORS.includes(c)),'Invalid Student card');
  requireRule(Object.keys(s.water).length===34,'Wrong regions');
  for(let r of MAP.regions)requireRule(Number.isInteger(s.water[r.id])&&s.water[r.id]>=0,'Invalid water');
- for(let color of COLORS){requireRule(Number.isInteger(s.supply[color])&&s.supply[color]>=0,'Invalid cube supply');let total=s.supply[color]+held.reduce((a,h)=>a+h.cubes.filter(c=>c===color).length,0);for(let c of MAP.cities){let k=s.cubes[c.id][color];requireRule(Number.isInteger(k)&&k>=0&&k<=3,'Invalid city cubes');total+=k}requireRule(total===24,'Cube conservation failure')}
+ for(let color of COLORS){requireRule(Number.isInteger(s.supply[color])&&s.supply[color]>=0,'Invalid cube supply');let total=s.supply[color]+held.reduce((a,h)=>a+h.cubes.filter(c=>c===color).length,0);for(let c of MAP.cities){let k=s.cubes[c.id][color];requireRule(Number.isInteger(k)&&k>=0&&k<=3,'Invalid city cubes at '+C[c.id].name);total+=k}requireRule(total===24,'Cube conservation failure')}
  requireRule(s.railSupply>=0&&s.railSupply+s.rails.length+held.reduce((a,h)=>a+h.rail,0)===20,'Rail conservation failure');
  requireRule(new Set(s.rails).size===s.rails.length&&s.rails.every(k=>EDGES.has(k)&&EDGES.get(k).railway_allowed),'Invalid built railway');
  requireRule(new Set(s.research).size===s.research.length&&s.research.every(c=>COLORS.includes(c)),'Invalid research');
@@ -1244,6 +1257,9 @@ function relocate(s,seat,to,ctx,withCity,allowed){let q=s.players[seat],from=q.c
  if(q.role==='civil_engineer'){let o=allowed||ADJ[to];requireRule(!withCity||o.includes(withCity),'Not a valid connection');q.city2=withCity||choice(ctx,o,'Civil Engineer: stand on the connection between '+C[to].name+' and which city?',o.map(n=>C[to].name+' – '+C[n].name));s.log.push('Civil Engineer stands between '+C[to].name+' and '+C[q.city2].name)}
  if(q.role==='nurse'){let opts=C[to].region_ids.slice();s.prevention=choice(ctx,opts,'Nurse: choose the region for the prevention token next to '+C[to].name,opts.map(regionLabel));s.log.push('Prevention token → '+s.prevention)}}
 // Record a prevented cube on the alert that caused it (shown in the popup, then animated on the board).
+function placeHospital(s,color,city){s.hospitals[color]=city;
+ if(influx(s)){let hw=s.hospWater;if(hw&&hw[color]>0){s.waterSupply+=hw[color];s.log.push(hw[color]+' purification tokens released from under the '+color+' hospital');hw[color]=0}
+  let n=s.cubes[city][color];if(n>0){s.supply[color]+=n;s.cubes[city][color]=0;s.log.push(n+' '+color+' cube'+(n>1?'s':'')+' removed from '+C[city].name)}}}
 function noteBlocked(s,b){let f=s.fx&&s.fx[s.fx.length-1];if(!f)return;let list=f.blocked=f.blocked||[],e=list.find(x=>x.city===b.city&&x.by===b.by&&x.region===b.region);if(e){e.n++;e.left=b.left}else list.push({...b,n:1})}
 // One plain sentence per action; disease colours are named so the log shows which disease a hospital, cure or cube was about.
 function actionLog(s,p,cmd,from){let n=p.name,cn=k=>C[k]?C[k].name:k,col=k=>k?k[0].toUpperCase()+k.slice(1):'',t=cmd.type;
@@ -1258,21 +1274,52 @@ function actionLog(s,p,cmd,from){let n=p.name,cn=k=>C[k]?C[k].name:k,col=k=>k?k[
  if(t==='share')return n+(cmd.direction==='take'?' takes ':' gives ')+cn(from)+' ('+col(C[from].color)+') '+(cmd.direction==='take'?'from ':'to ')+s.players[cmd.other].name;
  return n+': '+t+(cmd.to?' → '+cn(cmd.to):'')}
 function protectedByNurse(s,id){return !!(s.prevention&&R[s.prevention].adjacent_cities.includes(id))}
-function placeCube(s,id,color,ctx,erupted,pend,from){
+function hospitalCity(s,id){return Object.values(s.hospitals).includes(id)}
+function placeCube(s,id,color,ctx,erupted,pend,from,second){
  if(erupted.has(id))return null;
  if(protectedByNurse(s,id)){s.log.push('Prevention token protects '+C[id].name);noteBlocked(s,{city:id,by:'nurse',region:s.prevention});return 'blocked'}
  let water=C[id].region_ids.filter(r=>s.water[r]>0);
  if(water.length){let r=choice(ctx,water,'Choose which purification token protects '+C[id].name,water.map(x=>regionLabel(x)+' (×'+s.water[x]+')'),{block:id});s.water[r]--;s.waterSupply++;s.log.push('Purification in '+regionLabel(r)+' protects '+C[id].name);noteBlocked(s,{city:id,by:'water',region:r,left:s.water[r]});return 'blocked'}
- if(s.cubes[id][color]===3){if(!pend.some(p=>p[0]===id))pend.push([id,from]);return 'full'}
+ if(s.cubes[id][color]===3){if(!pend.some(p=>p[0]===id))pend.push(influx(s)&&hospitalCity(s,id)?[id,from,'overrun',color]:[id,from,null,color]);return 'full'}
  if(s.supply[color]===0){lose(s,'no '+color+' cubes left');return null}
- s.cubes[id][color]++;s.supply[color]--;return 'placed'}
+ s.cubes[id][color]++;s.supply[color]--;
+ if(!second&&color==='yellow'&&hist(s,'yellow')&&C[id].port){s.log.push('Yellow fever: spreads to the port cities next to '+C[id].name);for(let n of ADJ[id])if(C[n].port&&s.status==='playing')placeCube(s,n,'yellow',ctx,erupted,pend,id,true)}
+ return 'placed'}
+// Influx of Patients: a hospital city with 4 patients of one color is overrun. The 4th cube goes in, then every cube of that color flees to adjacent cities.
+function overrun(s,id,color,ctx,erupted,pend,from){
+ if(s.cubes[id][color]===3){if(s.supply[color]===0){lose(s,'no '+color+' cubes left');return}s.cubes[id][color]++;s.supply[color]--}
+ erupted.add(id);let n=s.cubes[id][color];
+ s.log.push('Hospital overrun in '+C[id].name+': '+n+' '+color+' patients flee');
+ let ofx={kind:'overrun',city:id,color,count:n};pushFx(s,ofx);
+ for(let j=0;j<n&&s.status==='playing';j++){let to=choice(ctx,ADJ[id],'Overrun hospital in '+C[id].name+': where does the '+(j+1)+(['st','nd','rd'][j]||'th')+' '+color+' patient go?',ADJ[id].map(k=>C[k].name));
+  s.cubes[id][color]--;
+  if(s.cubes[to][color]>=3){s.supply[color]++;pend.push([to,id,null,color])}else{s.cubes[to][color]++}
+  s.log.push('A '+color+' patient moves from '+C[id].name+' to '+C[to].name)}
+ if(s.status!=='playing')return;
+ s.outbreaks++;s.log.push('Outbreak marker: '+s.outbreaks+' (overrun hospital)');if(s.outbreaks>=8)lose(s,'8 outbreaks')}
 function outbreak(s,id,color,ctx,erupted,pend,from){erupted.add(id);s.outbreaks++;s.log.push('Outbreak '+s.outbreaks+': '+C[id].name);let ofx={kind:'outbreak',city:id,color,count:s.outbreaks,from:from||null,chainIndex:erupted.size};pushFx(s,ofx);(erupted.fx=erupted.fx||[]).push(ofx);if(s.outbreaks>=8){lose(s,'8 outbreaks');return}
  // rulebook: place this outbreak's cubes first; chain reaction outbreaks happen after the current outbreak is done
- for(let n of ADJ[id]){if(s.status!=='playing')return;if(!erupted.has(n))placeCube(s,n,color,ctx,erupted,pend,id)}}
+ for(let n of ADJ[id]){if(s.status!=='playing')return;if(!erupted.has(n))placeCube(s,n,color,ctx,erupted,pend,id)}
+ if(color==='blue'&&hist(s,'blue')){let near=new Set([id,...ADJ[id]]),two=[];for(let n of ADJ[id])for(let m of ADJ[n])if(!near.has(m)&&!two.includes(m))two.push(m);
+  for(let m of two){if(s.status!=='playing')return;if(COLORS.every(k=>s.cubes[m][k]===0)){s.log.push('Cholera reaches '+C[m].name);placeCube(s,m,'blue',ctx,erupted,pend,id)}}}}
 function resolveInfection(s,id,amount,ctx){let color=C[id].color,erupted=new Set(),pend=[];s.log.push('Infect '+C[id].name+' ×'+amount);
- for(let j=0;j<amount&&s.status==='playing';j++){if(placeCube(s,id,color,ctx,erupted,pend,null)==='full')break}
- while(pend.length&&s.status==='playing'){let [n,f]=pend.shift();if(!erupted.has(n))outbreak(s,n,color,ctx,erupted,pend,f)}
+ let double=amount===1&&color==='black'&&hist(s,'black')&&s.cubes[id].black===0;
+ for(let j=0;j<amount&&s.status==='playing';j++){let r=placeCube(s,id,color,ctx,erupted,pend,null);if(r==='placed'&&double&&s.status==='playing'){s.log.push('Malaria: a second black cube in '+C[id].name);r=placeCube(s,id,color,ctx,erupted,pend,null,true)}if(r==='full')break}
+ while(pend.length&&s.status==='playing'){let [n,f,kind,col]=pend.shift();if(erupted.has(n))continue;if(kind==='overrun')overrun(s,n,col,ctx,erupted,pend,f);else outbreak(s,n,col||color,ctx,erupted,pend,f)}
  for(let f of erupted.fx||[]){f.chainTotal=erupted.fx.length;f.chain=erupted.fx.map(x=>x.city)}}
+// Influx of Patients: each hospital draws the nearest patient of its color one step closer (rails count as one step).
+function stepsTo(s,target,useRails){let nb=x=>useRails?[...new Set([...ADJ[x],...railReach(s,x)])]:ADJ[x],d={[target]:0},q=[target];while(q.length){let x=q.shift();for(let y of nb(x))if(d[y]==null){d[y]=d[x]+1;q.push(y)}}return d}
+function movePatients(s,ctx){
+ for(let color of COLORS){let h=s.hospitals[color];if(!h||s.status!=='playing')continue;
+  let line=stepsTo(s,h,false),fast=stepsTo(s,h,true);
+  let info=MAP.cities.map(c=>c.id).filter(id=>id!==h&&s.cubes[id][color]>0).map(id=>({id,d:line[id],dests:[...new Set([...ADJ[id],...railReach(s,id)])].filter(n=>fast[n]===fast[id]-1&&(n===h||s.cubes[n][color]<3))})).filter(x=>x.dests.length&&x.d!=null);
+  if(!info.length){s.log.push('No '+color+' patient can move toward the '+color+' hospital in '+C[h].name);continue}
+  let best=Math.min(...info.map(x=>x.d)),tie=info.filter(x=>x.d===best);
+  let from=choice(ctx,tie.map(x=>x.id),'Move which '+color+' patient one step toward the '+color+' hospital in '+C[h].name+'?',tie.map(x=>C[x.id].name));
+  let t=tie.find(x=>x.id===from),to=choice(ctx,t.dests,'Where does the '+color+' patient from '+C[from].name+' go?',t.dests.map(x=>C[x].name));
+  pushFx(s,{kind:'patient',color,from,to,hospital:h});
+  s.cubes[from][color]--;s.cubes[to][color]++;s.log.push('A '+color+' patient moves from '+C[from].name+' to '+C[to].name+' (toward '+C[h].name+')');
+  if(to===h&&s.cubes[h][color]>=4){let erupted=new Set(),pend=[];overrun(s,h,color,ctx,erupted,pend,null);while(pend.length&&s.status==='playing'){let [n,f,k2,col]=pend.shift();if(!erupted.has(n))outbreak(s,n,col||color,ctx,erupted,pend,f)}for(let f of erupted.fx||[]){f.chainTotal=erupted.fx.length;f.chain=erupted.fx.map(x=>x.city)}}}}
 function beginInfectionStep(s){s.phase='infection';s.infectionDrawn=0;if(s.revealed&&s.revealed.length){s.infectionRemaining=s.revealed.length;s.infectionFromBottom=false}else if(s.goodSeason){s.goodSeason=false;s.infectionRemaining=1;s.infectionFromBottom=true;s.log.push('Good Season: one Infection card from the bottom')}else{s.infectionRemaining=RATE[s.rateIndex];s.infectionFromBottom=false}}
 function epidemic(s,ctx){let card=s.pendingEpidemics.shift();requireRule(card,'No epidemic pending');s.removed.push(card);s.rateIndex=Math.min(6,s.rateIndex+1);let id=s.infectionDeck.pop();s.log.push('Epidemic: infection rate '+RATE[s.rateIndex]+'; bottom card '+C[id].name);pushFx(s,{kind:'epidemic',city:id,rate:RATE[s.rateIndex],rateIndex:s.rateIndex});resolveInfection(s,id,3,ctx);s.infectionDiscard.push(id);if(s.status!=='playing')return;s.infectionDeck=[...shuffle(s,s.infectionDiscard),...s.infectionDeck];s.infectionDiscard=[];if(s.pendingEpidemics.length)s.phase='epidemic';else if(s.ttStart){s.ttStart=false;s.phase='actions';revealInfection(s)}else beginInfectionStep(s)}
 function endTurn(s,ctx){s.active=(s.active+1)%s.players.length;s.turn++;s.actions=4;s.phase='actions';s.doubleRailUsed=false;s.profUsed=false;s.infectionFromBottom=false;s.log.push('Turn '+s.turn+': '+playerLabel(s,s.active));startTurn(s,ctx)}
@@ -1318,7 +1365,7 @@ function movePawn(s,seat,m,ctx,free){let q=s.players[seat],from=q.city;if(q.role
 function playEvent(s,seat,card,a,ctx,fromDiscard){let q=s.players[seat];a=a||{};
  if(card==='good_season'){if(s.revealed&&s.revealed.length&&s.infectionDrawn===0){s.infectionDeck.unshift(...s.revealed);s.revealed=[s.infectionDeck.pop()];if(s.phase==='infection')s.infectionRemaining=1;s.log.push('Good Season: only one Infection card, from the bottom')}else if(s.phase==='infection'&&s.infectionDrawn===0){s.infectionRemaining=1;s.infectionFromBottom=true;s.log.push('Good Season applies to this infection step')}else s.goodSeason=true}
  else if(card==='government_mobilization'){let moves=a.moves||[];requireRule(Array.isArray(moves),'Invalid moves');let seen=new Set();for(let m of moves){if(!m)continue;requireRule(seatOk(s,m.seat)&&!seen.has(m.seat),'Each player moves at most once');seen.add(m.seat);requireRule(['carriage','train','ship'].includes(m.type),'Choose carriage, train or ship');movePawn(s,m.seat,{type:m.type,to:m.to,card:m.card},ctx,true)}}
- else if(card==='hospital_founding'){requireRule(C[a.city],'Choose a city');s.hospitals[C[a.city].color]=a.city;s.log.push(C[a.city].color[0].toUpperCase()+C[a.city].color.slice(1)+' hospital now in '+C[a.city].name)}
+ else if(card==='hospital_founding'){requireRule(C[a.city],'Choose a city');placeHospital(s,C[a.city].color,a.city);s.log.push(C[a.city].color[0].toUpperCase()+C[a.city].color.slice(1)+' hospital now in '+C[a.city].name)}
  else if(card==='mail_correspondence'){requireRule(seatOk(s,a.seatA)&&seatOk(s,a.seatB)&&a.seatA!==a.seatB,'Choose two different players');requireRule(a.consent===true,'Both players must agree');let A=s.players[a.seatA],B=s.players[a.seatB];requireRule(A.hand.includes(a.cardA)&&B.hand.includes(a.cardB),'Each player must offer a card from hand');requireRule(!(a.seatA===seat&&a.cardA===card)&&!(a.seatB===seat&&a.cardB===card),'Cannot swap the Event being played');take(A,a.cardA);take(B,a.cardB);A.hand.push(a.cardB);B.hand.push(a.cardA)}
  else if(card==='new_rails'||card==='ring_railroads'){let max=card==='new_rails'?2:3,routes=a.routes||[];requireRule(Array.isArray(routes)&&routes.length>=1&&routes.length<=max&&new Set(routes).size===routes.length,'Choose 1 to '+max+' different routes');requireRule(routes.length<=s.railSupply,'Not enough railroad tokens');for(let k of routes){if(card==='ring_railroads'){let [x,y]=k.split('|');requireRule(C[x]?.port&&C[y]?.port,'Ring Railroads must connect two port cities')}buildRail(s,k)}}
  else if(card==='one_more_day'){requireRule(s.phase==='actions','One More Day must be played during the action step');s.actions+=2}
@@ -1338,7 +1385,7 @@ const FREE=new Set(['stbuild','stwater','sttreat']);
 function act(s,p,cmd,from,ctx){
    if(cmd.type==='build'){let k;if(p.role==='civil_engineer'){requireRule(inCity(p,cmd.to)&&!cmd.to2,'The Civil Engineer builds only on the connection his pawn stands on');k=edgeKey(p.city,p.city2)}else k=edgeKey(from,cmd.to);buildRail(s,k);if(cmd.to2){requireRule(p.role==='railwayman'&&!s.doubleRailUsed,'Only the Railwayman, once per turn, may build two consecutive railroads');requireRule(cmd.to2!==from,'Second railroad must continue onward');buildRail(s,edgeKey(cmd.to,cmd.to2));s.doubleRailUsed=true;reactStudents(s,p,{rail:[from,cmd.to,cmd.to2]},ctx)}else reactStudents(s,p,{rail:k.split('|')},ctx)}
    else if(cmd.type==='treat'){requireRule(COLORS.includes(cmd.color)&&s.cubes[from][cmd.color]>0,'No cube of that color here');s.cubes[from][cmd.color]--;s.supply[cmd.color]++;let gone=[{city:from,color:cmd.color}];if(cmd.extra){requireRule(p.role==='rural_doctor','Only the Rural Doctor removes an extra cube');let x=cmd.extra,near=C[from].region_ids.flatMap(r=>R[r].adjacent_cities);requireRule(C[x.city]&&(x.city===from||near.includes(x.city)),'Extra cube must be in your city or a city in an adjacent region');requireRule(COLORS.includes(x.color)&&s.cubes[x.city][x.color]>0,'No such cube for the extra removal');s.cubes[x.city][x.color]--;s.supply[x.color]++;gone.push({city:x.city,color:x.color})}reactStudents(s,p,{cubes:gone},ctx)}
-   else if(cmd.type==='hospital'){spend(s,p,from);s.hospitals[C[from].color]=from}
+   else if(cmd.type==='hospital'){spend(s,p,from);placeHospital(s,C[from].color,from)}
    else if(cmd.type==='share'){requireRule(cmd.consent===true,'Other player must agree');requireRule(seatOk(s,cmd.other)&&cmd.other!==s.active&&inCity(s.players[cmd.other],from),'The other player must be in your city');requireRule(cmd.direction==='give'||cmd.direction==='take','Choose give or take');let o=s.players[cmd.other],giver=cmd.direction==='take'?o:p,receiver=cmd.direction==='take'?p:o;take(giver,from);receiver.hand.push(from)}
    else if(cmd.type==='pgive'){requireRule(p.role==='politician','Politician only');requireRule(seatOk(s,cmd.other)&&cmd.other!==s.active,'Choose another player');requireRule(cmd.consent===true,'Receiver must agree');take(p,from);s.players[cmd.other].hand.push(from)}
    else if(cmd.type==='pswap'){requireRule(p.role==='politician','Politician only');requireRule(C[cmd.card]&&p.hand.includes(cmd.card),'Choose a City card in hand');let i=s.discard.indexOf(cmd.take);requireRule(C[cmd.take]&&i>=0,'Choose a City card in the discard pile');requireRule(cmd.card===from||cmd.take===from,'You must be in a city matching one of the swapped cards');s.discard.splice(i,1);take(p,cmd.card);s.discard.push(cmd.card);p.hand.push(cmd.take)}
@@ -1365,17 +1412,17 @@ function transact(state,cmd){let s=CP(state),ctx={choices:cmd.choices||[],index:
   if(q.role==='professor'){let near=new Set(C[q.city].region_ids.flatMap(r=>R[r].adjacent_cities).map(k=>C[k].color));requireRule(q.hand.some(k=>C[k]&&near.has(C[k].color)),'The University Professor needs a City card matching the color of a city in an adjacent region to play an Event')}
   if(own)q.event=null;else take(q,cmd.card);s.log.push(q.name+' plays '+EVENTS[cmd.card]);playEvent(s,cmd.seat,cmd.card,cmd.args,ctx,false);if(q.role==='professor')(own?s.gone:s.removed).push(cmd.card);else s.discard.push(cmd.card)}
  else{requireRule(s.phase!=='setup','Choose starting locations first');if(cmd.type!=='epidemic')requireRule(fullHands(s).length===0,'Resolve all hands above seven before continuing');
-  if(cmd.type==='draw'){requireRule(s.phase==='actions','Not in action phase');if(p.role==='time_traveler'){s.actions=0;s.log.push(p.name+' ends the actions');beginInfectionStep(s)}else if(s.playerDeck.length<2){lose(s,'not enough Player cards to draw')}else{let drawn=s.playerDeck.splice(0,2);pushFx(s,{kind:'playerDraw',cards:drawn.slice(),seat:s.active});for(let card of drawn){if(card.startsWith('epidemic_'))s.pendingEpidemics.push(card);else p.hand.push(card)}s.log.push(p.name+' draws '+drawn.map(cardName).join(', '));s.actions=0;if(s.pendingEpidemics.length)epidemic(s,ctx);else beginInfectionStep(s)}}
+  if(cmd.type==='draw'){requireRule(s.phase==='actions','Not in action phase');if(influx(s)){movePatients(s,ctx);if(s.status!=='playing'){s.fx.forEach((f,i)=>f.after=i+1<s.fx.length?s.fx[i+1].pre:JSON.parse(JSON.stringify(s.cubes)));invariant(s);return s}}if(p.role==='time_traveler'){s.actions=0;s.log.push(p.name+' ends the actions');beginInfectionStep(s)}else if(s.playerDeck.length<2){lose(s,'not enough Player cards to draw')}else{let drawn=s.playerDeck.splice(0,2);pushFx(s,{kind:'playerDraw',cards:drawn.slice(),seat:s.active});for(let card of drawn){if(card.startsWith('epidemic_'))s.pendingEpidemics.push(card);else p.hand.push(card)}s.log.push(p.name+' draws '+drawn.map(cardName).join(', '));s.actions=0;if(s.pendingEpidemics.length)epidemic(s,ctx);else beginInfectionStep(s)}}
   else if(cmd.type==='epidemic'){requireRule(s.phase==='epidemic','No pending epidemic');epidemic(s,ctx)}
   else if(cmd.type==='infect'){requireRule(s.phase==='infection'&&s.infectionRemaining>0,'No infection due');let id=s.revealed&&s.revealed.length?s.revealed.shift():s.infectionFromBottom?s.infectionDeck.pop():s.infectionDeck.shift();pushFx(s,{kind:'infection',city:id});resolveInfection(s,id,1,ctx);s.infectionDiscard.push(id);s.infectionRemaining--;s.infectionDrawn++;if(s.status==='playing'&&s.infectionRemaining===0)endTurn(s,ctx)}
-  else{requireRule(s.phase==='actions'&&s.actions>0,'No action available');let from=p.city;
+  else{requireRule(s.phase==='actions'&&s.actions>0,'No action available');let from=p.city,cost=1;
    if(['carriage','train','ship'].includes(cmd.type))movePawn(s,s.active,cmd,ctx,false);
    else{if(p.city2&&cmd.type!=='build'){let ok=locs(p).filter(c=>{let t=CP(s);try{act(t,t.players[t.active],cmd,c,{choices:[],index:0});return true}catch(e){return !!e.needChoice}});if(ok.length)from=ok.length===1?ok[0]:ok.includes(cmd.at)?cmd.at:choice(ctx,ok,'Civil Engineer: act in which city?',ok.map(k=>C[k].name))}
-    act(s,p,cmd,from,ctx)}
-   if(!FREE.has(cmd.type))s.actions--;
+    cost=cmd.type==='treat'&&hist(s,'red')&&cmd.color==='red'&&s.cubes[from]&&s.cubes[from].red>1?2:1;requireRule(s.actions>=cost,'Removing a red cube from a city with 2 or more costs 2 actions (Typhus)');act(s,p,cmd,from,ctx)}
+   if(!FREE.has(cmd.type))s.actions-=cost;
    s.log.push(actionLog(s,p,cmd,from))}}
  s.fx.forEach((f,i)=>f.after=i+1<s.fx.length?s.fx[i+1].pre:JSON.parse(JSON.stringify(s.cubes)));invariant(s);return s}
-if(false)module.exports={VERSION,handLimit,locs,inCity,COLORS,RATE,C,R,EDGES,ADJ,ROLES,ROLE_TEXT,EVENTS,EVENT_TEXT,SETUP,HAND_LIMIT,edgeKey,initial,invariant,transact,railReach,fullHands,cardName,CP,hash};
+if(false)module.exports={DISEASES,HIST_TEXT,VERSION,handLimit,locs,inCity,COLORS,RATE,C,R,EDGES,ADJ,ROLES,ROLE_TEXT,EVENTS,EVENT_TEXT,SETUP,HAND_LIMIT,edgeKey,initial,invariant,transact,railReach,fullHands,cardName,CP,hash};
 
 // Iberia prototype UI v0.10
 const UI_VERSION='0.10.7',$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',MAP_SIGNATURE=hash(JSON.stringify(MAP)).toString(16);
@@ -1541,7 +1588,7 @@ function readyToGo(){if(!mode||!canAct()||busy)return false;let p=state.players[
  if(mode==='pswap')return o.filter(c=>c.take===sel.swapTake).length===1;
  if(mode==='research')return p.hand.filter(k=>C[k]&&C[k].color===sel.color).length===5;
  return false}
-async function treatCube(k,at){if(!canAct()||busy||cubeView||mapPick)return;let p=state.players[state.active],c=(legal[mode==='sttreat'?'sttreat':'treat']||[]).find(x=>x.color===k);if(!c)return;if(p.role==='rural_doctor'&&mode!=='sttreat'){mode='treat';sel.color=k;sel.extra='';sel.extraChosen=false;selectedCards=[];render();return}await perform(at&&p.city2&&p.role!=='rural_doctor'?{...c,at}:{...c})}
+async function treatCube(k,at){if(!canAct()||busy||cubeView||mapPick)return;let p=state.players[state.active],c=(legal[mode==='sttreat'?'sttreat':'treat']||[]).find(x=>x.color===k);if(!c){if(k==='red'&&hist(state,'red')&&p.city&&state.cubes[p.city].red>1&&state.actions===1&&state.phase==='actions')notice('Typhus: removing a red cube from a city with 2 or more costs 2 actions, and you have 1 left.',true);return}if(p.role==='rural_doctor'&&mode!=='sttreat'){mode='treat';sel.color=k;sel.extra='';sel.extraChosen=false;selectedCards=[];render();return}await perform(at&&p.city2&&p.role!=='rural_doctor'?{...c,at}:{...c})}
 async function goNow(){if(!mode||!canAct()||busy)return;let cmd=await makeCmd();if(cmd)perform(cmd)}
 async function autoGo(){if(!readyToGo())return;let cmd=await makeCmd();if(cmd)perform(cmd)}
 function check(label,checked,onchange,parent){let l=el('label',{className:'check'},parent),c=el('input',{type:'checkbox',checked},l);el('span',{textContent:label},l);c.onchange=()=>onchange(c.checked);return c}
@@ -1757,6 +1804,8 @@ function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();bo
   let path=el('div',{className:'chainPath'},a);f.chain.forEach((k,n)=>{if(n)el('span',{className:'arr',textContent:'→'},path);el('span',{className:'step',textContent:C[k].name},path)});
   el('p',{textContent:'Outbreaks: '+(f.count+f.chainTotal-1)+' / 8'},a);dur=3200;playSound('outbreak');for(let n=1;n<f.chainTotal;n++)setTimeout(()=>playSound('outbreak'),260*n)}
  else if(f.kind==='outbreak'){let a=el('div',{className:'alert outbreak'},b);let ban=asset('alerts/outbreak');if(ban)el('img',{className:'banner',src:ban},a);let h=el('h3',{},a);el('img',{className:'tok',src:tokenImg('outbreak')},h);h.append('Outbreak');el('p',{textContent:C[f.city].name+' · '+f.color+' disease'},a);el('p',{textContent:'Outbreaks: '+f.count+' / 8'},a);dur=2800;playSound('outbreak')}
+ else if(f.kind==='overrun'){let a=el('div',{className:'alert overrun'},b);let h=el('h3',{textContent:'Hospital overrun'},a);let ph=tokenImg('hospital-'+f.color);if(ph)h.prepend(Object.assign(el('img',{className:'tok',src:ph}),{}));el('p',{textContent:C[f.city].name+' · '+f.count+' '+f.color+' patients flee to the neighbouring cities.'},a);el('p',{textContent:'An outbreak is marked on the track.'},a);dur=3200;playSound('outbreak')}
+ else if(f.kind==='patient'){let a=el('div',{className:'alert patient'},b);let h=el('h3',{textContent:'Patient on the move'},a);let ph=tokenImg('hospital-'+f.color);if(ph)h.prepend(el('img',{className:'tok',src:ph}));el('p',{textContent:'A '+f.color+' patient goes from '+C[f.from].name+' to '+C[f.to].name+', toward the '+f.color+' hospital in '+C[f.hospital].name+'.'},a);dur=2200;playSound('move')}
  else if(f.kind==='end'){let a=el('div',{className:'alert'+(state.status==='won'?' win':'')},b);el('h3',{textContent:state.status==='won'?'Victory':'Defeat'},a);el('p',{textContent:f.text},a);dur=6000;playSound(state.status==='won'?'win':'lose')}
  if(f.blocked)blockedNote(f,b);
  let sticky=f.kind==='outbreak'||f.kind==='end'||speed===0||(f.blocked&&speed<0),ms=dur*(speed>0?speed:1);
@@ -1792,7 +1841,7 @@ function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[
 function resetFx(){afterFx=[];microHide.clear();fxDoneMicro.clear();stopPawnFlights();stopRailFlights();turnFlash=false;holdActive=null;clearTimeout(fxTimer);trackView=null;fxQueue=[];fxCurrent=null;if(flyTimer){clearTimeout(flyTimer);flyTimer=null}flyTarget=null;$('flyers').replaceChildren();cubeView=null;$('fx').replaceChildren();$('fx').className=''}
 
 /* ---------- hands ---------- */
-function drawSupply(){if(bmOn){let cc=$('cubeCounts');cc.replaceChildren();for(let k of COLORS){let t=el('span',{className:'cc',title:'Cubes left, '+k},cc),src=asset('tokens/cube-'+k);if(src)el('img',{src,alt:k},t);else el('i',{style:'background:'+DISEASE[k]},t);el('b',{textContent:String(state.supply[k])},t)}}
+function drawSupply(){if(bmOn){let cc=$('cubeCounts');cc.replaceChildren();for(let k of COLORS){let t=el('span',{className:'cc',title:'Cubes left, '+k+(hist(state,k)?'. '+HIST_TEXT[k]:'')},cc),src=asset('tokens/cube-'+k);if(src)el('img',{src,alt:k},t);else el('i',{style:'background:'+DISEASE[k]},t);el('b',{textContent:String(state.supply[k])},t)}}
  for(let im of document.querySelectorAll('#resources img[data-tok]')){let src=tokenImg(im.dataset.tok);if(src&&im.getAttribute('src')!==src)im.src=src;im.hidden=!src}
  let cs=$('cubeSupply');cs.replaceChildren();el('span',{className:'lbl',textContent:'Cubes left'},cs);for(let k of COLORS){let t=el('span',{className:'t',title:'Cubes left, '+k+': '+state.supply[k]},cs);let src=asset('tokens/cube-'+k);if(src)el('img',{src,alt:k,className:'cube-'+k},t);else el('i',{style:'display:inline-block;width:12px;height:12px;border-radius:2px;background:'+DISEASE[k]},t);t.append(String(state.supply[k]))}
  let rs=$('researchStatus');rs.replaceChildren();el('span',{className:'lbl',textContent:'Researched'},rs);for(let k of COLORS){let done=state.research.includes(k),src=asset('tokens/research-'+k),t=el('span',{className:'t',title:k+(done?' researched':' not researched yet')},rs);if(src)el('img',{src,alt:k,className:done?'':'off'},t);else{t.textContent=k;if(!done)t.style.opacity=.4}}}
@@ -1864,7 +1913,7 @@ function drawAction(){let box=$('actionButtons');box.replaceChildren();pickSet=n
  if(mode==='agronomist')$('actionHint').textContent='Place one purification token. No card required.';
  if(mode==='purify')$('actionHint').textContent='Places up to '+(p.role==='agronomist'?3:2)+' tokens ('+state.waterSupply+' left in supply).';
  if(pickHint)$('actionHint').textContent=pickHint+($('actionHint').textContent?' '+$('actionHint').textContent:'');
- $('confirm').hidden=false;$('confirm').textContent=mode==='peek'?'Confirm order · uses 1 action':LABEL[mode]+(FREEA.has(mode)?' · free':' · 1 action');$('confirm').disabled=mode==='research'&&selectedCards.length!==5;if(bmOn&&edge2.length)$('confirm').textContent='Build just one token · 1 action'}
+ $('confirm').hidden=false;$('confirm').textContent=mode==='peek'?'Confirm order · uses 1 action':LABEL[mode]+(FREEA.has(mode)?' · free':mode==='treat'&&sel.color==='red'&&hist(state,'red')&&state.players[state.active].city&&state.cubes[state.players[state.active].city].red>1?' · 2 actions (Typhus)':' · 1 action');$('confirm').disabled=mode==='research'&&selectedCards.length!==5;if(bmOn&&edge2.length)$('confirm').textContent='Build just one token · 1 action'}
 async function makeCmd(){let p=state.players[state.active],cmd={type:mode};
  if(['carriage','train','ship','build','stbuild'].includes(mode))cmd.to=sel.to;
  if(mode==='ship'&&p.role!=='sailor')cmd.card=selectedCards[0];
@@ -1959,7 +2008,7 @@ function render(){if(bmOn){if(mode!==lastMode){lastMode=mode;modeState=state}els
  $('phaseLabel').textContent=state.phase;$('footer').textContent='Player deck '+state.playerDeck.length+' · infection deck '+state.infectionDeck.length+' · Events in game: '+state.eventsInGame.map(k=>EVENTS[k]).join(', ')+' · seed '+state.seed+' · v'+UI_VERSION;
  $('outbreaks').textContent=shownOut()+'/8';$('rate').textContent=RATE[shownRate()];$('railsSupply').textContent=state.railSupply;$('waterSupply').textContent=state.waterSupply;drawSupply();
  let flags=[];if(state.goodSeason)flags.push('Good Season pending: next infection step draws 1 bottom card');if(state.phase==='infection'&&state.infectionFromBottom)flags.push('Good Season: drawing from the bottom');if(state.doubleRailUsed)flags.push('Railwayman double build used this turn');$('flags').textContent=flags.join(' · ');
- let np=$('nextPhase');np.hidden=['setup','ended'].includes(state.phase)||!mine(state.active);np.disabled=holdActive!=null||!!fxCurrent||fxQueue.length>0||fullHands(state).length>0&&state.phase!=='epidemic';np.textContent=state.phase==='actions'?(p.role==='time_traveler'?'End actions and start infection step':'End actions and draw cards'):state.phase==='epidemic'?'Resolve next Epidemic':'Infect next city · '+state.infectionRemaining+' left';
+ let np=$('nextPhase');np.hidden=['setup','ended'].includes(state.phase)||!mine(state.active);np.disabled=holdActive!=null||!!fxCurrent||fxQueue.length>0||fullHands(state).length>0&&state.phase!=='epidemic';np.textContent=state.phase==='actions'?(p.role==='time_traveler'?(influx(state)?'End actions, move patients and start infection step':'End actions and start infection step'):(influx(state)?'End actions, move patients and draw cards':'End actions and draw cards')):state.phase==='epidemic'?'Resolve next Epidemic':'Infect next city · '+state.infectionRemaining+' left';
  fitLayout();drawAction();if(bmOn&&mode&&mode!=='peek'&&canAct())el('button',{className:'cancelMode',textContent:'Cancel',onclick:()=>{mode='';selectedCards=[];render()}},$('actionForm'));onlineHint();drawHands();paint();positionRing()}
 
 /* ---------- events ---------- */
@@ -2016,7 +2065,7 @@ $('menuButton').onclick=()=>{drawRoleFields();syncChips();showDialog('menu')};
 // Summary shown at the top of the log (final results once the game has ended) and written into the saved log file.
 function gameStats(){let cap=k=>k[0].toUpperCase()+k.slice(1),end=state.status!=='playing',res=state.research.map(cap).join(', ')||'none',cubes=COLORS.map(k=>cap(k)+' '+state.supply[k]).join(' · ');
  let head=state.status==='won'?'Victory — all four diseases researched':state.status==='playing'?'Game in progress':'Defeat — '+state.status.replace('lost: ','');
- return {title:end?'Final results: '+head:'Game so far',rows:[['Turn',state.turn],['Outbreaks',state.outbreaks+' of 8'],['Infection rate',RATE[state.rateIndex]],['Diseases researched',state.research.length+' of 4 ('+res+')'],['Cubes left in supply',cubes],['Hospitals',COLORS.filter(k=>state.hospitals[k]).map(k=>cap(k)+' in '+C[state.hospitals[k]].name).join(' · ')||'none'],['Railroads built',state.rails.length],['Purification tokens left',state.waterSupply],['Player deck left',state.playerDeck.length],['Players',state.players.map(q=>q.name===roleName(q.role)?q.name:q.name+' ('+roleName(q.role)+')').join(' · ')],['Seed',state.seed]]}}
+ return {title:end?'Final results: '+head:'Game so far',rows:[['Turn',state.turn],['Outbreaks',state.outbreaks+' of 8'],['Infection rate',RATE[state.rateIndex]],['Diseases researched',state.research.length+' of 4 ('+res+')'],['Cubes left in supply',cubes],['Hospitals',COLORS.filter(k=>state.hospitals[k]).map(k=>cap(k)+' in '+C[state.hospitals[k]].name).join(' · ')||'none'],['Railroads built',state.rails.length],['Purification tokens left',state.waterSupply],...(challengeText(state.challenges)?[['Challenges',challengeText(state.challenges)]]:[]),['Player deck left',state.playerDeck.length],['Players',state.players.map(q=>q.name===roleName(q.role)?q.name:q.name+' ('+roleName(q.role)+')').join(' · ')],['Seed',state.seed]]}}
 const REWIND_KEY='iberia-before-rewind';
 function rewindBackup(){try{let b=JSON.parse(localStorage.getItem(REWIND_KEY)||'null');return b&&b.state&&b.state.seed===state.seed?b:null}catch(e){return null}}
 function applyEnvelope(o){state=o.state;commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';selectedCards=[];resetFx();recompute();render();autosave()}
@@ -2024,7 +2073,7 @@ function computeRewind(idx,line){
  if(!(idx>=0&&idx<state.log.length)||(line!=null&&state.log[idx]!==line))return {ok:false,error:'That point in the game is no longer there'};
  let m=/^Turn (\d+)/.exec(state.log[idx]);if(!m)return {ok:false,error:'You can go back to the start of a turn'};
  let s,k=-1,keep=null;
- try{s=initial(state.seed,state.difficulty,state.players.map(p=>p.role));if(s.log.length>idx){k=0;keep=s}
+ try{s=initial(state.seed,state.difficulty,state.players.map(p=>p.role),state.challenges);if(s.log.length>idx){k=0;keep=s}
   for(let i=0;i<commands.length;i++){s=transact(s,commands[i]);if(k<0&&s.log.length>idx){k=i+1;keep=s}}
  }catch(e){return {ok:false,error:'Could not replay this game from the beginning ('+(e.message||'unknown problem')+'). Nothing was changed.'}}
  if(JSON.stringify(s)!==JSON.stringify(state)||!keep)return {ok:false,error:'Replaying the saved moves did not reproduce this game exactly, so going back is not safe here. Nothing was changed.'};
@@ -2046,11 +2095,19 @@ function logText(){let g=gameStats();return 'Iberia game log\n'+g.title+'\n'+g.r
 function saveLog(){let u=URL.createObjectURL(new Blob([logText()],{type:'text/plain'})),a=el('a',{href:u,download:'iberia-log-turn'+state.turn+'.txt'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 $('logButton').onclick=()=>{let box=$('logContent');box.replaceChildren();{let g=gameStats(),sb=el('div',{className:'statsBox'+(state.status!=='playing'?' final':'')},box);el('h3',{textContent:g.title},sb);for(let [k,v] of g.rows){let r=el('div',{className:'statRow'},sb);el('b',{textContent:k},r);el('span',{textContent:String(v)},r)}el('button',{type:'button',textContent:'Save log as a text file',onclick:saveLog},sb);if(!Net.active&&rewindBackup())el('button',{type:'button',textContent:'Undo going back',onclick:undoRewind},sb)}let list=el('div',{className:'logList'},box),sub=false;let base=Math.max(0,state.log.length-250);for(let [li,t] of state.log.slice(-250).map((t,j)=>[base+j,t])){let lv;if(/^(Turn \d+:|New game|First player:)/.test(t)){lv=0;sub=false}else if(/^(Infect |Epidemic)/.test(t)){lv=1;sub=true}else if(sub&&/^(Outbreak \d|Purification in|Prevention token protects)/.test(t))lv=2;else{lv=1;sub=false}let ld=el('div',{className:'logL l'+lv,textContent:t},list);if(lv===0&&/^Turn \d+/.test(t)&&li<state.log.length-1&&state.status!=='setup'&&state.phase!=='setup')el('button',{type:'button',className:'rewindBtn',textContent:'↶ Back to here',title:'Go back to the start of this turn',onclick:()=>rewindToLine(li)},ld)}for(let [title,cards] of [['Player discard pile',state.discard],['Infection discard pile',state.infectionDiscard],['Events in this game',state.eventsInGame]]){el('h3',{textContent:title},box);el('p',{textContent:cards.map(cardName).join(' · ')||'Empty'},box)}el('h3',{textContent:'Roles'},box);for(let q of state.players)el('p',{textContent:roleName(q.role)+': '+ROLE_TEXT[q.role]},box);showDialog('logDialog');box.parentElement.scrollTop=0};
 let roleChoice=randRoles();
-function drawRoleFields(){let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++)field('Role '+(i+1),'role'+i,Object.entries(ROLES),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},box)}
+let chLocal={influx:false,hist:[]};
+function challengeText(c){c=c||{};let a=[];if(c.influx)a.push('Influx of Patients');for(let k of COLORS)if((c.hist||[]).includes(k))a.push(DISEASES[k]);return a.join(' · ')}
+function drawChallengeFields(box,opts,change,heading){box.replaceChildren();el('h4',{textContent:heading||'Challenges (optional)'},box);
+ let l=el('label',{className:'check',title:'Hospitals attract patients. Each turn, after your actions, every hospital draws the nearest patient of its color one step closer; a hospital with 4 patients is overrun. Starts with only 6 purification tokens; building a hospital frees the 2 under it and clears its color from the city.'},box);
+ let cb=el('input',{type:'checkbox',checked:!!opts.influx},l);l.append('Influx of Patients');cb.onchange=()=>{opts.influx=cb.checked;change()};
+ el('div',{className:'chSub',textContent:'Historical diseases (each one you choose behaves differently)'},box);let row=el('div',{className:'chRow'},box);
+ for(let k of COLORS){let li=el('label',{className:'check',title:HIST_TEXT[k]},row),c=el('input',{type:'checkbox',checked:(opts.hist||[]).includes(k)},li);li.append(DISEASES[k]);c.onchange=()=>{opts.hist=COLORS.filter(x=>x===k?c.checked:(opts.hist||[]).includes(x));change()}}
+ let rb=el('button',{type:'button',textContent:'Pick historical diseases at random',className:'chRandom'},box);rb.onclick=()=>{let n=1+Math.floor(Math.random()*4),pool=COLORS.slice().sort(()=>Math.random()-.5).slice(0,n);opts.hist=COLORS.filter(k=>pool.includes(k));change();drawChallengeFields(box,opts,change,heading)}}
+function drawRoleFields(){drawChallengeFields($('challengeBox'),chLocal,()=>{});let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++)field('Role '+(i+1),'role'+i,Object.entries(ROLES),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},box)}
 $('playerCount').onchange=drawRoleFields;
 for(let id of ['playerCount','difficulty','fxSpeed'])buttonize($(id));
 $('randomRoles').onclick=()=>{roleChoice=randRoles();drawRoleFields()};
-$('newGame').onclick=async()=>{if(Net.active){notice('You are in an online room. Use the Online button to leave it or go back to the lobby.',true);$('menu').close();return}if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;let seed=$('seed').value.trim()||newSeed();state=initial(seed,+$('difficulty').value,roleChoice.slice(0,n));roleChoice=randRoles();drawRoleFields();$('seed').value='';history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.')}catch(e){notice(e.message,true)}};
+$('newGame').onclick=async()=>{if(Net.active){notice('You are in an online room. Use the Online button to leave it or go back to the lobby.',true);$('menu').close();return}if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;let seed=$('seed').value.trim()||newSeed();state=initial(seed,+$('difficulty').value,roleChoice.slice(0,n),{influx:chLocal.influx,hist:chLocal.hist.slice()});roleChoice=randRoles();drawRoleFields();$('seed').value='';history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.'+(challengeText(state.challenges)?' Challenges: '+challengeText(state.challenges)+'.':''))}catch(e){notice(e.message,true)}};
 $('saveButton').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(envelope(),null,2)],{type:'application/json'})),a=el('a',{href:u,download:'iberia-save-v09-turn'+state.turn+'.json'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 function restore(o){requireRule(!Net.active,'You are in an online room. Leave it before loading a save.');requireRule(o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');invariant(o.state);state=o.state;if(o.settings)applySettings(o.settings,true);commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';resetFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
 $('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('menu').close()}$('loadFile').value=''};
@@ -2068,7 +2125,7 @@ $('sound').onchange=()=>setSound($('sound').checked);$('volume').oninput=()=>{sn
 // the Online dialog (host, join, seats, people), and the hooks net.js uses to run commands on this page.
 function safeStore(k){try{return window[k]}catch(e){return null}}
 function netSum(){return hash(JSON.stringify({...state,fx:undefined})).toString(16)}
-function startGameLocal(seed,difficulty,roles){state=initial(seed,difficulty,roles);history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();notice('Choose starting cities.')}
+function startGameLocal(seed,difficulty,roles,challenges){state=initial(seed,difficulty,roles,challenges);history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();notice('Choose starting cities.')}
 // Online play uses the relay server when an address is set (src/ice.json, or the Relay box in the Online dialog),
 // and otherwise falls back to direct browser-to-browser links, which many networks block.
 const p2pTransport=peerJsTransport();let relayCache=null;
@@ -2089,7 +2146,7 @@ const Net=createNet({
     loadState:(s,cmds)=>{invariant(s);state=s;history=[];commands=Array.isArray(cmds)?cmds:[];mode='';selectedCards=[];resetFx();recompute();render()},
     apply:cmd=>{let n;try{n=transact(state,cmd)}catch(e){return {ok:false,error:e.needChoice?'Incomplete choices':e.message}}try{commit(cmd,n,true)}catch(e){console.error(e)}return {ok:true,sum:netSum()}},
     checksum:netSum,
-    onStart:g=>startGameLocal(g.seed,g.difficulty,g.roles),
+    onStart:g=>startGameLocal(g.seed,g.difficulty,g.roles,g.challenges),
     ask:q=>ask(q),
     undo:undoLocal,undoLabel:()=>history.length?history[history.length-1].label:null
   }
@@ -2123,6 +2180,7 @@ function drawOnline(){
     let row=el('div',{className:'seatRow'},sb);
     let l1=el('label',{textContent:'Players'},row),s1=el('select',{},l1);for(let n=2;n<=5;n++)el('option',{value:n,textContent:n,selected:n===L.settings.players},s1);s1.onchange=()=>Net.setSettings({players:+s1.value});
     let l2=el('label',{textContent:'Epidemics'},row),s2=el('select',{},l2);for(let [v,t] of [[4,'4 · Introductory'],[5,'5 · Standard'],[6,'6 · Heroic']])el('option',{value:v,textContent:t,selected:v===L.settings.difficulty},s2);s2.onchange=()=>Net.setSettings({difficulty:+s2.value});
+    let cbox=el('div',{className:'challengeBox'},sb),co={influx:!!(L.settings.challenges&&L.settings.challenges.influx),hist:(L.settings.challenges&&L.settings.challenges.hist||[]).slice()};drawChallengeFields(cbox,co,()=>Net.setSettings({challenges:{influx:co.influx,hist:co.hist.slice()}}),'Challenges (optional)');
   }
   L.seats.forEach((owner,i)=>{
     let role=playing&&state.players[i]?state.players[i].role:L.settings.roles[i];

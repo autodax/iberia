@@ -432,3 +432,9 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 @keyframes cureShine{50%{color:#e8a317;text-shadow:0 0 10px #ffd54a}}
 @keyframes confetti{0%{transform:translate(0,0) rotate(0);opacity:1}70%{opacity:1}100%{transform:translate(var(--x),calc(var(--y) + 90px)) rotate(var(--r));opacity:0}}
 @media(prefers-reduced-motion:reduce){.alert.cure,.alert.cure *{animation:none!important}.alert.cure .confetti{display:none}}
+
+.challengeBox{margin:8px 0;padding:8px 10px;border:1px solid var(--tanBorder);border-radius:8px;background:#fff4;font-size:14px}
+.challengeBox h4{margin:0 0 4px;font-size:14px}.challengeBox .chSub{margin:6px 0 2px;font-weight:600;font-size:13px}
+.challengeBox .chRow{display:flex;flex-wrap:wrap;gap:2px 14px}.challengeBox .chRandom{margin-top:6px;font-size:13px}
+.alert.overrun{border-color:#7e1d14;background:#f6dcc8}.alert.patient{border-color:#8a6d1d;max-width:420px}
+.alert.overrun h3,.alert.patient h3{font-size:22px}.alert.overrun img.tok,.alert.patient img.tok{width:38px;height:38px}
