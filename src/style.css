@@ -448,3 +448,10 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .reachDot{fill:none;fill-opacity:0;stroke:#ffd93a;stroke-width:3px;filter:drop-shadow(0 0 2px #0009) drop-shadow(0 0 3px #ffc800);animation:reachPulse 3s ease-in-out infinite}
 @keyframes reachPulse{0%,100%{stroke-opacity:.3}50%{stroke-opacity:1}}
 @media (prefers-reduced-motion:reduce){.reachDot{animation:none;stroke-opacity:.9}}
+
+#choiceDialog.withCard:not(.mapPick){width:fit-content;max-width:min(420px,94vw)}
+#choiceDialog.withCard #choiceTitle{font-size:17px;margin-bottom:6px;text-align:center}
+#choiceCard{display:flex;justify-content:center;margin:4px 0 12px}
+#choiceCard[hidden]{display:none}
+#choiceCard .bigCard.art{width:min(calc(var(--aw,160px)*var(--cs,1.4)),36vh)}
+#choiceDialog.withCard #choiceOptions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
