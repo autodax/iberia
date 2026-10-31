@@ -1,4 +1,5 @@
 ## Latest
+- The play-or-discard question for an Event card shows the card (readable) again.
 - Map-input boxes now sit as close to the pawn as possible without covering anything you need to click (highlighted regions and cities), joined to the pawn by a line. Cancel/confirm-only boxes shrink to a pair of ring-style buttons.
 - Popups that close by themselves no longer have a green Continue button (click anywhere to dismiss); popups that wait for you, like outbreaks, keep it.
 - Event card alerts are smaller with less padding; the box under the pawn moves out of the way of highlighted cities and regions.
