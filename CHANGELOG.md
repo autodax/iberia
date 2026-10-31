@@ -1,4 +1,5 @@
 ## Latest
+- One More Day can now be played at the start of the infection step (e.g. when over the hand limit after drawing): 2 extra actions, then the same infection step continues without drawing again. City cards rebuilt from the original photos at higher resolution.
 - Card size slider recalibrated: 100% = size of the cards in the side panel, 200% = twice that; role/Event previews show just the card.
 - Moving: bigger click targets around each destination city and on its printed name; the ring now only fades (no size change).
 - Reachable cities glow bright yellow and pulse; University Professor card art replaced again (brighter).
