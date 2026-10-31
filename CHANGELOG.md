@@ -1,4 +1,5 @@
 ## Latest
+- Water-token and railroad-token counters on the board under the blue cube; hover counts on those tokens removed.
 - Instruction cards: back to the original pictures, now shown larger.
 - Sound after reloading a saved game in Safari: the audio engine is now only created on a real tap or click, and is rebuilt if Safari leaves it stuck.
 - Instruction cards (actions 1, 2 and the Play card) cleaned up: paper texture flattened so the text is easier to read.
