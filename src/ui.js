@@ -184,7 +184,8 @@ function check(label,checked,onchange,parent){let l=el('label',{className:'check
 function pawnIcon(role,parent,size=14){let s=svg('svg',{width:size,height:size*1.5,viewBox:'-15 -42 30 45'},parent);drawPawn(s,0,0,role,null,false);return s}
 
 /* ---------- choice / confirm dialog ---------- */
-let mapPick=null;
+let mapPick=null;function mapOnlyOk(){return !!state&&!!state.players[state.active]&&!!$('boardFrame')}
+function placePawnAlert(d){let bf=$('boardFrame').getBoundingClientRect(),w=bf.width,h=bf.height,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,pc=PAWN[state.players[state.active].role]||'#555',dw=Math.min(280,w-12);d.style.borderColor=pc;d.style.width=dw+'px';d.style.maxWidth=dw+'px';d.style.right='auto';d.style.bottom='auto';d.style.left=(bf.left+Math.max(6,Math.min(w-dw-6,fx-dw/2)))+'px';let dh=d.offsetHeight,top=fy+34;if(top+dh>h-6)top=Math.max(6,fy-34-dh);d.style.top=(bf.top+top)+'px'}
 // with no action chosen, clicking a reachable city moves there: carriage/boat at once (undoable); train or ship opens that action
 function quickMoves(){let m=new Map();if(mode||!canAct()||state.phase!=='actions')return m;for(let [t,label] of [['carriage','move here by carriage or boat (1 action)'],['train','move here by train'],['ship','move here by ship']])for(let c of legal[t]||[])if(c.to&&!m.has(c.to))m.set(c.to,{type:t,label});return m}
 async function quickMove(to){let q=quickMoves().get(to);if(!q)return;if(q.type==='carriage'){let c=(legal.carriage||[]).find(x=>x.to===to);await perform({...c});return}mode=q.type;sel.to=to;sel.to2='';delete sel.passenger;selectedCards=[];render();autoGo()}
@@ -194,11 +195,11 @@ let dlgClosedAt=0;
 async function dialogGap(){let t0=Date.now();while((fxCurrent||fxQueue.length)&&Date.now()-t0<20000)await new Promise(r=>setTimeout(r,150));let w=450-(Date.now()-dlgClosedAt);if(w>0&&dlgClosedAt)await new Promise(r=>setTimeout(r,w))}
 function chooseNow(title,options,labels,noCancel,card){return dialogGap().then(()=>new Promise(res=>{let d=$('choiceDialog');d.classList.toggle('noCancel',!!noCancel);let cc=$('choiceCard');cc.replaceChildren();cc.hidden=!card;d.classList.toggle('withCard',!!card);if(card)cc.appendChild(cardFace(card));$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();
  let kind=options.length&&options.every(o=>typeof o==='string'&&R[o])?'region':options.length&&options.every(o=>typeof o==='string'&&C[o])?'city':null;
- let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();dlgClosedAt=Date.now();d.classList.remove('mapPick');if(mapPick){mapPick=null;paint()}res(v)};
- box.classList.toggle('mapOnly',!!kind&&options.length>8);
+ let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();dlgClosedAt=Date.now();d.classList.remove('mapPick','pawnAlert');d.style.left=d.style.top=d.style.right=d.style.bottom='';if(mapPick){mapPick=null;paint()}res(v)};
+ box.classList.toggle('mapOnly',!!kind&&(options.length>8||bmOn));
  options.forEach((o,i)=>{let b=el('button',{textContent:labels?.[i]??o,onclick:()=>finish(o)},box);if(kind){b.onmouseenter=()=>{if(mapPick){mapPick.hover=o;paint()}};b.onmouseleave=()=>{if(mapPick){mapPick.hover=null;paint()}}}});
  $('choiceCancel').onclick=()=>finish(null);d.oncancel=e=>{e.preventDefault();if(!noCancel)finish(null)};
- if(kind){mapPick={kind,options:new Set(options),pick:finish,hover:null};d.classList.add('mapPick');el('p',{className:'mapHint',textContent:'Or click a highlighted '+(kind==='region'?'region':'city')+' on the map.'},box);d.show();paint()}else d.showModal()}))}
+ if(kind){mapPick={kind,options:new Set(options),pick:finish,hover:null};d.classList.add('mapPick');el('p',{className:'mapHint',textContent:(bmOn?'Click a highlighted ':'Or click a highlighted ')+(kind==='region'?'region':'city')+' on the map.'},box);d.show();if(bmOn&&mapOnlyOk()){d.classList.add('pawnAlert');placePawnAlert(d)}paint()}else d.showModal()}))}
 async function ask(q){return (await choose(q,['yes','no'],['Yes — agreed','No']))==='yes'}
 
 /* ---------- layout ---------- */
