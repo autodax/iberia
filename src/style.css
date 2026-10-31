@@ -481,3 +481,4 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #pawnPanel.compact #confirm:disabled{opacity:.6}
 #choiceDialog,#pawnPanel{touch-action:none}#choiceDialog:not(.mapPick) h2,#choiceDialog.mapPick,#pawnPanel{cursor:move}#choiceDialog button,#pawnPanel button{cursor:pointer}
 .winGrip{position:absolute;top:-11px;right:-11px;width:22px;height:22px;border-radius:50%;background:#f6ecd4;border:2px solid #555;color:#444;font-size:13px;line-height:18px;text-align:center;cursor:grab;z-index:3;user-select:none;touch-action:none}#choiceDialog{overflow:visible}
+#eventDialog.sideDialog{max-height:60vh;overflow:visible;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.4)}#eventDialog.sideDialog #eventForm{max-height:calc(60vh - 90px);overflow:auto}
