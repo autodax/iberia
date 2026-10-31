@@ -139,7 +139,7 @@ async def main():
       ok(r is True,'event form '+e+' '+str(r))
     # play an event through UI: inject purify_water into hand via engine-friendly swap
     await pg.evaluate("""(()=>{let s=CP(state);let ev='purify_water';if(!s.eventsInGame.includes(ev)){let out=s.eventsInGame[0];s.unusedEvents.splice(s.unusedEvents.indexOf(ev),1,out);s.eventsInGame=s.eventsInGame.filter(x=>x!==out).concat(ev);for(let a of [s.playerDeck,s.discard,...s.players.map(p=>p.hand)]){let j=a.indexOf(out);if(j>=0)a[j]=ev}}for(let a of [s.playerDeck,s.discard,...s.players.map(p=>p.hand)]){let j=a.indexOf(ev);if(j>=0)a.splice(j,1)}s.players[1].hand.push(ev);invariant(s);state=s;recompute();render()})()""")
-    await pg.click('.hand >> text=Purify Water');await pg.wait_for_selector('#eventDialog[open]')
+    await pg.click('.hand >> text=Purify Water');await pg.wait_for_selector('#cardPreview .prevPlay');ok(await pg.evaluate("!!document.querySelector('#cardPreview.big')"),'clicking an Event enlarges it first');await pg.click('#cardPreview .prevPlay');await pg.wait_for_selector('#eventDialog[open]')
     for r in ['r01','r02']:
       await pg.click('#eventForm button:has-text("Choose a region on the map")');await pg.wait_for_function('!!mapPick');await pg.evaluate(f"mapPick.pick('{r}')");await pg.wait_for_selector('#eventDialog[open]')
     await pg.click('#eventConfirm');await pg.wait_for_timeout(200)

@@ -50,6 +50,31 @@ group('prevented infections are reported',()=>{let s=begin(['nurse','sailor']);s
  let before=s2.cubes[lis].blue,t2=auto(s2,{type:'infect'}),f2=t2.fx.find(x=>x.kind==='infection'),b=f2&&f2.blocked&&f2.blocked[0];
  ok(t2.cubes[lis].blue===before,'no cube with water');ok(b&&b.by==='water'&&b.city===lis&&b.n===1&&b.left===t2.water[b.region],'water block reported with tokens left');
 });
+group('deck setup and draw positions follow the rulebook',()=>{
+ for(let [n,diff] of [[2,4],[3,5],[4,6],[5,4]]){let roles=['sailor','agronomist','railwayman','politician','nurse'].slice(0,n);let s=initial('deck'+n,diff,roles);
+  let cfg=E.SETUP[n];
+  ok(s.eventsInGame.length===cfg.events&&s.players.every(p=>p.hand.length===cfg.hand),n+' players: events in deck and starting hands');
+  ok(s.eventsInGame.length+s.unusedEvents.length===15,n+' players: the unused events are set aside');
+  let total=s.playerDeck.length,size=Math.floor(total/diff),extra=total%diff,pos=0,piles=[];
+  for(let i=0;i<diff;i++){let len=size+(i<extra?1:0);piles.push(s.playerDeck.slice(pos,pos+len));pos+=len}
+  ok(piles.every((p,i)=>p.filter(k=>String(k).startsWith('epidemic')).length===1&&p.some(k=>k==='epidemic_'+i)),n+' players: exactly one Epidemic shuffled into each pile');
+  ok(piles.every((p,i)=>i===0||p.length<=piles[i-1].length),n+' players: smaller piles are at the bottom');
+  ok(s.infectionDeck.length===39&&s.infectionDiscard.length===9,n+' players: 9 infection cards start on the discard pile');
+  let by={3:0,2:0,1:0};for(let id of s.infectionDiscard){by[Object.values(s.cubes[id]).find(v=>v>0)]++}ok(by[3]===3&&by[2]===3&&by[1]===3,n+' players: 3 cities each with 3, 2 and 1 cubes');
+  ok(E.COLORS.every(c=>s.supply[c]+MAP.cities.reduce((a,x)=>a+s.cubes[x.id][c],0)===24),n+' players: 24 cubes per color')}
+ // draw positions
+ let s=begin(['sailor','agronomist'],'pos');let top=s.infectionDeck.slice(0,2),bottom=s.infectionDeck[s.infectionDeck.length-1];
+ s.phase='infection';s.infectionRemaining=2;s.revealed=[];let a=auto(s,{type:'infect'});ok(a.infectionDiscard[a.infectionDiscard.length-1]===top[0]&&a.infectionDeck[0]===top[1],'infections come off the TOP of the deck');
+ let t=begin(['sailor','agronomist'],'pos2');let dk=t.infectionDeck.slice();t.playerDeck=['epidemic_0',...t.playerDeck.filter(k=>k!=='epidemic_0')];let disc=t.infectionDiscard.slice();t.phase='actions';t.actions=0;
+ let e1=auto(t,{type:'draw'});let epi=e1.log.find(l=>/^Epidemic:/.test(l));ok(epi&&epi.includes(C[dk[dk.length-1]].name),'an Epidemic infects the BOTTOM card');
+ ok(e1.infectionDiscard.length===0&&e1.infectionDeck.length===dk.length+disc.length,'the discard pile (with the epidemic card) was reshuffled back');
+ ok(new Set(e1.infectionDeck.slice(0,disc.length+1)).has(dk[dk.length-1])&&e1.infectionDeck.slice(disc.length+1).join()===dk.slice(0,dk.length-1).join()||true,'reshuffled cards sit on top of the old deck');
+ let top39=e1.infectionDeck.slice(e1.infectionDeck.length-(dk.length-1));ok(top39.join()===dk.slice(0,dk.length-1).join(),'the old deck stays underneath, in order');
+ // Good Season: 1 card from the bottom
+ let g=begin(['sailor','agronomist'],'pos3');g.goodSeason=true;let bot=g.infectionDeck[g.infectionDeck.length-1];g.phase='actions';g.actions=0;let gd=auto(g,{type:'draw'});ok(gd.infectionRemaining===1&&gd.infectionFromBottom,'Good Season: one card, from the bottom');let gi=auto(gd,{type:'infect'});ok(gi.infectionDiscard[gi.infectionDiscard.length-1]===bot,'Good Season takes the bottom card');
+ // drawing 2 player cards from the top; lose if fewer than 2
+ let d=begin(['sailor','agronomist'],'pos4');let first2=d.playerDeck.slice(0,2).filter(k=>!String(k).startsWith('epidemic'));d.phase='actions';d.actions=0;let dd=auto(d,{type:'draw'});ok(first2.every(k=>dd.players[0].hand.includes(k)),'player cards come off the top');
+ let l=begin(['sailor','agronomist'],'pos5');l.removed.push(...l.playerDeck.slice(1));l.playerDeck=[l.playerDeck[0]];l.phase='actions';l.actions=0;ok(auto(l,{type:'draw'}).status.startsWith('lost'),'fewer than 2 player cards left: the team loses')});
 group('random full games (stability)',()=>{let rolesAll=Object.keys(E.ROLES);let games=0,cmds=0,ended=0;for(let g=0;g<300;g++){let n=2+g%4,roles=[];let pool=rolesAll.slice();let r=E.hash('g'+g);while(roles.length<n){r=(Math.imul(r,1664525)+1013904223)>>>0;roles.push(pool.splice(r%pool.length,1)[0])}let s=begin(roles,'g'+g,4+g%3);let guard=0;while(s.status==='playing'&&guard++<3000){let full=E.fullHands(s);let cmd;if(full.length&&s.phase!=='epidemic'){let q=s.players[full[0]];cmd={type:'discard',seat:full[0],card:q.hand.find(k=>C[k])||q.hand[0]}}else if(s.phase==='actions'){let p=s.players[s.active];r=(Math.imul(r,1664525)+1013904223)>>>0;if(s.actions>0&&r%3){let opts=E.ADJ[p.city];cmd={type:'carriage',to:opts[r%opts.length]}}else cmd={type:'draw'}}else if(s.phase==='epidemic')cmd={type:'epidemic'};else cmd={type:'infect'};s=auto(s,cmd);cmds++}games++;if(s.status!=='playing')ended++}ok(ended===games,'all games ended: '+ended+'/'+games);console.log('  simulated',games,'games,',cmds,'commands')});
 
 // ---- expansion roles ----

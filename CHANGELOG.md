@@ -1,4 +1,5 @@
 ## Latest
+- Clicking an Event card now enlarges it (with its effect written out and a "Play this Event" button) instead of playing it straight away.
 - Two optional challenges from the rulebook, chosen in the New game dialog and in the online lobby: Influx of Patients (hospitals draw patients; overrun hospitals; 6 purification tokens at the start; a new hospital frees its 2 tokens and clears its color from the city) and Historical Diseases (Malaria, Typhus, Cholera, Yellow fever, any combination).
 - Researched banner celebrates with the disease name, spinning microscope, golden rays and confetti; new chime.
 - Rewind to the start of any turn from the log; online, any player can ask and everyone connected must agree.

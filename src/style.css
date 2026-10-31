@@ -438,3 +438,8 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .challengeBox .chRow{display:flex;flex-wrap:wrap;gap:2px 14px}.challengeBox .chRandom{margin-top:6px;font-size:13px}
 .alert.overrun{border-color:#7e1d14;background:#f6dcc8}.alert.patient{border-color:#8a6d1d;max-width:420px}
 .alert.overrun h3,.alert.patient h3{font-size:22px}.alert.overrun img.tok,.alert.patient img.tok{width:38px;height:38px}
+
+#cardPreview.big .bigCard.art{width:calc(clamp(230px,44vh,380px)*var(--cs,1))}
+#cardPreview.big .prevText{max-width:clamp(230px,44vh,380px);font-size:15px;line-height:1.35}
+#cardPreview .prevPlay{margin-top:8px;font-size:16px;padding:8px 18px}
+#cardPreview .prevHint{margin-top:6px;font-size:12px;color:#fffc;text-shadow:0 1px 3px #000}
