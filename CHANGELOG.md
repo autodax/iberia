@@ -1,5 +1,7 @@
 ## Latest
 
+- Fixed: the floating Event window no longer closes when you drag it or click its padding.
+
 - Event windows now float over the map (bottom-left, movable with the ✥ handle) instead of covering the side panel. Purify Water is one step in that window: click up to 2 regions on the map (selected ones are outlined), then Play Event. No side panel, no extra popups.
 
 - Floating windows (action buttons under the pawn, map-pick and event popups) are now movable: drag the small ✥ handle on the corner, or click it to send the window to the next corner of the board.

@@ -686,7 +686,7 @@ function openEvent(seat,card,fromRole){if(['setup','ended'].includes(state.phase
 /* ---------- wiring ---------- */
 function showDialog(id){let d=$(id);if(d.open)return;if(bmOn&&id==='eventDialog'){d.classList.add('sideDialog');dragOff.ev=[0,0];d.style.translate='';d.show();let bf=$('boardFrame').getBoundingClientRect();d.style.left=(bf.left+12)+'px';d.style.right='auto';d.style.top='auto';d.style.bottom=(innerHeight-bf.bottom+12)+'px';d.style.width='min(300px,'+(bf.width-24)+'px)';addGrips()}else{d.classList.remove('sideDialog');d.showModal()}}
 $('eventDialog').addEventListener('close',()=>{if(!$('eventDialog').open&&mapPick&&mapPick.ev){mapPick=null;paint()}})
-for(let id of ['menu','eventDialog','logDialog']){let d=$(id);d.querySelector('.close').onclick=()=>d.close();d.addEventListener('click',e=>{if(e.target===d)d.close()})}
+for(let id of ['menu','eventDialog','logDialog']){let d=$(id);d.querySelector('.close').onclick=()=>d.close();d.addEventListener('click',e=>{if(e.target===d&&!d.classList.contains('sideDialog'))d.close()})}
 $('confirm').onclick=async()=>{let cmd=await makeCmd();if(cmd)perform(cmd)};
 $('begin').onclick=()=>perform({type:'start',...(Net.active?{}:{cities:state.players.map((_,i)=>sel['start'+i])}),first:+$('firstPlayer').value});
 $('nextPhase').onclick=async()=>{if(fxCurrent||fxQueue.length)return;if(state.phase==='actions'&&state.actions>0){let tt=state.players[state.active].role==='time_traveler',n=state.actions;if(!await ask('You still have '+n+' action'+(n>1?'s':'')+' left. End your actions now and '+(tt?'start the infection step?':'draw two Player cards?')))return}perform({type:state.phase==='actions'?'draw':state.phase==='epidemic'?'epidemic':'infect'})};
