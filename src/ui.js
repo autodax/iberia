@@ -207,7 +207,7 @@ function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pa
  let free=W-2*pad-2*gap-boardW,wantBM=!LEGACY_SIDEBAR_LAYOUT;
  if(wantBM){let strip=214;boardH=Math.max(200,H-2*pad);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];if(boardW>W-2*pad-gap-strip){boardW=W-2*pad-gap-strip;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
   let stripW=Math.floor(Math.min(270,W-2*pad-gap-boardW)),aw=Math.max(84,Math.min(168,stripW-46,(H-330)/3.6)),st2=$('app').style;
-  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--stripW':stripW,'--appW':W,'--appH':H,'--aw':aw}))st2.setProperty(k,v+'px');st2.setProperty('--bs',String(+(boardW/1478).toFixed(4)));setBoardMode(true);return}
+  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--stripW':stripW,'--appW':W,'--appH':H,'--aw':aw}))st2.setProperty(k,v+'px');document.documentElement.style.setProperty('--aw',aw+'px');st2.setProperty('--bs',String(+(boardW/1478).toFixed(4)));setBoardMode(true);return}
  setBoardMode(false);
  if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
  let side=Math.min(maxSide,Math.max(minSide,W-2*pad-gap-boardW));
@@ -538,7 +538,7 @@ function showHelpCards(){if($('helpCards'))return closeHelpCards();let ov=el('di
 function closeHelpCards(){$('helpCards')?.remove()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelpCards()});
 $('shipHot').onclick=e=>{e.stopPropagation();showHelpCards()};
-function showPreview(k,pin,onPlay){if(prevPinned&&!pin)return;prevPinned=false;if(prevEl){prevEl.remove();prevEl=null}if(!cardArt(k,false))return;prevEl=el('div',{id:'cardPreview'},document.body);prevEl.appendChild(cardFace(k));if(String(k).startsWith('role:')){let r=k.slice(5);el('div',{className:'prevText',textContent:ROLE_TEXT[r]||''},prevEl)}if(pin){prevPinned=true;prevEl.classList.add('pinned');if(onPlay){let pb=el('button',{className:'prevPlay primary',textContent:'Play this Event',type:'button'},prevEl);pb.onclick=e=>{e.stopPropagation();hidePreview(true);onPlay()}}if(EVENTS[k])el('div',{className:'prevHint',textContent:'Click anywhere else to close'},prevEl)}}
+function showPreview(k,pin,onPlay){if(prevPinned&&!pin)return;prevPinned=false;if(prevEl){prevEl.remove();prevEl=null}if(!cardArt(k,false))return;prevEl=el('div',{id:'cardPreview'},document.body);prevEl.appendChild(cardFace(k));if(pin){prevPinned=true;prevEl.classList.add('pinned');if(onPlay){let pb=el('button',{className:'prevPlay primary',textContent:'Play this Event',type:'button'},prevEl);pb.onclick=e=>{e.stopPropagation();hidePreview(true);onPlay()}}if(EVENTS[k])el('div',{className:'prevHint',textContent:'Click anywhere else to close'},prevEl)}}
 document.addEventListener('click',()=>hidePreview(true));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&bmOn&&mode&&mode!=='peek'&&!document.querySelector('dialog[open]')){mode='';selectedCards=[];render()}
  if(e.key==='Escape'&&ringOpen){ringOpen=false;positionRing()}
@@ -855,6 +855,6 @@ $('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room for goo
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
 
 // Card size slider (Menu): scales the hover previews and the drawn-card popups; remembered on this device
-{let K='iberia-card-size',v=100;try{v=+localStorage.getItem(K)||100}catch(e){}
- let apply=x=>{x=Math.max(50,Math.min(150,x));document.documentElement.style.setProperty('--cs',String(x/100));let i=$('cardSize');if(i)i.value=x;let t=$('cardSizeVal');if(t)t.textContent=x+'%';return x};
+{let K='iberia-card-size2',v=140;try{v=+localStorage.getItem(K)||140}catch(e){}
+ let apply=x=>{x=Math.max(100,Math.min(200,x));document.documentElement.style.setProperty('--cs',String(x/100));let i=$('cardSize');if(i)i.value=x;let t=$('cardSizeVal');if(t)t.textContent=x+'%';return x};
  apply(v);$('cardSize').oninput=()=>{v=apply(+$('cardSize').value);try{localStorage.setItem(K,String(v))}catch(e){}}}

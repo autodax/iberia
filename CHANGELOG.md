@@ -1,4 +1,5 @@
 ## Latest
+- Card size slider recalibrated: 100% = size of the cards in the side panel, 200% = twice that; role/Event previews show just the card.
 - Moving: bigger click targets around each destination city and on its printed name; the ring now only fades (no size change).
 - Reachable cities glow bright yellow and pulse; University Professor card art replaced again (brighter).
 - Board cube counters are darker and more muted with a subtle wood grain; remaining blue-green highlights (turn pulse, water-by ring, notice edge) are now gold.

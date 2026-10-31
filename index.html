@@ -80,8 +80,8 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 .bigCard.art{background:#1c241f;border-color:#2b2b22}
 .bigCard.landscape{width:220px;height:150px}
 /* real card pictures are shown larger so the text on them can be read */
-.bigCard.art{width:calc(clamp(112px,20vh,180px)*var(--cs,1));height:auto;aspect-ratio:584/836}
-.bigCard.art.landscape{width:calc(clamp(165px,30vh,262px)*var(--cs,1));aspect-ratio:724/510}
+.bigCard.art{width:calc(var(--aw,120px)*var(--cs,1.4));height:auto;aspect-ratio:584/836}
+.bigCard.art.landscape{width:calc(var(--aw,120px)*1.46*var(--cs,1.4));aspect-ratio:724/510}
 .bigCard img{width:100%;height:100%;object-fit:cover}
 .bigCard .band{height:34px}.bigCard .nm{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font:700 18px Georgia,serif}
 .bigCard .kind{font-size:11px;text-transform:uppercase;letter-spacing:.08em;text-align:center;padding:5px;color:#6a5a3c}
@@ -198,7 +198,7 @@ header #onlineButton.live{background:var(--accent);color:var(--parchLight);borde
 
 #cardPreview{position:fixed;right:384px;top:50%;transform:translateY(-50%);z-index:60;pointer-events:none;filter:drop-shadow(0 8px 22px rgba(0,0,0,.55));text-align:center}
 #cardPreview.pinned{pointer-events:auto}
-#cardPreview .bigCard.art{width:calc(clamp(115px,24vh,200px)*var(--cs,1))}
+#cardPreview .bigCard.art{width:calc(var(--aw,120px)*var(--cs,1.4))}
 #cardPreview .prevText{max-width:180px;font-size:12px;margin-top:6px;padding:6px 10px;background:var(--parchLight);border-radius:6px;font-size:13px;color:var(--ink);text-align:left}
 .roleLink{cursor:help}
 .deckArt{pointer-events:none}
@@ -486,7 +486,7 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 <div class="dialogButtons"><button id="saveButton" title="Download the game as a file">Save Game</button><button id="loadButton" title="Open a saved game file">Restore Game</button><button id="resumeButton" title="The game saves itself in this browser after every move">Restore Last Game</button></div><p class="detail">Save Game downloads a file (usually into your Downloads folder). Restore Last Game reloads the automatic save kept inside this browser on this device, which is updated after every move; clearing the browser's site data erases it.</p><input id="loadFile" type="file" accept=".json" hidden>
 <h3>New game</h3><div class="seatRow"><label>Players<select id="playerCount"><option>2</option><option>3</option><option>4</option><option>5</option></select></label><label>Epidemics<select id="difficulty"><option value="4">Introductory (4 epidemic cards)</option><option value="5">Standard (5 epidemic cards)</option><option value="6">Heroic (6 epidemic cards)</option></select></label></div>
 <label>Shuffle seed (optional)<input id="seed" value="" placeholder="Random each game · type a seed to replay one" autocomplete="off"></label><div id="roleFields" class="rolesGrid"></div><div id="challengeBox" class="challengeBox"></div><div class="dialogButtons"><button id="randomRoles">Random roles</button><button id="newGame" class="primary" style="width:auto">Start new game</button></div>
-<h3>Alerts and card reveals</h3><label>Reveal speed<select id="fxSpeed"><option value="0">Until clicked</option><option value="2">Slow</option><option value="1">Normal</option><option value="0.5" selected>Fast</option><option value="-1">Off (alerts still shown)</option></select></label><label class="check"><input id="sound" type="checkbox">Play sounds</label><label>Volume<input id="volume" type="range" min="0" max="100" step="5" value="70"></label><button id="soundTest" type="button" title="Plays a sound and shows what your browser is doing with audio">Test sound</button><div id="soundStatus" style="font-size:12px;opacity:.85;margin:2px 0 6px"></div><label title="Size of the cards that pop up when you hover or draw">Card size<input id="cardSize" type="range" min="50" max="150" step="5" value="100"><span id="cardSizeVal">100%</span></label>
+<h3>Alerts and card reveals</h3><label>Reveal speed<select id="fxSpeed"><option value="0">Until clicked</option><option value="2">Slow</option><option value="1">Normal</option><option value="0.5" selected>Fast</option><option value="-1">Off (alerts still shown)</option></select></label><label class="check"><input id="sound" type="checkbox">Play sounds</label><label>Volume<input id="volume" type="range" min="0" max="100" step="5" value="70"></label><button id="soundTest" type="button" title="Plays a sound and shows what your browser is doing with audio">Test sound</button><div id="soundStatus" style="font-size:12px;opacity:.85;margin:2px 0 6px"></div><label title="Size of the cards that pop up when you hover or draw: 100% matches the cards in the side panel, 200% is twice that size">Card size<input id="cardSize" type="range" min="100" max="200" step="5" value="140"><span id="cardSizeVal">140%</span></label>
 <h3>Graphics</h3><p>Graphics load from the <code>assets</code> folder of the GitHub repo by default. Optionally choose a local folder: files stay on your computer and matching names override the repo graphics for this session.</p><div class="dialogButtons"><button id="assetButton">Choose local asset folder</button><button id="assetClear">Use repo graphics</button></div><input id="assetFiles" type="file" webkitdirectory directory multiple hidden><p id="assetStatus" class="detail">Loading graphics from the GitHub repo…</p>
 <h3>Display</h3><label class="check"><input id="showRegions" type="checkbox">Show region labels</label><label class="check"><input id="showNames" type="checkbox">Show city names</label>
 <p class="notice">Standard base game — all 7 roles and 15 Events, 2–5 seats. Play from one browser, or use the Online button to play with others over the internet. Not yet included: the five custom roles, optional challenges and founding-date automation.</p></dialog>
@@ -1654,7 +1654,7 @@ function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pa
  let free=W-2*pad-2*gap-boardW,wantBM=!LEGACY_SIDEBAR_LAYOUT;
  if(wantBM){let strip=214;boardH=Math.max(200,H-2*pad);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];if(boardW>W-2*pad-gap-strip){boardW=W-2*pad-gap-strip;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
   let stripW=Math.floor(Math.min(270,W-2*pad-gap-boardW)),aw=Math.max(84,Math.min(168,stripW-46,(H-330)/3.6)),st2=$('app').style;
-  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--stripW':stripW,'--appW':W,'--appH':H,'--aw':aw}))st2.setProperty(k,v+'px');st2.setProperty('--bs',String(+(boardW/1478).toFixed(4)));setBoardMode(true);return}
+  for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--stripW':stripW,'--appW':W,'--appH':H,'--aw':aw}))st2.setProperty(k,v+'px');document.documentElement.style.setProperty('--aw',aw+'px');st2.setProperty('--bs',String(+(boardW/1478).toFixed(4)));setBoardMode(true);return}
  setBoardMode(false);
  if(boardW>W-2*pad-gap-minSide){boardW=Math.max(300,W-2*pad-gap-minSide);boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
  let side=Math.min(maxSide,Math.max(minSide,W-2*pad-gap-boardW));
@@ -1985,7 +1985,7 @@ function showHelpCards(){if($('helpCards'))return closeHelpCards();let ov=el('di
 function closeHelpCards(){$('helpCards')?.remove()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelpCards()});
 $('shipHot').onclick=e=>{e.stopPropagation();showHelpCards()};
-function showPreview(k,pin,onPlay){if(prevPinned&&!pin)return;prevPinned=false;if(prevEl){prevEl.remove();prevEl=null}if(!cardArt(k,false))return;prevEl=el('div',{id:'cardPreview'},document.body);prevEl.appendChild(cardFace(k));if(String(k).startsWith('role:')){let r=k.slice(5);el('div',{className:'prevText',textContent:ROLE_TEXT[r]||''},prevEl)}if(pin){prevPinned=true;prevEl.classList.add('pinned');if(onPlay){let pb=el('button',{className:'prevPlay primary',textContent:'Play this Event',type:'button'},prevEl);pb.onclick=e=>{e.stopPropagation();hidePreview(true);onPlay()}}if(EVENTS[k])el('div',{className:'prevHint',textContent:'Click anywhere else to close'},prevEl)}}
+function showPreview(k,pin,onPlay){if(prevPinned&&!pin)return;prevPinned=false;if(prevEl){prevEl.remove();prevEl=null}if(!cardArt(k,false))return;prevEl=el('div',{id:'cardPreview'},document.body);prevEl.appendChild(cardFace(k));if(pin){prevPinned=true;prevEl.classList.add('pinned');if(onPlay){let pb=el('button',{className:'prevPlay primary',textContent:'Play this Event',type:'button'},prevEl);pb.onclick=e=>{e.stopPropagation();hidePreview(true);onPlay()}}if(EVENTS[k])el('div',{className:'prevHint',textContent:'Click anywhere else to close'},prevEl)}}
 document.addEventListener('click',()=>hidePreview(true));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&bmOn&&mode&&mode!=='peek'&&!document.querySelector('dialog[open]')){mode='';selectedCards=[];render()}
  if(e.key==='Escape'&&ringOpen){ringOpen=false;positionRing()}
@@ -2302,7 +2302,7 @@ $('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room for goo
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
 
 // Card size slider (Menu): scales the hover previews and the drawn-card popups; remembered on this device
-{let K='iberia-card-size',v=100;try{v=+localStorage.getItem(K)||100}catch(e){}
- let apply=x=>{x=Math.max(50,Math.min(150,x));document.documentElement.style.setProperty('--cs',String(x/100));let i=$('cardSize');if(i)i.value=x;let t=$('cardSizeVal');if(t)t.textContent=x+'%';return x};
+{let K='iberia-card-size2',v=140;try{v=+localStorage.getItem(K)||140}catch(e){}
+ let apply=x=>{x=Math.max(100,Math.min(200,x));document.documentElement.style.setProperty('--cs',String(x/100));let i=$('cardSize');if(i)i.value=x;let t=$('cardSizeVal');if(t)t.textContent=x+'%';return x};
  apply(v);$('cardSize').oninput=()=>{v=apply(+$('cardSize').value);try{localStorage.setItem(K,String(v))}catch(e){}}}
 </script></body></html>
