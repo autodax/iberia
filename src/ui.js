@@ -226,14 +226,24 @@ function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=docu
  app.classList.toggle('bm',on);$('ringToggle').onclick=toggleRing;
  let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',textContent:'v'+UI_VERSION},bf);svg('svg',{id:'ringLines'},ring)}
  for(let id of ['rulesLink','guideLink','logButton','onlineButton','menuButton'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
- if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));aside.style.display='none';R.style.display=''}
- else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));aside.style.display='';R.style.display='none'}
+ if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));let pp=$('pawnPanel');if(!pp)pp=el('div',{id:'pawnPanel',hidden:true},bf);el('div',{id:'pawnNote'},pp);for(let id of ['actionForm','confirm','actionHint'])pp.appendChild($(id));aside.style.display='none';R.style.display=''}
+ else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));{let aa=$('actionArea');for(let id of ['actionForm','confirm','actionHint'])aa.appendChild($(id));let pp=$('pawnPanel');if(pp)pp.hidden=true}aside.style.display='';R.style.display='none'}
  ringOpen=false;if(typeof state!=='undefined'&&state)setTimeout(render,0)}
 function ringAvail(){return bmOn&&state.status==='playing'&&state.phase==='actions'&&holdActive==null&&mine(state.active)&&!inLobby()&&!fxCurrent&&!fxQueue.length&&!mapPick&&!mode}
 let ringWait=0,ringWaitT=0;
 function lastIsDiscard(){let c=commands[commands.length-1];return !!c&&c.type==='discard'&&history.length>0}
 function ruStyle(ru,x,y,w){ru.style.cssText=`position:absolute;left:${x-w/2}px;top:${y+26}px;width:${w}px;height:32px;padding:0 6px;font-size:13px;pointer-events:auto;border-radius:16px;border:2px solid ${PAWN[state.players[state.active].role]||'#555'};box-shadow:0 2px 8px #0008;margin:0;display:${ru.hidden?'none':''}`}
+function positionPawnPanel(){let pp=$('pawnPanel');if(!pp)return;
+ let fh=typeof fullHands==='function'&&state&&state.status==='playing'&&!['epidemic','setup','ended'].includes(state.phase)?fullHands(state):[],who=fh.length?fh[0]:state.active,q=state.players[who];
+ let note=$('pawnNote'),over=fh.length&&q&&mine(who)?q.hand.length-handLimit(q):0,form=$('actionForm'),hasForm=!!mode&&!!form.children.length&&canAct();
+ note.textContent=over>0?(who!==state.active?plabel(who)+': ':'')+'Too many cards: discard '+over+' ('+q.hand.length+' in hand, limit '+handLimit(q)+'). Click a card in the hand to discard it, or play an Event.':'';note.style.display=over>0?'':'none';
+ let show=bmOn&&!inLobby()&&(over>0||hasForm);pp.hidden=!show;if(!show)return;
+ let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(who,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,pc=PAWN[q.role]||'#555',pw=Math.min(280,w-12);
+ pp.style.cssText=`position:absolute;width:${pw}px;left:${Math.max(6,Math.min(w-pw-6,fx-pw/2))}px;top:0;border-color:${pc}`;
+ let ph=pp.offsetHeight,top=fy+34;if(top+ph>h-6)top=Math.max(6,fy-34-ph);pp.style.top=top+'px';
+}
 function positionRing(){let ring=$('ring'),np=$('nextPhase'),un=$('undo');if(!ring)return;
+ positionPawnPanel();
  let re=$('ringEnd'),ru=$('ringUndo');if(!re){re=el('button',{id:'ringEnd',type:'button',onclick:()=>$('nextPhase').click()},ring);ru=el('button',{id:'ringUndo',type:'button',textContent:'Undo',onclick:()=>$('undo').click()},ring)}
  $('app').classList.toggle('inMode',!!mode);
  {let infOk=bmOn&&state.status==='playing'&&['infection','epidemic'].includes(state.phase)&&mine(state.active)&&!np.hidden&&!inLobby();$('app').classList.toggle('ringInf',infOk);

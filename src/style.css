@@ -455,3 +455,5 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #choiceCard[hidden]{display:none}
 #choiceCard .bigCard.art{width:min(calc(var(--aw,160px)*var(--cs,1.4)),36vh)}
 #choiceDialog.withCard #choiceOptions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+#pawnPanel{z-index:6;background:#f6ecd4;border:3px solid #555;border-radius:12px;padding:9px 10px;box-shadow:0 4px 16px #000a;box-sizing:border-box}#pawnPanel[hidden]{display:none}#pawnNote{font-size:13px;font-weight:600;line-height:1.35;color:#8a3b12;margin-bottom:6px}#pawnPanel #actionForm{margin-top:0;gap:6px}#pawnPanel #actionHint{display:block;font-size:12px;margin:6px 0 0}#app.bm:not(.inMode) #pawnPanel #actionHint{display:none}#pawnPanel #confirm{margin-top:6px}#pawnPanel .cancelMode{margin-top:6px;width:100%}#app.bm .overNote{display:none}
