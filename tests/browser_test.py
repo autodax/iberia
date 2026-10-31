@@ -299,6 +299,16 @@ async def main():
     await pg.evaluate("ask=async()=>true;chLocal.influx=true;chLocal.hist=['red'];$('newGame').click()");await pg.wait_for_timeout(600)
     ok(await pg.evaluate("state.challenges.influx&&state.challenges.hist.join()==='red'&&state.waterSupply===6"),'a new game starts with the chosen challenges')
     await pg.evaluate("chLocal.influx=false;chLocal.hist=[];$('newGame').click()");await pg.wait_for_timeout(400)
+    # touch screens: first tap on a reachable city arms it, second tap moves there
+    tp=await b.new_page(viewport={'width':1440,'height':900});await tp.goto(F.replace('?layout=sidebar',''));await tp.evaluate("window.__touch=true;state=initial(7,4,['politician','agronomist']);render()");await tp.wait_for_timeout(400);await tp.click('#begin');await tp.wait_for_timeout(4500);await tp.evaluate('resetFx()');await tp.wait_for_timeout(300)
+    pos=lambda:tp.evaluate("(()=>{let d=document.querySelector('circle.reachDot');if(!d)return null;let r=d.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()")
+    q=await pos()
+    if q:
+      c0=await tp.evaluate("state.players[state.active].city");await tp.mouse.click(q[0],q[1]);await tp.wait_for_timeout(400)
+      ok(await tp.evaluate("state.players[state.active].city")==c0,'touch: first tap only previews the move')
+      q=await pos();await tp.mouse.click(q[0],q[1]);await tp.wait_for_timeout(700)
+      ok(await tp.evaluate("state.players[state.active].city")!=c0,'touch: second tap completes the move')
+    else:ok(False,'touch: reachable city found')
     await b.close()
 asyncio.run(main())
 for c,m in res:print(('PASS ' if c else 'FAIL ')+m)
