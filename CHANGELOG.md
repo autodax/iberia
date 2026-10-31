@@ -1,4 +1,6 @@
 ## Latest
+
+- Fixed Research disease: when you hold more than 5 cards of the colour, 5 are now preselected so Confirm is enabled (tap cards to change the pick). The research ring icon now matches the disease colour, and the disabled Confirm is easier to see.
 - The play-or-discard question for an Event card shows the card (readable) again.
 - Map-input boxes now sit as close to the pawn as possible without covering anything you need to click (highlighted regions and cities), joined to the pawn by a line. Cancel/confirm-only boxes shrink to a pair of ring-style buttons.
 - Popups that close by themselves no longer have a green Continue button (click anywhere to dismiss); popups that wait for you, like outbreaks, keep it.
