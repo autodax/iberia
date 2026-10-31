@@ -315,7 +315,7 @@ aside #phaseLabel{display:none}
 #topBtns .btn,#topBtns button{font-size:18px;padding:3px 12px;border-radius:15px;height:auto;white-space:nowrap}
 #cubeCounts{position:absolute;left:calc(83.6% - 8px*var(--bs,1));top:20.5%;width:15.1%;display:flex;justify-content:space-around;align-items:center;z-index:3;pointer-events:none}
 #cubeCounts .cc{position:relative;width:34px;height:34px}#cubeCounts img{width:28px;height:28px;filter:drop-shadow(0 1px 2px #000a)}
-#cubeCounts b{position:absolute;right:-3px;bottom:-2px;background:#fff;color:#222;border-radius:9px;font:700 11px system-ui;padding:0 4px;border:1px solid #444}
+#cubeCounts b{position:absolute;right:-3px;bottom:-2px;background:#f3e6c8;color:#3a2f1c;border-radius:9px;font:700 11px system-ui;padding:0 4px;border:1px solid #6b5a3a}
 #tokTip{position:absolute;z-index:8;background:#fff;border-radius:8px;padding:3px 8px;display:flex;gap:6px;align-items:center;font:700 14px system-ui;pointer-events:none;box-shadow:0 2px 8px #0006}
 #tokTip img{height:26px}#tokTip img.wide{height:20px}
 #ring{position:absolute;inset:0;pointer-events:none;z-index:5}
@@ -344,7 +344,7 @@ aside #phaseLabel{display:none}
 #cubeCounts{top:20.2%}
 #cubeCounts .cc{width:46px;height:44px}#cubeCounts img{width:38px;height:38px}
 #cubeCounts b{font-size:14px;padding:0 6px;border-radius:11px;right:-4px;bottom:-3px}
-.deckCount circle{fill:#fff}
+.deckCount circle{fill:#f3e6c8}
 
 .edgeBuild .edgeGlow{opacity:0;transition:opacity .12s;pointer-events:none}
 .edgeBuild:hover .edgeGlow{opacity:.85}
@@ -457,3 +457,5 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #choiceDialog.withCard #choiceOptions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
 #pawnPanel{z-index:6;background:#f6ecd4;border:3px solid #555;border-radius:12px;padding:9px 10px;box-shadow:0 4px 16px #000a;box-sizing:border-box}#pawnPanel[hidden]{display:none}#pawnNote{font-size:13px;font-weight:600;line-height:1.35;color:#8a3b12;margin-bottom:6px}#pawnPanel #actionForm{margin-top:0;gap:6px}#pawnPanel #actionHint{display:block;font-size:12px;margin:6px 0 0}#app.bm:not(.inMode) #pawnPanel #actionHint{display:none}#pawnPanel #confirm{margin-top:6px}#pawnPanel .cancelMode{margin-top:6px;width:100%}#app.bm .overNote{display:none}
+#pawnNote{text-align:center;display:flex;align-items:center;justify-content:center;margin:0 0 6px}#pawnPanel.noteOnly{padding:6px 10px}#pawnPanel.noteOnly #pawnNote{min-height:70px;margin:0}
+#cubeCounts b{background:#f3e6c8;color:#3a2f1c;border-color:#6b5a3a}
