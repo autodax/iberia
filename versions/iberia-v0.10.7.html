@@ -1574,7 +1574,7 @@ function applySettings(o,withSound){if(!o||typeof o!=='object')return;if(o.fxSpe
  if(!withSound)return;if(typeof o.volume==='number'&&o.volume>=0&&o.volume<=1)sndPrefs.vol=o.volume;if(typeof o.sound==='boolean')sndPrefs.on=o.sound;saveSound();syncSoundUI()}
 function saveSettings(){try{localStorage.setItem(SET_KEY,JSON.stringify(getSettings()))}catch(e){}if(typeof autosave==='function'&&state)autosave()}
 function envelope(){return {app:'iberia-prototype',version:VERSION,uiVersion:UI_VERSION,mapSignature:MAP_SIGNATURE,settings:getSettings(),state,commands}}
-function autosave(){if(typeof Net!=='undefined'&&Net.active)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify(envelope()))}catch(e){}}
+function autosave(){if(typeof Net!=='undefined'&&Net.active)return;if(state&&state.phase==='setup'&&!(commands&&commands.length))return; /* a fresh, unstarted game must never overwrite the last real game */try{localStorage.setItem(SAVE_KEY,JSON.stringify(envelope()))}catch(e){}}
 function uniq(a){return [...new Set(a)]}
 function cubeTotal(k){return COLORS.reduce((a,c)=>a+(state.cubes[k]?.[c]||0),0)}
 function byCubes(ids){return ids.map((k,i)=>[k,i]).sort((a,b)=>cubeTotal(b[0])-cubeTotal(a[0])||a[1]-b[1]).map(x=>x[0])}
