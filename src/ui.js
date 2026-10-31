@@ -420,9 +420,9 @@ function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();bo
  else if(f.kind==='end'){let a=el('div',{className:'alert'+(state.status==='won'?' win':'')},b);el('h3',{textContent:state.status==='won'?'Victory':'Defeat'},a);el('p',{textContent:f.text},a);dur=6000;playSound(state.status==='won'?'win':'lose')}
  if(f.blocked)blockedNote(f,b);
  let sticky=f.kind==='outbreak'||f.kind==='end'||speed===0||(f.blocked&&speed<0),ms=dur*(speed>0?speed:1);
- let sk=el('div',{className:'fxSkip'},b);let btn=el('button',{textContent:(()=>{let n=fxQueue.filter(x=>!(x.kind==='outbreak'&&x.chainTotal>1&&x.chainIndex>1)).length;return n?'Continue ('+n+' more)':'Continue'})()},sk);btn.onclick=e=>{e.stopPropagation();nextFx()};
+ let sk=el('div',{className:'fxSkip'},b);let btn=!sticky?null:el('button',{textContent:(()=>{let n=fxQueue.filter(x=>!(x.kind==='outbreak'&&x.chainTotal>1&&x.chainIndex>1)).length;return n?'Continue ('+n+' more)':'Continue'})()},sk);if(btn)btn.onclick=e=>{e.stopPropagation();nextFx()};
  if(!sticky){let bar=el('div',{className:'fxBar',title:'Closes automatically; click to continue now'},sk);el('i',{style:'animation-duration:'+ms+'ms'},bar);fxTimer=setTimeout(nextFx,ms)}
- box.className='on';box.onclick=()=>nextFx();setTimeout(()=>btn.focus({preventScroll:true}),0)}
+ box.className='on';box.onclick=()=>nextFx();if(btn)setTimeout(()=>btn.focus({preventScroll:true}),0)}
 document.addEventListener('keydown',e=>{if(fxCurrent&&(e.key==='Enter'||e.key===' '||e.key==='Escape')&&!document.querySelector('dialog[open]')){e.preventDefault();nextFx()}});
 
 

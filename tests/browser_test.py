@@ -40,7 +40,8 @@ async def main():
     cid=await pg.evaluate("state.infectionDeck[0]");shown=f"COLORS.reduce((a,k)=>a+(cubeView||state.cubes)['{cid}'][k],0)";real=f"COLORS.reduce((a,k)=>a+state.cubes['{cid}'][k],0)"
     b0=await pg.evaluate(real);await pg.evaluate("perform({type:'infect'})");await pg.wait_for_timeout(400)
     ok(await pg.evaluate(real)>b0 and await pg.evaluate(shown)==b0,'new cube hidden while the infection popup is up')
-    await pg.click('#fx .fxSkip button');await pg.wait_for_timeout(300)
+    ok(await pg.evaluate("!document.querySelector('#fx .fxSkip button')&&!!document.querySelector('#fx .fxBar')"),'timed popups have no Continue button, just the countdown bar')
+    await pg.click('#fx',position={'x':20,'y':20});await pg.wait_for_timeout(300)
     ok(await pg.evaluate("$('flyers').children.length>0"),'cube flies in after the popup closes')
     await pg.wait_for_timeout(1000)
     ok(await pg.evaluate(f"{shown}==={real}&&cubeView===null&&$('flyers').children.length===0"),'cube lands and the board matches the game state')

@@ -1,4 +1,5 @@
 ## Latest
+- Popups that close by themselves no longer have a green Continue button (click anywhere to dismiss); popups that wait for you, like outbreaks, keep it.
 - Event card alerts are smaller with less padding; the box under the pawn moves out of the way of highlighted cities and regions.
 - Event map-pick prompts (Science Triumph, Purify Water) now show the Event card and sit in a board corner away from the choices instead of over the middle of the map.
 - iPad/touch: tapping a city a second time now completes the move (the larger tap areas I added earlier were cancelling the first tap).
