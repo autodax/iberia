@@ -520,3 +520,5 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 .saveName{display:flex;align-items:center;gap:8px;font-size:15px;margin:0 0 8px}.saveName input{flex:1;font-size:15px;padding:5px 8px;border:1px solid #9a8a62;border-radius:6px;background:#fffaf0}
 @media(max-width:1399px){#app.bm .handTitle{white-space:normal;line-height:15px;font-size:13px;align-items:flex-start}}
+#app.bm .pileTray button.card.thumb,#app.bm .peekOne button.card.thumb{width:56px;max-width:56px;flex:none;aspect-ratio:2/3;height:auto}
+#app.bm .pileTray{max-height:40vh;overflow:auto}
