@@ -522,3 +522,5 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 @media(max-width:1399px){#app.bm .handTitle{white-space:normal;line-height:15px;font-size:13px;align-items:flex-start}}
 #app.bm .pileTray button.card.thumb,#app.bm .peekOne button.card.thumb{width:56px;max-width:56px;flex:none;aspect-ratio:2/3;height:auto}
 #app.bm .pileTray{max-height:40vh;overflow:auto}
+.alert.cure{max-width:none;box-sizing:border-box}
+.alert.cure h3{text-transform:none;letter-spacing:.02em;text-align:center;margin-left:auto;margin-right:auto}
