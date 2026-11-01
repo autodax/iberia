@@ -486,3 +486,15 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .cubeRow{display:flex;gap:8px;flex-wrap:wrap}.cubeBtn{position:relative;width:46px;height:46px;padding:4px;border-radius:10px;background:#fff8;border:2px solid #777}.cubeBtn img{width:100%;height:100%;object-fit:contain;pointer-events:none}.cubeBtn b{position:absolute;right:-4px;bottom:-4px;background:#f6ecd4;border:1px solid #555;border-radius:9px;font-size:11px;padding:0 4px}
 .cubeChips{display:flex;flex-wrap:wrap;gap:5px}.cubeChips .chip{display:inline-flex;align-items:center;gap:3px;background:#fff8;border:1px solid #777;border-radius:12px;padding:1px 7px 1px 3px;font-size:12px}.cubeChips .chip img{width:18px;height:18px}
 #choiceOptions .cubeBtn{flex:0 0 auto!important;width:52px;height:52px}
+
+/* setup panel: numbered steps, large text, one button style */
+#app.bm #setupPanel{padding:14px 14px 16px}
+#app.bm #setupPanel h2{font-size:22px;margin:0 0 4px}
+#app.bm #setupPanel .label,#app.bm #setupPanel label>span{display:block;font-size:18px;font-weight:700;line-height:1.25;margin:16px 0 8px;color:#2e4339}
+#app.bm #setupPanel .choiceGroup,#app.bm #setupPanel .choiceGroup.many{display:flex;flex-direction:column;gap:7px;max-height:none;overflow:visible;border:0;padding:0;background:none}
+#app.bm #setupPanel .choiceGroup .chip{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;font-size:17px;padding:8px 12px;border-radius:9px;text-align:left;font-weight:500}
+#app.bm #setupPanel .choiceGroup .chip.on{font-weight:700}
+#app.bm #setupPanel .choiceGroup .chip.on::after{content:'✓';margin-left:auto;font-size:20px}
+#app.bm #setupPanel #begin{width:100%;min-height:52px;font-size:19px;font-weight:700;margin-top:16px}
+#app.bm #setupPanel #firstHint{font-size:15px;line-height:1.4;margin-top:12px}
+#app.bm #setupPanel .detail{font-size:16px;margin:10px 0}

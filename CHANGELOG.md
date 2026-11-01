@@ -1,5 +1,7 @@
 ## Latest
 
+- The Starting choices panel is now a numbered list of steps in larger type: 1, 2… pick each player's starting city, then 'Who goes first?', then 'Begin game'. All the options are the same size and the chosen one is dark green with a check mark.
+
 - Safari sound after a reload: the page now releases its audio engine and the silent 'keep-alive' audio when it is reloaded or closed, and starts them fresh when it comes back (a fix for sound staying dead until Safari is restarted). Not testable outside Safari, so please report whether it helps.
 
 - The research fanfare now plays together with the celebration popup (not later, when the microscope token lands).

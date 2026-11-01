@@ -488,12 +488,13 @@ function drawHands(){let box=$('hands'),top=$('activeHand'),n=state.players.leng
   if(p.hand.length>handLimit(p)&&!['epidemic','setup','ended'].includes(state.phase))el(bmOn?'div':'span',{className:'detail overNote',textContent:bmOn?'Over the limit: click a card to discard it, or click an Event to play or discard it.':' Over the limit: click ✕ to discard, or click an Event to play or discard it.'},bmOn?h:cards);if(shownActive()===i&&holdActive==null&&state.phase!=='setup'&&state.status==='playing'){let ts=state.phase==='actions'?'Actions left: '+state.actions:state.phase==='draw'?'Draw cards':state.phase==='infection'?'Infection step':state.phase==='epidemic'?'Epidemic':state.phase==='discard'?'Discard to the limit':'';if(ts)el('div',{className:'turnState',textContent:ts},h)}});$('turnBox').hidden=state.phase==='setup'||inLobby();{let q=state.players[shownActive()];if(q)$('turnBox').style.setProperty('--pc',PAWN[q.role]||'#1f5a3a')}for(let [k,t] of slideIn)if(performance.now()-t>=900)slideIn.delete(k)}
 
 /* ---------- action panel ---------- */
-function drawSetup(){let box=$('startFields');box.replaceChildren();let online=Net.active,host=!online||Net.isHost;
+function drawSetup(){let box=$('startFields');box.replaceChildren();let online=Net.active,host=!online||Net.isHost,step=0;
  state.players.forEach((p,i)=>{let items=p.hand.filter(k=>C[k]);let opts=(items.length?items:Object.keys(C)).map(k=>[k,C[k].name]);
   if(!mine(i)){el('p',{className:'detail',textContent:plabel(i)+': '+(p.city?'starts in '+C[p.city].name:'is choosing a starting city…')},box);return}
+  step++;
   let cur=p.city||(online?'':sel['start'+i]);if(cur&&!opts.some(([v])=>v===cur))cur=online?'':opts[0][0];if(!online&&!cur)cur=opts[0][0];sel['start'+i]=cur;
-  field(plabel(i)+' starts in'+(online&&!p.city?' — choose one':''),'start'+i,opts,cur,v=>{sel['start'+i]=v;perform({type:'pick',seat:i,city:v})},box,{blank:online&&!p.city})});
- let fp=$('firstPlayer'),lab=fp.parentElement,done=state.players.every(q=>q.city);lab.hidden=!host;$('begin').hidden=!host;$('begin').disabled=online&&!done;
+  field(step+'. '+plabel(i)+': pick a starting city'+(online&&!p.city?' (required)':''),'start'+i,opts,cur,v=>{sel['start'+i]=v;perform({type:'pick',seat:i,city:v})},box,{blank:online&&!p.city})});
+ let fp=$('firstPlayer'),lab=fp.parentElement,done=state.players.every(q=>q.city);lab.hidden=!host;$('begin').hidden=!host;if($('firstLabel'))$('firstLabel').textContent=(step+1)+'. Who goes first?';$('begin').textContent=(step+2)+'. Begin game';$('begin').disabled=online&&!done;
  if(!host){$('firstHint').textContent=done?'Everyone has chosen. Waiting for the host to begin the game.':'Choose your starting city from a City card in your hand. The host begins the game when everyone has chosen.';return}
  let sug=suggestFirst(),key=state.seed+':'+state.players.map(q=>q.hand.join()).join('|');fp.replaceChildren();state.players.forEach((p,i)=>{let k=oldestCard(p);el('option',{value:i,textContent:plabel(i)+(k?' · '+C[k].name+' '+fmtYear(FOUNDED[k]):'')},fp)});if(fp.dataset.key!==key){fp.dataset.key=key;fp.value=sug?String(sug.i):'0'}else if(+fp.dataset.v<state.players.length)fp.value=fp.dataset.v;fp.onchange=()=>fp.dataset.v=fp.value;fp.dataset.v=fp.value;buttonize(fp);
  let ties=sug?state.players.filter(q=>{let k=oldestCard(q);return k&&FOUNDED[k]===sug.y}).length:0;
