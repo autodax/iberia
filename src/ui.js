@@ -232,7 +232,7 @@ function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=docu
  if(!ring){ring=el('div',{id:'ring'},$('boardFrame'))}
  let R=$('rightStrip');if(!R){R=el('div',{id:'rightStrip'});main.appendChild(R)}
  app.classList.toggle('bm',on);$('ringToggle').onclick=toggleRing;
- let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',textContent:'v'+UI_VERSION+' · built __BUILD__'},bf);svg('svg',{id:'ringLines'},ring)}
+ let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);svg('svg',{id:'ringLines'},ring)}
  for(let id of ['rulesLink','guideLink','logButton','onlineButton','menuButton'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
  if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));let pp=$('pawnPanel');if(!pp)pp=el('div',{id:'pawnPanel',hidden:true},bf);el('div',{id:'pawnNote'},pp);for(let id of ['actionForm','confirm','actionHint'])pp.appendChild($(id));aside.style.display='none';R.style.display=''}
  else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));{let aa=$('actionArea');for(let id of ['actionForm','confirm','actionHint'])aa.appendChild($(id));let pp=$('pawnPanel');if(pp)pp.hidden=true}aside.style.display='';R.style.display='none'}

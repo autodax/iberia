@@ -1,5 +1,7 @@
 ## Latest
 
+- The version and build time moved off the map into the Menu (top of the Game menu).
+
 - Added tests/ui_fuzz.py: plays whole games on the real page by clicking buttons and map spots at random, checking the rules after every move (usage: `python3 tests/ui_fuzz.py 25 SEED out.json`).
 - Railroads on connections that are not allowed (e.g. from an older cached page or old rewind data) are now removed when a saved/rewound game loads. The board's version label now shows the build time so you can tell whether your page is current.
 
