@@ -1,5 +1,8 @@
 ## Latest
 
+- Event windows streamlined: every step now happens in the one floating window. Science Triumph picks its region on the map inside the window (no popup that closes it); choosing which cube to remove (Science Triumph, Overseas Migration) now shows coloured cube buttons right in the window, plus chips showing the cubes chosen. The separate "do they agree?" popup is replaced by a line in the window and an "Everyone agrees — Play Event" button. Hospital Founding plays as soon as you click the city; Good Season, One More Day and Second Chance play immediately with no extra window.
+- Removed the ✥ handle: drag any floating window from anywhere that isn't a button (the cursor becomes a hand).
+
 - Fixed: the floating Event window no longer closes when you drag it or click its padding.
 
 - Event windows now float over the map (bottom-left, movable with the ✥ handle) instead of covering the side panel. Purify Water is one step in that window: click up to 2 regions on the map (selected ones are outlined), then Play Event. No side panel, no extra popups.
