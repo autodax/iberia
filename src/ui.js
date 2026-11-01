@@ -17,11 +17,11 @@ function layoutBase(){if(LAYOUT)return LAYOUT;let labels=[],dots=[];for(let c of
 function ovl(a,b){let w=Math.min(a[2],b[2])-Math.max(a[0],b[0]),h=Math.min(a[3],b[3])-Math.max(a[1],b[1]);return w>0&&h>0?w*h:0}
 function hit(r,list){let s=0;for(let b of list)s+=ovl(r,b);return s}
 // choose the first candidate rectangle that covers the least printed text, then other cities, then other pieces
-function pick(cands,w,h,extra=[],own=null){let L=layoutBase(),best=null;cands.forEach(([x,y],i)=>{let r=[x,y,x+w,y+h],off=(x<26||x+w>1494||y<38||y+h>1046)?500:0,score=off+hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==own))*3+hit(r,extra)*2+i*3;if(!best||score<best.s)best={x,y,s:score}});return best}
+function pick(cands,w,h,extra=[],own=null,avoid=[]){let L=layoutBase(),best=null;cands.forEach(([x,y],i)=>{let r=[x,y,x+w,y+h],off=(x<26||x+w>1494||y<38||y+h>1046)?500:0,score=off+hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==own))*3+hit(r,extra)*2+hit(r,avoid)*12+i*3;if(!best||score<best.s)best={x,y,s:score}});return best}
 function cubeWidth(cid,view){let w=0;for(let k of COLORS){let n=view[cid][k];if(n)w+=19+(n-1)*9+3}return Math.max(0,w-3)}
-function cubeOrigin(cid,view){let c=C[cid],W=cubeWidth(cid,view),np=pawnsAt(cid),key=cid+':'+W+':'+np,L=layoutBase();if(L.cache[key])return L.cache[key];let pr=np?[pawnSpot(cid,np).r]:[];
+function cubeOrigin(cid,view){let c=C[cid],W=cubeWidth(cid,view),np=pawnsAt(cid),L=layoutBase(),eng=[];for(let q of state.players)if(q.city2&&q.city){let [ex,ey]=pawnPos(state.players.indexOf(q),state);if(Math.hypot(ex-c.x,ey-c.y)<150)eng.push([ex-26,ey-56,ex+26,ey+18])}let key=cid+':'+W+':'+np+':'+eng.map(r=>r.map(Math.round)).join(';');if(L.cache[key])return L.cache[key];let pr=np?[pawnSpot(cid,np).r]:[];
  let x=c.x,y=c.y,H=22,cands=[[x+13,y-17],[x-13-W,y-17],[x-W/2,y+14],[x+9,y+10],[x-9-W,y+10],[x+13,y-30],[x-13-W,y-30],[x-W/2,y-62],[x+13,y+28],[x-13-W,y+28],[x-W/2,y+34]];
- let b=pick(cands,W,H,pr,cid);return L.cache[key]=[b.x,b.y]}
+ if(eng.length)for(let r of [24,40,56])for(let a=0;a<8;a++)cands.push([Math.round(x-W/2+r*Math.cos(a*Math.PI/4)*1.4),Math.round(y-8+r*Math.sin(a*Math.PI/4))]);let b=pick(cands,W,H,pr,cid,eng);return L.cache[key]=[b.x,b.y]}
 function hospitalOrigin(cid,n,extra){let c=C[cid],x=c.x,y=c.y,W=30*n,H=30;let cands=[[x-35,y-8],[x+5,y-8],[x-W/2,y+12],[x-14-W,y-15],[x+14,y-15],[x-35,y-48],[x+5,y-48],[x-W/2,y+30]];let b=pick(cands,W,H,extra,cid);return [b.x,b.y]}
 function pawnSpot(cid,n){let L=layoutBase(),key='p:'+cid+':'+n;if(L.cache[key])return L.cache[key];let c=C[cid],W=20*(n-1)+30,best=null;
  for(let dy of [0,12,22])for(let dx of [0,10,-10,18,-18]){let r=[c.x+dx-W/2,c.y-4+dy-42,c.x+dx+W/2,c.y-4+dy+3],s=hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==cid))*3+Math.abs(dx)*8+dy*5;if(!best||s<best.s)best={dx,dy,s,r}}return L.cache[key]=best}

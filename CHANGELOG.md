@@ -7,6 +7,7 @@
 - Rural Doctor: after clicking a cube there is now an "Also treat most infected" button (picks the nearby city with the most cubes); you can still click any nearby city on the map to choose a specific one.
 - Choice boxes (play or discard a card, confirmations, other pick lists) now open just left of the side bar (draggable) instead of the middle of the board.
 - Hospital tokens can no longer be placed off the edge of the board; the version and build time are back on the map (medium green, bottom edge beside the microscopes).
+- Cubes now keep clear of the Civil Engineer's pawn when she stands on a connection near their city.
 - Starting choices buttons tightened further, font slightly smaller.
 
 - The Starting choices panel is now a numbered list of steps in larger type: 1, 2… pick each player's starting city, then 'Who goes first?', then 'Begin game'. All the options are the same size and the chosen one is dark green with a check mark.
