@@ -17,7 +17,7 @@ function layoutBase(){if(LAYOUT)return LAYOUT;let labels=[],dots=[];for(let c of
 function ovl(a,b){let w=Math.min(a[2],b[2])-Math.max(a[0],b[0]),h=Math.min(a[3],b[3])-Math.max(a[1],b[1]);return w>0&&h>0?w*h:0}
 function hit(r,list){let s=0;for(let b of list)s+=ovl(r,b);return s}
 // choose the first candidate rectangle that covers the least printed text, then other cities, then other pieces
-function pick(cands,w,h,extra=[],own=null){let L=layoutBase(),best=null;cands.forEach(([x,y],i)=>{let r=[x,y,x+w,y+h],score=hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==own))*3+hit(r,extra)*2+i*3;if(!best||score<best.s)best={x,y,s:score}});return best}
+function pick(cands,w,h,extra=[],own=null){let L=layoutBase(),best=null;cands.forEach(([x,y],i)=>{let r=[x,y,x+w,y+h],off=(x<26||x+w>1494||y<38||y+h>1046)?500:0,score=off+hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==own))*3+hit(r,extra)*2+i*3;if(!best||score<best.s)best={x,y,s:score}});return best}
 function cubeWidth(cid,view){let w=0;for(let k of COLORS){let n=view[cid][k];if(n)w+=19+(n-1)*9+3}return Math.max(0,w-3)}
 function cubeOrigin(cid,view){let c=C[cid],W=cubeWidth(cid,view),np=pawnsAt(cid),key=cid+':'+W+':'+np,L=layoutBase();if(L.cache[key])return L.cache[key];let pr=np?[pawnSpot(cid,np).r]:[];
  let x=c.x,y=c.y,H=22,cands=[[x+13,y-17],[x-13-W,y-17],[x-W/2,y+14],[x+9,y+10],[x-9-W,y+10],[x+13,y-30],[x-13-W,y-30],[x-W/2,y-62],[x+13,y+28],[x-13-W,y+28],[x-W/2,y+34]];
@@ -235,7 +235,7 @@ function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=docu
  if(!ring){ring=el('div',{id:'ring'},$('boardFrame'))}
  let R=$('rightStrip');if(!R){R=el('div',{id:'rightStrip'});main.appendChild(R)}
  app.classList.toggle('bm',on);$('ringToggle').onclick=toggleRing;
- let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);svg('svg',{id:'ringLines'},ring)}
+ let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',textContent:'v'+UI_VERSION+' · built __BUILD__'},bf);svg('svg',{id:'ringLines'},ring)}
  for(let id of ['rulesLink','guideLink','logButton','onlineButton','menuButton'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
  if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));let pp=$('pawnPanel');if(!pp)pp=el('div',{id:'pawnPanel',hidden:true},bf);el('div',{id:'pawnNote'},pp);for(let id of ['actionForm','confirm','actionHint'])pp.appendChild($(id));aside.style.display='none';R.style.display=''}
  else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));{let aa=$('actionArea');for(let id of ['actionForm','confirm','actionHint'])aa.appendChild($(id));let pp=$('pawnPanel');if(pp)pp.hidden=true}aside.style.display='';R.style.display='none'}

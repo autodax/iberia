@@ -324,7 +324,7 @@ aside #phaseLabel{display:none}
 @keyframes hotPulse{0%,100%{opacity:.45}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){.hotPulse{animation:none;opacity:.75}}
 #app.bm #bar{display:none}
-#verTag{position:absolute;left:13.4%;top:95.6%;font:600 11px system-ui;color:#000;z-index:3;pointer-events:none;opacity:.85}
+#verTag{position:absolute;left:39%;top:95.4%;font:600 11px system-ui;color:#3f7f4c;text-shadow:0 0 3px #f4ecd2,0 0 3px #f4ecd2;z-index:3;pointer-events:none;white-space:nowrap}
 #app:not(.bm) #verTag{display:none}
 #app.bm .cancelMode{margin-top:6px;width:100%}
 
