@@ -36,8 +36,8 @@ font=ImageFont.truetype(R+'tools/fonts/EBGaramond-Variable.ttf',SIZE)
 try: font.set_variation_by_axes([650])
 except Exception as ex: print('weight axis not set',ex)
 sym=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',int(SIZE*.8))
-halo=Image.new('RGBA',pil.size,(0,0,0,0));hd=ImageDraw.Draw(halo)
-txt=Image.new('RGBA',pil.size,(0,0,0,0));td=ImageDraw.Draw(txt)
+halo=Image.new('L',pil.size,0);hd=ImageDraw.Draw(halo)
+txt=Image.new('L',pil.size,0);td=ImageDraw.Draw(txt)
 CREAM=(247,238,212,235);INK=(38,24,10,255)
 fonts={}
 def F(sz):
@@ -104,15 +104,18 @@ for cid,o in LO.items():
         if len(lines)>1 and o[2]<0: lx=left+(w-aw-lw)
         if len(lines)>1 and o[0]<=0 and o[2]>=0: lx=left+(w-aw-lw)/2
         ly=top+k*lh
-        for dx,dy in [(-2,0),(2,0),(0,-2),(0,2),(-2,-2),(2,2),(-2,2),(2,-2)]:
-            put(hd,lx+dx,ly+dy,l,font,sz,CREAM)
-        put(td,lx,ly,l,font,sz,INK)
+        put(hd,lx,ly,l,font,sz,255)
+        put(td,lx,ly,l,font,sz,255)
         if port and k==n-1:
             ax=lx+lw+sz*0.08;ay=ly+sz*0.02
-            hd.text((ax,ay),'\u2693',font=sym,fill=CREAM,stroke_width=3,stroke_fill=CREAM)
-            td.text((ax,ay),'\u2693',font=sym,fill=INK)
+            hd.text((ax,ay),'\u2693',font=sym,fill=255)
+            td.text((ax,ay),'\u2693',font=sym,fill=255)
 from PIL import ImageFilter
 patch=patch.filter(ImageFilter.GaussianBlur(14))
-out=Image.alpha_composite(Image.alpha_composite(Image.alpha_composite(pil,patch),halo),txt).convert('RGB')
-out.save(R+'assets/board_clear.jpeg',quality=92)
+# one even cream outline per word: grow the text mask, close the gaps between letters, soften the edge
+cream_a=halo.filter(ImageFilter.MaxFilter(13)).filter(ImageFilter.GaussianBlur(2.2)).point(lambda v:min(255,int(v*1.15)))
+cream=Image.new('RGBA',pil.size,CREAM[:3]+(0,));cream.putalpha(cream_a)
+ink=Image.new('RGBA',pil.size,INK[:3]+(0,));ink.putalpha(txt)
+out=Image.alpha_composite(Image.alpha_composite(Image.alpha_composite(pil,patch),cream),ink).convert('RGB')
+out.save(R+'assets/board_clear.jpeg',quality=95,subsampling=0)
 print('saved',out.size)
