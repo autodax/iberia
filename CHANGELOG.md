@@ -1,6 +1,7 @@
 ## Latest
 - New board picture with clearer, larger city names (the original is kept as assets/board_original_backup.jpeg).
 - Board picture updated again.
+- Board picture updated once more.
 - The board picture is now always the one built into the page, so a stale cached copy from the repo can no longer replace it after a moment.
 - "Disease researched" banner: text is centred and in title case (for example "Yellow fever researched!") instead of all capitals.
 - The board picture now reloads fresh after each update (it could show the new board briefly, then an older cached copy).
