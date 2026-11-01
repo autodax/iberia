@@ -907,7 +907,7 @@ recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin
 
 // Card size slider (Menu): scales the hover previews and the drawn-card popups; remembered on this device
 {let K='iberia-card-size2',v=140;try{v=+localStorage.getItem(K)||140}catch(e){}
- let apply=x=>{x=Math.max(100,Math.min(200,x));document.documentElement.style.setProperty('--cs',String(x/100));let i=$('cardSize');if(i)i.value=x;let t=$('cardSizeVal');if(t)t.textContent=x+'%';return x};
+ let apply=x=>{x=Math.max(100,Math.min(300,x));document.documentElement.style.setProperty('--cs',String(x/100));let i=$('cardSize');if(i)i.value=x;let t=$('cardSizeVal');if(t)t.textContent=x+'%';return x};
  apply(v);$('cardSize').oninput=()=>{v=apply(+$('cardSize').value);try{localStorage.setItem(K,String(v))}catch(e){}}}
 
 /* no hover tooltips: keep the text for screen readers (aria-label) but drop the title popups */
