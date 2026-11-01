@@ -1,5 +1,8 @@
 ## Latest
 
+- The buttons under the pawn now move out of the way of the cities/regions offered by a second map pick (for example the Civil Engineer choosing the other end of his connection).
+- Removed the small red labels for the infection-rate and outbreak markers advancing; the ring animation and sound remain.
+
 - Removed the hover tooltips (the little text boxes that appear after hovering a while). The text is kept for screen readers.
 - When a choice is about a cube colour (e.g. the Palliative Care Nurse bringing a cube along), the options are now cube pictures instead of words.
 - The UI test runner (tests/ui_fuzz.py) is more reliable: it reloads the page for each game and handles pop-up choices correctly.
