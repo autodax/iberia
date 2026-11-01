@@ -26,6 +26,7 @@ COLLECT="""(()=>{
  for(let b of document.querySelectorAll('#pawnPanel button:not(:disabled)'))add(b,'panel',3);
  for(let b of document.querySelectorAll('#hands button:not(:disabled)'))add(b,'hand',1);
  for(let b of document.querySelectorAll('#preview button:not(:disabled),.previewBox button:not(:disabled),#cardPreview button:not(:disabled)'))add(b,'preview',1);
+ let rt=document.getElementById('ringToggle');if(rt&&!rt.hidden)add(rt,'ringtoggle',3);
  let bg=document.getElementById('begin');if(bg&&!bg.disabled)add(bg,'begin',8);
  let np=document.getElementById('nextPhase');if(np&&!np.disabled)add(np,'next',2);
  let un=document.getElementById('undo');if(un&&!un.disabled)add(un,'undo',0.15);
