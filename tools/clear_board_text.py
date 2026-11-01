@@ -5,7 +5,7 @@ import json,re,sys,math
 import numpy as np,cv2
 from PIL import Image,ImageDraw,ImageFont
 R='/home/claude/iberia/'
-SIZE=int(sys.argv[1]) if len(sys.argv)>1 else 36
+SIZE=int(sys.argv[1]) if len(sys.argv)>1 else 44
 src=open(R+'src/ui.js').read()
 LO=json.loads(re.search(r"const LABEL_OFF=(\{.*?\});",src).group(1))
 M=json.JSONDecoder().raw_decode(open(R+'src/map.js').read().split('=',1)[1].lstrip())[0]
@@ -44,52 +44,75 @@ def F(sz):
     sz=int(round(sz))
     if sz not in fonts:
         f=ImageFont.truetype(R+'tools/fonts/EBGaramond-Variable.ttf',sz)
-        try:f.set_variation_by_axes([650])
+        try:f.set_variation_by_axes([620])
         except Exception:pass
         fonts[sz]=f
     return fonts[sz]
+TRACK=0.04          # letter spacing as a fraction of the font size
+def tw(t,font,sz): return sum(font.getlength(ch) for ch in t)+len(t)*sz*TRACK
+def put(d,x,y,t,font,sz,fill,**kw):
+    for ch in t:
+        d.text((x,y),ch,font=font,fill=fill,**kw);x+=font.getlength(ch)+sz*TRACK
+patch=Image.new('RGBA',pil.size,(0,0,0,0));pd=ImageDraw.Draw(patch)
+cleanarr=np.array(pil.convert('RGB'))
+CIRC=[to_img(c['x'],c['y']) for c in M['cities']]
+INK=(14,9,4,255);CREAM=(250,243,222,255)
 for cid,o in LO.items():
     ci=C[cid];name=ci['name'].upper()
-    x0,y0,x1,y1=boxes[cid]
-    bw,bh=x1-x0,y1-y0
-    port=ci.get('port')
-    two=(o[3]-o[1])>=26 and (' ' in name or '-' in name)
+    x0,y0,x1,y1=boxes[cid];port=ci.get('port')
+    long=len(name)>15 and (' ' in name or '-' in name)
+    two=((o[3]-o[1])>=26 or long) and (' ' in name or '-' in name)
     if two:
-        parts=re.split(r'(?<=-)|\s+',name);parts=[q for q in parts if q]
+        parts=[q for q in re.split(r'(?<=-)|\s+',name) if q]
         best=None
         for k in range(1,len(parts)):
             l1=' '.join(parts[:k]);l2=' '.join(parts[k:]);sc=abs(len(l1)-len(l2))
             if best is None or sc<best[0]:best=(sc,l1,l2)
         lines=[best[1],best[2]]
     else: lines=[name]
-    n=len(lines)
-    ref=F(60);wref=max(td.textlength(l,font=ref) for l in lines)+(60*0.95 if port else 0)
-    s_w=60*bw/wref                       # size that makes the new text as wide as the old
-    s_h=(bh/n)/0.78*1.0                  # size from the old line height
-    sz=SIZE
-    font=F(sz);sym=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',int(sz*.8))
-    lh=sz*0.98
-    widths=[td.textlength(l,font=font) for l in lines]
-    aw=sz*0.95 if port else 0
-    w=max(widths)+aw
+    n=len(lines);sz=SIZE;font=F(sz)
+    sym=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',int(sz*.85))
+    lh=sz*0.98;widths=[tw(l,font,sz) for l in lines];aw=sz*1.0 if port else 0
+    w=max(widths)+aw;h=lh*n
     midx=(x0+x1)/2;midy=(y0+y1)/2
     if o[0]>0: left=x0
     elif o[2]<0: left=x1-w
     else: left=midx-w/2
-    top=midy-lh*n/2-sz*0.12
+    top=midy-h/2-sz*0.1
+    # keep clear of every city circle (radius about 40 px at this scale)
+    def clash(L,T):
+        for (cx,cy) in CIRC:
+            nx=min(max(cx,L),L+w);ny=min(max(cy,T+sz*.15),T+h)
+            if math.hypot(nx-cx,ny-cy)<44:return True
+        return False
+    step=6;tries=0
+    while clash(left,top) and tries<14:
+        if o[0]>0: left+=step
+        elif o[2]<0: left-=step
+        else: top+=step*(1 if midy>CIRC[int(cid[1:])][1] else -1)
+        tries+=1
+    left=max(30,min(left,pil.size[0]-w-30))
+    # lighten the ground behind the name (soft patch)
+    L0,T0,R0,B0=int(left-10),int(top),int(left+w+10),int(top+h+sz*.25)
+    reg=cleanarr[max(0,T0):B0,max(0,L0):R0].reshape(-1,3)
+    if len(reg):
+        med=np.median(reg,axis=0);col=tuple(int(min(255,v*1.1+12)) for v in med)
+        pd.rounded_rectangle([L0,T0,R0,B0],radius=14,fill=col+(120,))
     for k,l in enumerate(lines):
         lw=widths[k]
-        lx=left if o[0]>0 else (left+(w-aw-lw) if o[2]<0 else midx-lw/2-aw/2*(1 if k==n-1 else 0)*0)
+        lx=left if (o[0]>0 or len(lines)>1 and o[2]>=0) else (left+(w-aw-lw) if o[2]<0 else left+(w-aw-lw)/2)
+        if len(lines)>1 and o[2]<0: lx=left+(w-aw-lw)
+        if len(lines)>1 and o[0]<=0 and o[2]>=0: lx=left+(w-aw-lw)/2
         ly=top+k*lh
-        for dx in (-2,0,2):
-            for dy in (-2,0,2):
-                hd.text((lx+dx,ly+dy),l,font=font,fill=CREAM)
-        td.text((lx,ly),l,font=font,fill=INK)
+        for dx,dy in [(-2,0),(2,0),(0,-2),(0,2),(-2,-2),(2,2),(-2,2),(2,-2)]:
+            put(hd,lx+dx,ly+dy,l,font,sz,CREAM)
+        put(td,lx,ly,l,font,sz,INK)
         if port and k==n-1:
-            ax=lx+lw+sz*0.1;ay=ly+sz*0.04
-            hd.text((ax,ay),'\u2693',font=sym,fill=CREAM,stroke_width=2,stroke_fill=CREAM)
+            ax=lx+lw+sz*0.08;ay=ly+sz*0.02
+            hd.text((ax,ay),'\u2693',font=sym,fill=CREAM,stroke_width=3,stroke_fill=CREAM)
             td.text((ax,ay),'\u2693',font=sym,fill=INK)
-halo=halo.filter(__import__('PIL.ImageFilter',fromlist=['x']).GaussianBlur(1.2))
-out=Image.alpha_composite(Image.alpha_composite(pil,halo),txt).convert('RGB')
+from PIL import ImageFilter
+patch=patch.filter(ImageFilter.GaussianBlur(14))
+out=Image.alpha_composite(Image.alpha_composite(Image.alpha_composite(pil,patch),halo),txt).convert('RGB')
 out.save(R+'assets/board_clear.jpeg',quality=92)
 print('saved',out.size)
