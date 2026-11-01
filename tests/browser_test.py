@@ -60,7 +60,7 @@ async def main():
     if await pg.evaluate("document.getElementById('choiceDialog').open"):await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(150)
     c1=await pg.evaluate("state.players[state.active].city")
     ok(c1!=c0 and not await pg.evaluate("$('undo').hidden"),'undo offered after a move')
-    t=await pg.get_attribute('#undo','title');ok(t and 'Undo:' in t,'undo tooltip: '+str(t))
+    t=await pg.get_attribute('#undo','aria-label');ok(t and 'Undo:' in t,'undo label (no hover tooltip): '+str(t))
     await pg.click('#actionButtons >> text=Carriage / boat');await pg.click('#confirm');await pg.wait_for_timeout(200)
     if await pg.evaluate("document.getElementById('choiceDialog').open"):await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(150)
     ok(await pg.evaluate("state.actions===2"),'two moves made')
@@ -251,7 +251,7 @@ async def main():
         await pg.evaluate("to=>{quickMove(to)}",to);await pg.wait_for_timeout(300)
         ok(await pg.evaluate("to=>$('choiceDialog').open&&$('choiceDialog').classList.contains('mapPick')&&document.querySelectorAll('#board polygon.pickable').length===C[to].region_ids.length",to),'nurse region choice highlighted on map')
         r=await pg.evaluate("to=>C[to].region_ids[1]",to)
-        await pg.evaluate("r=>{let p=[...document.querySelectorAll('#board polygon.pickable')].find(x=>x.querySelector('title').textContent.startsWith(r+' '));p.dispatchEvent(new MouseEvent('click',{bubbles:true}))}",r);await pg.wait_for_timeout(400)
+        await pg.evaluate("r=>{mapPick.pick(r)}",r);await pg.wait_for_timeout(400)
         ok(await pg.evaluate("(a)=>state.players[state.active].city===a[0]&&state.prevention===a[1]&&!$('choiceDialog').open&&!document.querySelector('#board polygon.pickable')",[to,r]),'map click moves pawn and places nurse token')
     else: ok(False,'no nurse test city found')
     # v0.9.21 checks
