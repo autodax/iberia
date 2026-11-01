@@ -498,3 +498,18 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #app.bm #setupPanel #begin{width:100%;min-height:34px;font-size:17px;font-weight:700;margin-top:10px;padding:3px 12px}
 #app.bm #setupPanel #firstHint{font-size:15px;line-height:1.4;margin-top:12px}
 #app.bm #setupPanel .detail{font-size:16px;margin:10px 0}
+/* event windows: numbered steps, one button style */
+#eventDialog{padding:12px 14px 14px}
+#eventDialog h2{font-size:20px;line-height:1.2;margin:0 0 8px}
+#eventDialog .close{font-size:14px;padding:2px 10px;min-height:26px}
+#eventDialog.sideDialog .close{float:right;margin:0 0 4px 8px}
+#eventDialog #eventForm{counter-reset:evstep;gap:10px}
+#eventDialog .eventText{font-size:15px;line-height:1.35}
+#eventDialog .field>.label,#eventDialog .cardPicker>.label{font-size:17px;font-weight:700;line-height:1.25;margin:4px 0 4px;color:#2e4339}
+#eventDialog .field>.label::before,#eventDialog .cardPicker>.label::before{counter-increment:evstep;content:counter(evstep) ". "}
+#eventDialog .detail{font-size:14px;margin:0 0 6px}
+#eventDialog #eventForm button:not(.cubeBtn):not(.miniCard),#eventDialog #eventConfirm{display:block;width:100%;min-height:30px;font-size:15px;padding:3px 12px;border-radius:9px;margin-top:4px}
+#eventDialog #eventConfirm{min-height:36px;font-size:17px;font-weight:700;margin-top:10px}
+#eventDialog #eventConsent{font-size:14px;margin:8px 0 0}
+
+#eventDialog .mapFld.picking .detail{background:#ffe9a8;border-left:4px solid #e0a800;border-radius:6px;padding:6px 8px;color:#3a2f00;font-size:15px}

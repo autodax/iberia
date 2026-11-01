@@ -645,8 +645,8 @@ function eventForm(card,box,seat,onChange){let m={},n=state.players.length,activ
  // Board view: choose cities / railway lines on the map; the dialog sits in the side strip and says what to click
  function mapField(label,o){let row=el('div',{className:'field mapFld'},box);el('div',{className:'label',textContent:label},row);el('p',{className:'detail',textContent:o.text},row);
   let activate=()=>{activeLabel=label;mapPick={kind:o.kind,options:new Set(o.options),selected:new Set(o.selected||[]),ev:true,hover:null,pick:v=>{o.onPick(v)}};paint()};
-  if(!o.options.length)return;el('button',{type:'button',className:'action'+(activeLabel===label?' chosen':''),textContent:activeLabel===label?'Click on the map…':'Pick on the map',onclick:activate},row);
-  if(activeLabel===label||(o.auto&&!m._auto[label])){m._auto[label]=true;activate()}}
+  if(!o.options.length)return;
+  if(activeLabel===label||(o.auto&&!m._auto[label])){m._auto[label]=true;activate();row.classList.add('picking')}else el('button',{type:'button',className:'action',textContent:'Pick on the map',onclick:activate},row)}
  function cubeBtns(c,cols,done){let r=el('div',{className:'field cubePick'},box);el('div',{className:'label',textContent:C[c].name},r);let w=el('div',{className:'cubeRow'},r);for(let k of cols){let b=el('button',{type:'button',className:'cubeBtn',title:k,onclick:()=>done(k)},w);el('img',{src:asset('tokens/cube-'+k)||'',alt:k},b);let n=state.cubes[c][k];if(n>1)el('b',{textContent:n},b)}}
  function cubeChips(list){if(!list.length)return;let r=el('div',{className:'cubeChips'},box);for(let [c,k] of list){let x=el('span',{className:'chip',title:C[c].name+' · '+k},r);el('img',{src:asset('tokens/cube-'+k)||'',alt:k},x);x.append(C[c].name)}}
  function endPick(){activeLabel=null;if(mapPick&&mapPick.ev){mapPick=null;paint()}}
@@ -686,7 +686,7 @@ function eventForm(card,box,seat,onChange){let m={},n=state.players.length,activ
 function openEvent(seat,card,fromRole){if(['setup','ended'].includes(state.phase)||busy||!mine(seat))return;
  if(['good_season','one_more_day','second_chance'].includes(card)&&!(card==='second_chance'&&!state.discard.includes(state.players[seat].city)&&!state.players[seat].city2)){perform({type:'event',seat,card,args:{},...(fromRole?{fromRole:true}:{})});return}
  let box=$('eventForm');box.replaceChildren();$('eventTitle').textContent=plabel(seat)+': '+EVENTS[card];let cq=$('eventConsent'),btn=$('eventConfirm'),f;
- let upd=()=>{if(!f)return;let q=null;try{let A=f.args;if(!(f.missing&&f.missing(card==='when_plans_were_good'?A.inner:A)))q=f.consentNeeded(A)}catch(e){}cq.textContent=q||'';cq.hidden=!q;btn.textContent=q?'Everyone agrees — Play Event':'Play Event'};
+ let upd=()=>{if(!f)return;let q=null;try{let A=f.args;if(!(f.missing&&f.missing(card==='when_plans_were_good'?A.inner:A)))q=f.consentNeeded(A)}catch(e){}cq.textContent=q||'';cq.hidden=!q;let st=[...box.querySelectorAll('.field>.label,.cardPicker>.label')].filter(e=>e.parentElement.style.display!=='none').length+1;btn.textContent=st+'. '+(q?'Everyone agrees — Play Event':'Play Event')};
  f=eventForm(card,box,seat,upd);box.onchange=upd;upd();
  btn.onclick=async()=>{let args=f.args,mm=f.missing&&f.missing(card==='when_plans_were_good'?args.inner:args);if(mm){notice(mm,true);return}if(f.consentNeeded(args)){if(card==='when_plans_were_good')args.inner.consent=true;else args.consent=true}$('eventDialog').close();if(!await perform({type:'event',seat,card,args,...(fromRole?{fromRole:true}:{})}))showDialog('eventDialog')};showDialog('eventDialog')}
 
