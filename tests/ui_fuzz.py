@@ -19,12 +19,12 @@ COLLECT="""(()=>{
  if(open('choiceDialog')){let d=document.getElementById('choiceDialog');for(let b of d.querySelectorAll('button:not(:disabled)'))add(b,'choice',3);
    if(d.classList.contains('mapPick'))document.querySelectorAll('#board .pickable,#board [data-arm],#board .edgeBuild').forEach(e=>add(e,'map',3));return out}
  if(fx&&fx.classList.contains('on')){add(fx,'fx',5);return out}
- if(open('eventDialog')){for(let b of document.querySelectorAll('#eventDialog button:not(:disabled)'))add(b,'event',2);
+ if(open('eventDialog')){for(let x of document.querySelectorAll('#eventDialog select,#eventDialog input[type=checkbox]'))add(x,'sel',4);for(let b of document.querySelectorAll('#eventDialog button:not(:disabled)'))add(b,'event',2);
    document.querySelectorAll('#board .pickable,#board [data-arm],#board .edgeBuild').forEach(e=>add(e,'map',4));return out}
  for(let id of ['menu','logDialog','onlineDialog'])if(open(id))document.getElementById(id).close();
  for(let b of document.querySelectorAll('#ring button:not(:disabled),#actionButtons button:not(:disabled)'))add(b,'ring',3);
  for(let b of document.querySelectorAll('#pawnPanel button:not(:disabled)'))add(b,'panel',3);
- for(let b of document.querySelectorAll('#hands button:not(:disabled)'))add(b,'hand',1);
+ for(let b of document.querySelectorAll('#rightStrip button.card:not(:disabled),#hands button:not(:disabled)'))add(b,'hand',b.classList.contains('disc')?10:1);
  for(let b of document.querySelectorAll('#preview button:not(:disabled),.previewBox button:not(:disabled),#cardPreview button:not(:disabled)'))add(b,'preview',1);
  let rt=document.getElementById('ringToggle');if(rt&&!rt.hidden)add(rt,'ringtoggle',3);
  let bg=document.getElementById('begin');if(bg&&!bg.disabled)add(bg,'begin',8);
@@ -64,7 +64,7 @@ async def main():
         if key==last:idle+=1
         else:idle=0;last=key
         if idle>60:
-          dbg=await pg.evaluate("({ph:state.phase,st:state.status,begin:!!document.getElementById('begin')&&document.getElementById('begin').offsetParent!==null,cd:document.getElementById('choiceDialog').open,ed:document.getElementById('eventDialog').open,fx:document.getElementById('fx').className,busy:!!busy,fxc:!!fxCurrent,q:fxQueue.length,mode,pk:!!mapPick,pv:!!document.getElementById('cardPreview'),first:state.active,act:state.actions})");print('STUCK',dbg,trace[-12:],flush=True)
+          dbg=await pg.evaluate("({ph:state.phase,st:state.status,begin:!!document.getElementById('begin')&&document.getElementById('begin').offsetParent!==null,cd:document.getElementById('choiceDialog').open,ed:document.getElementById('eventDialog').open,fx:document.getElementById('fx').className,busy:!!busy,fxc:!!fxCurrent,q:fxQueue.length,mode,pk:!!mapPick,pv:!!document.getElementById('cardPreview'),first:state.active,act:state.actions})");dbg['ring']=await pg.evaluate("(()=>{let g=id=>{let e=document.getElementById(id);if(!e)return null;let r=e.getBoundingClientRect(),cs=getComputedStyle(e);return [e.hidden,e.disabled,cs.display,cs.visibility,cs.pointerEvents,Math.round(r.width),Math.round(r.height)]};return {hold:holdActive,full:fullHands(state).map(i=>[i,state.players[i].hand.length,handLimit(state.players[i])]),ringOpen,ring:g('ring'),toggle:g('ringToggle'),np:g('nextPhase'),re:g('ringEnd'),ab:g('actionButtons'),canAct:canAct(),mine:mine(state.active),inMode:document.getElementById('app').className}})()");print('STUCK',dbg,trace[-12:],flush=True)
           await pg.screenshot(path=f'/tmp/fuzz_stuck_{SEED}_{g}.png')
           findings['stuck'].append({'game':g,'roles':roles,'phase':st['phase'],'mode':st['mode'],'shot':f'/tmp/fuzz_stuck_{SEED}_{g}.png'});break
         if idle in (25,45):
@@ -77,6 +77,8 @@ async def main():
           cands.append([-1,'bodyclick',12,'body'])
         w=[c[2] for c in cands];c=rnd.choices(cands,weights=w)[0]
         trace.append((c[1],c[3]))
+        if c[1]=='sel':
+          await pg.evaluate("(i)=>{let e=window.__c[i];if(e.tagName==='SELECT'){e.selectedIndex=Math.floor(Math.random()*e.options.length);e.dispatchEvent(new Event('change',{bubbles:true}))}else e.click()}",c[0]);await pg.wait_for_timeout(25);continue
         if c[0]<0:
           await pg.mouse.click(20,892);await pg.wait_for_timeout(25);continue
         info=await pg.evaluate("""(i)=>{let e=window.__c[i];let r=e.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;let t=document.elementFromPoint(x,y);let isHtml=e instanceof HTMLButtonElement&&!e.closest('#hands');return {x,y,covered:isHtml&&t&&!(e===t||e.contains(t)||t.contains(e)),by:t&&(t.tagName+'#'+t.id+'.'+(t.className&&t.className.baseVal===undefined?t.className:'')+' in '+(t.parentElement&&(t.parentElement.id||t.parentElement.className)))}}""",c[0])

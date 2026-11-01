@@ -1,5 +1,8 @@
 ## Latest
 
+- The research fanfare now plays together with the celebration popup (not later, when the microscope token lands).
+- The click-through test (tests/ui_fuzz.py) now discards cards, uses dropdowns/tick boxes in Event windows, and reports why a game is stuck.
+
 - The buttons under the pawn now move out of the way of the cities/regions offered by a second map pick (for example the Civil Engineer choosing the other end of his connection).
 - Removed the small red labels for the infection-rate and outbreak markers advancing; the ring animation and sound remain.
 
