@@ -203,7 +203,7 @@ function chooseNow(title,options,labels,noCancel,card){return dialogGap().then((
  let kind=options.length&&options.every(o=>typeof o==='string'&&R[o])?'region':options.length&&options.every(o=>typeof o==='string'&&C[o])?'city':null;
  let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();dlgClosedAt=Date.now();d.classList.remove('mapPick','pawnAlert','btnAlert','withCardAlert');if($('panelLine'))pawnLine(0,0,null);d.style.left=d.style.top=d.style.right=d.style.bottom='';if(mapPick){mapPick=null;paint()}res(v)};
  box.classList.toggle('mapOnly',!!kind&&(options.length>8||bmOn));
- options.forEach((o,i)=>{let b=el('button',{textContent:labels?.[i]??o,onclick:()=>finish(o)},box);if(kind){b.onmouseenter=()=>{if(mapPick){mapPick.hover=o;paint()}};b.onmouseleave=()=>{if(mapPick){mapPick.hover=null;paint()}}}});
+ options.forEach((o,i)=>{let isCube=COLORS.includes(o)&&asset('tokens/cube-'+o),b=el('button',{textContent:isCube?'':labels?.[i]??o,title:isCube?(labels?.[i]??o):'',className:isCube?'cubeBtn':'',onclick:()=>finish(o)},box);if(isCube)el('img',{src:asset('tokens/cube-'+o),alt:o},b);if(kind){b.onmouseenter=()=>{if(mapPick){mapPick.hover=o;paint()}};b.onmouseleave=()=>{if(mapPick){mapPick.hover=null;paint()}}}});
  $('choiceCancel').onclick=()=>finish(null);d.oncancel=e=>{e.preventDefault();if(!noCancel)finish(null)};
  if(kind){mapPick={kind,options:new Set(options),pick:finish,hover:null};d.classList.add('mapPick');el('p',{className:'mapHint',textContent:(bmOn?'Click a highlighted ':'Or click a highlighted ')+(kind==='region'?'region':'city')+' on the map.'},box);d.show();if(bmOn&&mapOnlyOk()){d.classList.add('pawnAlert');if(card)d.classList.add('withCardAlert');placeCornerAlert(d,kind,options)}paint()}else if(bmOn&&card&&mapOnlyOk()){d.classList.remove('withCard');d.classList.add('pawnAlert','btnAlert','withCardAlert');d.show();placeCornerAlert(d,'city',[])}else d.showModal()}))}
 async function ask(q){return (await choose(q,['yes','no'],['Yes — agreed','No']))==='yes'}
@@ -905,3 +905,7 @@ recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin
 {let K='iberia-card-size2',v=140;try{v=+localStorage.getItem(K)||140}catch(e){}
  let apply=x=>{x=Math.max(100,Math.min(200,x));document.documentElement.style.setProperty('--cs',String(x/100));let i=$('cardSize');if(i)i.value=x;let t=$('cardSizeVal');if(t)t.textContent=x+'%';return x};
  apply(v);$('cardSize').oninput=()=>{v=apply(+$('cardSize').value);try{localStorage.setItem(K,String(v))}catch(e){}}}
+
+/* no hover tooltips: keep the text for screen readers (aria-label) but drop the title popups */
+(function(){let strip=n=>{if(n.nodeType!==1)return;let list=n.matches('[title]')?[n,...n.querySelectorAll('[title]')]:[...n.querySelectorAll('[title]')];for(let e of list){let t=e.getAttribute('title');if(t&&!e.hasAttribute('aria-label'))e.setAttribute('aria-label',t);e.removeAttribute('title')}if(n.localName==='title'&&n.namespaceURI===NS)n.remove();else for(let t of [...n.querySelectorAll('svg title')])t.remove()};
+strip(document.documentElement);new MutationObserver(ms=>{for(let m of ms){if(m.type==='attributes')strip(m.target);else m.addedNodes.forEach(strip)}}).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['title']})})();

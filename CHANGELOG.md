@@ -1,5 +1,9 @@
 ## Latest
 
+- Removed the hover tooltips (the little text boxes that appear after hovering a while). The text is kept for screen readers.
+- When a choice is about a cube colour (e.g. the Palliative Care Nurse bringing a cube along), the options are now cube pictures instead of words.
+- The UI test runner (tests/ui_fuzz.py) is more reliable: it reloads the page for each game and handles pop-up choices correctly.
+
 - New Palliative Care Nurse role card image.
 
 - The version and build time moved off the map into the Menu (top of the Game menu).

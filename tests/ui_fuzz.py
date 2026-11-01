@@ -17,7 +17,7 @@ COLLECT="""(()=>{
  window.__c=[];
  let fx=document.getElementById('fx');
  if(open('choiceDialog')){let d=document.getElementById('choiceDialog');for(let b of d.querySelectorAll('button:not(:disabled)'))add(b,'choice',3);
-   document.querySelectorAll('#board .pickable,#board [data-arm],#board .edgeBuild').forEach(e=>add(e,'map',3));return out}
+   if(d.classList.contains('mapPick'))document.querySelectorAll('#board .pickable,#board [data-arm],#board .edgeBuild').forEach(e=>add(e,'map',3));return out}
  if(fx&&fx.classList.contains('on')){add(fx,'fx',5);return out}
  if(open('eventDialog')){for(let b of document.querySelectorAll('#eventDialog button:not(:disabled)'))add(b,'event',2);
    document.querySelectorAll('#board .pickable,#board [data-arm],#board .edgeBuild').forEach(e=>add(e,'map',4));return out}
@@ -26,6 +26,7 @@ COLLECT="""(()=>{
  for(let b of document.querySelectorAll('#pawnPanel button:not(:disabled)'))add(b,'panel',3);
  for(let b of document.querySelectorAll('#hands button:not(:disabled)'))add(b,'hand',1);
  for(let b of document.querySelectorAll('#preview button:not(:disabled),.previewBox button:not(:disabled),#cardPreview button:not(:disabled)'))add(b,'preview',1);
+ let bg=document.getElementById('begin');if(bg&&!bg.disabled)add(bg,'begin',8);
  let np=document.getElementById('nextPhase');if(np&&!np.disabled)add(np,'next',2);
  let un=document.getElementById('undo');if(un&&!un.disabled)add(un,'undo',0.15);
  document.querySelectorAll('#board .pickable,#board [data-arm],#board .edgeBuild').forEach(e=>add(e,'map',2));
@@ -45,11 +46,13 @@ async def main():
     await pg.goto(URL);await pg.wait_for_timeout(1500)
     await pg.evaluate("$('fxSpeed').value='-1';try{setSound(false)}catch(e){};window.__n=[];let on=notice;notice=function(m,e){window.__n.push(m);return on.apply(this,arguments)}")
     for g in range(GAMES):
+      await pg.goto(URL);await pg.wait_for_timeout(900)
+      await pg.evaluate("$('fxSpeed').value='-1';try{setSound(false)}catch(e){};window.__n=window.__n||[];let on=notice;notice=function(m,e){window.__n.push(m);return on.apply(this,arguments)}")
       n=rnd.choice([2,3,4]);roles=rnd.sample(list(json.loads(await pg.evaluate("JSON.stringify(Object.keys(ROLES))"))),n)
       await pg.evaluate("([n,roles,seed])=>{state=initial(seed,n,roles);commands=[];history=[];mode='';selectedCards=[];resetFx();recompute();render()}",[4,roles,rnd.randrange(10**6)] if False else [rnd.choice([4,5,6]),roles,rnd.randrange(10**6)])
       await pg.wait_for_timeout(200)
       await pg.evaluate("document.getElementById('begin')&&document.getElementById('begin').click()");await pg.wait_for_timeout(400)
-      last=(-1,'');idle=0;steps=0;t0=time.time()
+      trace=[];last=(-1,'');idle=0;steps=0;t0=time.time()
       while steps<2500:
         steps+=1;findings['steps']+=1
         st=await pg.evaluate(STATE)
@@ -60,11 +63,11 @@ async def main():
         if key==last:idle+=1
         else:idle=0;last=key
         if idle>60:
-          dbg=await pg.evaluate("({ph:state.phase,st:state.status,begin:!!document.getElementById('begin')&&document.getElementById('begin').offsetParent!==null,cd:document.getElementById('choiceDialog').open,ed:document.getElementById('eventDialog').open,fx:document.getElementById('fx').className,busy:!!busy,fxc:!!fxCurrent,q:fxQueue.length,mode,pk:!!mapPick,pv:!!document.getElementById('cardPreview'),first:state.active,act:state.actions})");print('STUCK',dbg,flush=True)
+          dbg=await pg.evaluate("({ph:state.phase,st:state.status,begin:!!document.getElementById('begin')&&document.getElementById('begin').offsetParent!==null,cd:document.getElementById('choiceDialog').open,ed:document.getElementById('eventDialog').open,fx:document.getElementById('fx').className,busy:!!busy,fxc:!!fxCurrent,q:fxQueue.length,mode,pk:!!mapPick,pv:!!document.getElementById('cardPreview'),first:state.active,act:state.actions})");print('STUCK',dbg,trace[-12:],flush=True)
           await pg.screenshot(path=f'/tmp/fuzz_stuck_{SEED}_{g}.png')
           findings['stuck'].append({'game':g,'roles':roles,'phase':st['phase'],'mode':st['mode'],'shot':f'/tmp/fuzz_stuck_{SEED}_{g}.png'});break
         if idle in (25,45):
-          await pg.evaluate("mode='';selectedCards=[];mapPick=null;for(let id of ['choiceDialog','eventDialog'])document.getElementById(id).open&&document.getElementById(id).close();resetFx();render()")
+          await pg.keyboard.press('Escape');await pg.evaluate("if(document.getElementById('eventDialog').open)document.querySelector('#eventDialog .close').click()")
         cands=json.loads(json.dumps(await pg.evaluate(COLLECT)))
         if not cands:
           await pg.wait_for_timeout(60)
@@ -72,6 +75,7 @@ async def main():
         if await pg.evaluate("!!document.getElementById('cardPreview')"):
           cands.append([-1,'bodyclick',12,'body'])
         w=[c[2] for c in cands];c=rnd.choices(cands,weights=w)[0]
+        trace.append((c[1],c[3]))
         if c[0]<0:
           await pg.mouse.click(20,892);await pg.wait_for_timeout(25);continue
         info=await pg.evaluate("""(i)=>{let e=window.__c[i];let r=e.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;let t=document.elementFromPoint(x,y);let isHtml=e instanceof HTMLButtonElement&&!e.closest('#hands');return {x,y,covered:isHtml&&t&&!(e===t||e.contains(t)||t.contains(e)),by:t&&(t.tagName+'#'+t.id+'.'+(t.className&&t.className.baseVal===undefined?t.className:'')+' in '+(t.parentElement&&(t.parentElement.id||t.parentElement.className)))}}""",c[0])
@@ -82,11 +86,10 @@ async def main():
         except Exception as e:
           note(findings['pageerrors'],'click: '+str(e)[:100])
         await pg.wait_for_timeout(25)
+      for m in await pg.evaluate('window.__n'):note(findings['notices'],str(m)[:100])
       st=await pg.evaluate(STATE)
       findings['results'].append({'game':g,'roles':roles,'status':st['status'],'phase':st['phase'],'commands':st['n'],'steps':steps,'secs':round(time.time()-t0)})
       print(f"game {g}: {st['status']} cmds={st['n']} steps={steps} {round(time.time()-t0)}s",flush=True)
-    nt=await pg.evaluate("window.__n")
-    for m in nt:note(findings['notices'],str(m)[:100])
     await b.close()
   print(json.dumps({k:v for k,v in findings.items() if k!='results'},indent=1,ensure_ascii=False)[:6000])
   if OUT:json.dump(findings,open(OUT,'w'),ensure_ascii=False,indent=1)
