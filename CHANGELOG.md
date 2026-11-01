@@ -1,4 +1,5 @@
 ## Latest
+- New board picture with clearer, larger city names (the original is kept as assets/board_original_backup.jpeg).
 - Starting choices buttons are shorter vertically (same font); hover-to-zoom is back on the active player's cards.
 - Starting choices buttons tightened further, font slightly smaller.
 - Event windows: removed the redundant "Pick on the map" button while the map is already waiting for clicks; the instruction is highlighted instead.
