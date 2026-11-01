@@ -324,8 +324,8 @@ aside #phaseLabel{display:none}
 @keyframes hotPulse{0%,100%{opacity:.45}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){.hotPulse{animation:none;opacity:.75}}
 #app.bm #bar{display:none}
-#verTag{position:absolute;left:39%;top:95.4%;font:600 11px system-ui;color:#3f7f4c;text-shadow:0 0 3px #f4ecd2,0 0 3px #f4ecd2;z-index:3;pointer-events:none;white-space:nowrap}
-#app:not(.bm) #verTag{display:none}
+#verTag{position:absolute;left:38.5%;top:94.3%;font:600 calc(13px*var(--bs,1))/1.2 system-ui;color:#3f7f4c;text-shadow:0 0 3px #f4ecd2,0 0 3px #f4ecd2;z-index:3;pointer-events:none;white-space:nowrap}
+#app:not(.bm) #verTag{position:absolute;left:38.5%;top:94.3%;font:600 calc(13px*var(--bs,1))/1.2 system-ui;color:#3f7f4c;text-shadow:0 0 3px #f4ecd2,0 0 3px #f4ecd2;z-index:3;pointer-events:none;white-space:nowrap}
 #app.bm .cancelMode{margin-top:6px;width:100%}
 
 /* other players: a condensed fan of small cards */
@@ -519,4 +519,4 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #choiceDialog.sideChoice{position:fixed;margin:0;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.4);box-sizing:border-box;max-height:calc(100vh - 16px);overflow:auto}#choiceDialog.sideChoice #choiceCard .card,#choiceDialog.sideChoice #choiceCard>*{max-width:100%}
 
 .saveName{display:flex;align-items:center;gap:8px;font-size:15px;margin:0 0 8px}.saveName input{flex:1;font-size:15px;padding:5px 8px;border:1px solid #9a8a62;border-radius:6px;background:#fffaf0}
-@media(max-width:1299px){#app.bm .handTitle{white-space:normal;line-height:15px;font-size:13px;align-items:flex-start}}
+@media(max-width:1399px){#app.bm .handTitle{white-space:normal;line-height:15px;font-size:13px;align-items:flex-start}}

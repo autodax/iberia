@@ -10,7 +10,8 @@
 - Cubes now keep clear of the Civil Engineer's pawn when she stands on a connection near their city.
 - Palliative Care Nurse buttons now show the colour of the hospital she is at (treat all) and the colour of the most numerous cubes in connected cities (attract).
 - Menu: you can type a name for the saved game file (remembered; the turn number is added). Blank keeps the old automatic name.
-- On narrower screens (iPad) the side panel is slimmer (111 px) so the board gets more of the height.
+- On narrower screens (iPad) the side panel shrinks automatically (down to 111 px, only as much as needed) so the board gets more of the height.
+- Version and build time on the map is now two small lines pinned to the board and scaling with it, clear of the microscopes.
 - Starting choices buttons tightened further, font slightly smaller.
 
 - The Starting choices panel is now a numbered list of steps in larger type: 1, 2… pick each player's starting city, then 'Who goes first?', then 'Begin game'. All the options are the same size and the chosen one is dark green with a check mark.

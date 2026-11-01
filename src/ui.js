@@ -216,7 +216,7 @@ function fitLayout(){let W=document.documentElement.clientWidth,H=innerHeight,pa
  let boardH=Math.max(200,H-2*pad-bar-gap),boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];
  // Wide windows (a Mac): the board fills the height and the hands live in strips on both sides.
  let free=W-2*pad-2*gap-boardW,wantBM=!LEGACY_SIDEBAR_LAYOUT;
- if(wantBM){let strip=W<1300&&state.phase!=='setup'?111:214;boardH=Math.max(200,H-2*pad);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];if(boardW>W-2*pad-gap-strip){boardW=W-2*pad-gap-strip;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
+ if(wantBM){let strip=214;if(state.phase!=='setup'){let bw=(H-2*pad)*BOARD_FIT[2]/BOARD_FIT[3];strip=Math.max(111,Math.min(214,Math.floor(W-2*pad-gap-bw)))}boardH=Math.max(200,H-2*pad);boardW=boardH*BOARD_FIT[2]/BOARD_FIT[3];if(boardW>W-2*pad-gap-strip){boardW=W-2*pad-gap-strip;boardH=boardW*BOARD_FIT[3]/BOARD_FIT[2]}
   let stripW=Math.floor(Math.min(270,W-2*pad-gap-boardW)),aw=Math.max(84,Math.min(168,stripW-46,(H-330)/3.6)),st2=$('app').style;
   for(let [k,v] of Object.entries({'--boardW':boardW,'--boardH':boardH,'--stripW':stripW,'--appW':W,'--appH':H,'--aw':aw}))st2.setProperty(k,v+'px');document.documentElement.style.setProperty('--aw',aw+'px');st2.setProperty('--bs',String(+(boardW/1478).toFixed(4)));setBoardMode(true);return}
  setBoardMode(false);
@@ -235,7 +235,7 @@ function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=docu
  if(!ring){ring=el('div',{id:'ring'},$('boardFrame'))}
  let R=$('rightStrip');if(!R){R=el('div',{id:'rightStrip'});main.appendChild(R)}
  app.classList.toggle('bm',on);$('ringToggle').onclick=toggleRing;
- let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',textContent:'v'+UI_VERSION+' · built __BUILD__'},bf);svg('svg',{id:'ringLines'},ring)}
+ let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',innerHTML:'v'+UI_VERSION+'<br>built __BUILD__'},bf);svg('svg',{id:'ringLines'},ring)}
  for(let id of ['rulesLink','guideLink','logButton','onlineButton','menuButton'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
  if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));let pp=$('pawnPanel');if(!pp)pp=el('div',{id:'pawnPanel',hidden:true},bf);el('div',{id:'pawnNote'},pp);for(let id of ['actionForm','confirm','actionHint'])pp.appendChild($(id));aside.style.display='none';R.style.display=''}
  else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));{let aa=$('actionArea');for(let id of ['actionForm','confirm','actionHint'])aa.appendChild($(id));let pp=$('pawnPanel');if(pp)pp.hidden=true}aside.style.display='';R.style.display='none'}
