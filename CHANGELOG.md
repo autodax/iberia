@@ -1,4 +1,5 @@
 ## Latest
+- Starting choices buttons are shorter vertically (same font); hover-to-zoom is back on the active player's cards.
 
 - The Starting choices panel is now a numbered list of steps in larger type: 1, 2… pick each player's starting city, then 'Who goes first?', then 'Begin game'. All the options are the same size and the chosen one is dark green with a check mark.
 
