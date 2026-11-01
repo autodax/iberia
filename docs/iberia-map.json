@@ -1141,13 +1141,6 @@
   },
   {
    "a": "c45",
-   "b": "c44",
-   "style": "solid",
-   "railway_allowed": true,
-   "verification": "approved_by_user"
-  },
-  {
-   "a": "c45",
    "b": "c46",
    "style": "solid",
    "railway_allowed": true,

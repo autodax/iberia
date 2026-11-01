@@ -22,10 +22,12 @@ ice='const NET_ICE='+json.dumps(json.loads(d('src/ice.json')))+';'
 net=d('src/net.js').replace("if(typeof module!=='undefined')","if(false)")
 REPO_FILES=sorted(os.path.relpath(p,'assets').replace(os.sep,'/') for p in glob.glob('assets/**/*',recursive=True) if os.path.isfile(p))
 js=mp+'\n'+ice+'\n'+net+'\nconst REPO_FILES='+json.dumps(REPO_FILES)+';\nconst TOKENS='+json.dumps(TOKENS)+';\nconst EMBED='+json.dumps(EMBED)+';\n'+eng+'\n'+d('src/ui.js')
+import time
 html=d('src/index.html').replace('/*CSS*/',d('src/style.css')).replace('/*BOARD*/',board).replace('/*PEERJS*/',d('src/vendor/peerjs.min.js').replace('</script','<\\/script')).replace('/*JS*/',js.replace('</script','<\\/script'))
 ver=re.search(r"UI_VERSION='([\d.]+)'",d('src/ui.js')).group(1)
 os.makedirs('versions',exist_ok=True)
 out=['index.html','versions/iberia-v'+ver+'.html']
+html=html.replace('__BUILD__',time.strftime('%b %d %H:%M',time.gmtime())+' UTC')
 for f in out:open(f,'w',encoding='utf-8').write(html)
 print(len(html),'bytes ->',', '.join(out),'|',len(EMBED),'built-in graphics and sounds')
 

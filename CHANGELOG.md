@@ -1,5 +1,8 @@
 ## Latest
 
+- Added tests/ui_fuzz.py: plays whole games on the real page by clicking buttons and map spots at random, checking the rules after every move (usage: `python3 tests/ui_fuzz.py 25 SEED out.json`).
+- Railroads on connections that are not allowed (e.g. from an older cached page or old rewind data) are now removed when a saved/rewound game loads. The board's version label now shows the build time so you can tell whether your page is current.
+
 - Event windows streamlined: every step now happens in the one floating window. Science Triumph picks its region on the map inside the window (no popup that closes it); choosing which cube to remove (Science Triumph, Overseas Migration) now shows coloured cube buttons right in the window, plus chips showing the cubes chosen. The separate "do they agree?" popup is replaced by a line in the window and an "Everyone agrees — Play Event" button. Hospital Founding plays as soon as you click the city; Good Season, One More Day and Second Chance play immediately with no extra window.
 - Removed the ✥ handle: drag any floating window from anywhere that isn't a button (the cursor becomes a hand).
 
