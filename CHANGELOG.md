@@ -1,5 +1,7 @@
 ## Latest
 
+- Safari sound after a reload: the page now releases its audio engine and the silent 'keep-alive' audio when it is reloaded or closed, and starts them fresh when it comes back (a fix for sound staying dead until Safari is restarted). Not testable outside Safari, so please report whether it helps.
+
 - The research fanfare now plays together with the celebration popup (not later, when the microscope token lands).
 - The click-through test (tests/ui_fuzz.py) now discards cards, uses dropdowns/tick boxes in Event windows, and reports why a game is stuck.
 

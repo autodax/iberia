@@ -130,6 +130,9 @@ async function testSound(){let out=$('soundStatus');let say=t=>{out.textContent=
  say(log.join(' · ')+' · sound setting is '+(sndPrefs.on?'ON':'OFF')+' · volume '+Math.round(sndPrefs.vol*100)+'%')}
 $('soundTest').onclick=testSound;
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&sndPrefs.on){unlockSound();setTimeout(preloadSounds,300)}});
+// Safari keeps the old page's audio engine and "playing media" claim alive across a reload, which can leave the new page silent until Safari is restarted: let go of both when the page goes away, and start fresh when it comes back
+window.addEventListener('pagehide',()=>{try{if(sndKeep){sndKeep.pause();sndKeep.removeAttribute('src');sndKeep.load();sndKeep=null}}catch(e){}try{if(navigator.audioSession)navigator.audioSession.type='auto'}catch(e){}try{if(sndCtx&&sndCtx.state!=='closed')sndCtx.close()}catch(e){}sndCtx=null;sndMaster=null;sndBuf={}});
+window.addEventListener('pageshow',e=>{if(e.persisted&&sndPrefs.on){sndCtx=null;sndMaster=null;sndBuf={};unlockSound(true)}});
 
 /* ---------- helpers ---------- */
 function el(tag,props={},parent){let n=Object.assign(document.createElement(tag),props);if(parent)parent.appendChild(n);return n}
