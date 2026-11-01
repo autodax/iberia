@@ -12,6 +12,7 @@
 - Menu: you can type a name for the saved game file (remembered; the turn number is added). Blank keeps the old automatic name.
 - On narrower screens (iPad) the side panel shrinks automatically (down to 111 px, only as much as needed) so the board gets more of the height.
 - Card size slider (Menu) now goes up to 300%; big cards are capped to fit the window height.
+- The active pawn now sits on top of the turn-change rings and of the coloured lines to its buttons.
 - Version and build time on the map is now two small lines pinned to the board and scaling with it, clear of the microscopes.
 - Starting choices buttons tightened further, font slightly smaller.
 
