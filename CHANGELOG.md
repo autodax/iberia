@@ -3,6 +3,7 @@
 - Starting choices buttons tightened further, font slightly smaller.
 - Event windows: removed the redundant "Pick on the map" button while the map is already waiting for clicks; the instruction is highlighted instead.
 - Other event windows: Ships Arrive gets a numbered "Who travels there?" step, Government Mobilization buttons read "Move to…", player and card choices wrap side by side so windows are shorter.
+- Event windows now open just left of the side bar (still draggable).
 - Starting choices buttons tightened further, font slightly smaller.
 
 - The Starting choices panel is now a numbered list of steps in larger type: 1, 2… pick each player's starting city, then 'Who goes first?', then 'Begin game'. All the options are the same size and the chosen one is dark green with a check mark.
