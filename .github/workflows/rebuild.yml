@@ -1,0 +1,29 @@
+# Rebuilds the game page whenever the board picture (or any other picture/sound in assets/) is replaced.
+name: Rebuild game
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: rebuild
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow
+      - run: python3 build.py
+      - name: Commit the rebuilt game
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add index.html versions
+          if git diff --cached --quiet; then echo "Nothing to commit"; else git commit -m "Rebuild game from assets [skip ci]" && git push; fi
