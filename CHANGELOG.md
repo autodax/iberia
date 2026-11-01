@@ -1,5 +1,7 @@
 ## Latest
 
+- New Palliative Care Nurse role card image.
+
 - The version and build time moved off the map into the Menu (top of the Game menu).
 
 - Added tests/ui_fuzz.py: plays whole games on the real page by clicking buttons and map spots at random, checking the rules after every move (usage: `python3 tests/ui_fuzz.py 25 SEED out.json`).
