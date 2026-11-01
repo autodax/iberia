@@ -68,9 +68,10 @@ function repoBase(){return location.protocol.startsWith('http')&&/github\.io$/.t
 async function loadRepoAssets(){let files=null;
  try{let r=await fetch('https://api.github.com/repos/'+REPO_NAME+'/git/trees/'+REPO_BRANCH+'?recursive=1',{cache:'no-store'});if(r.ok){let j=await r.json();files=j.tree.filter(t=>t.type==='blob'&&t.path.startsWith('assets/')).map(t=>t.path.slice(7))}}catch(e){}
  if(!files)files=typeof REPO_FILES!=='undefined'?REPO_FILES:[];
- files=files.filter(f=>/\.(png|jpe?g|webp|gif|svg|wav|mp3|ogg)$/i.test(f));let base=repoBase(),found={};
+ files=files.filter(f=>/\.(png|jpe?g|webp|gif|svg|wav|mp3|ogg)$/i.test(f)&&!/^board\.[a-z]+$/i.test(f));   // the board picture is built into this file, so a cached copy from the repo can never replace it
+ let base=repoBase(),found={};
  const LAZY=/^(city_cards|infection_cards|event_cards|role_cards|instruction_cards)\/|(^|\/)(city_back|infection_back|role_back|actions_card|epidemia_card)\./i;   // big card pictures load only when a card is shown
- await Promise.all(files.map(f=>new Promise(res=>{let url=base+f.split('/').map(encodeURIComponent).join('/');if(/\.(wav|mp3|ogg)$/i.test(f)||LAZY.test(f)){found[repoKey(f)]=url;return res()}let im=new Image();im.onload=()=>{found[repoKey(f)]=url;res()};im.onerror=()=>res();im.src=url})));
+ await Promise.all(files.map(f=>new Promise(res=>{let url=base+f.split('/').map(encodeURIComponent).join('/');if(/^board\.[a-z]+$/i.test(f))url+='?v='+encodeURIComponent('__BUILD__');if(/\.(wav|mp3|ogg)$/i.test(f)||LAZY.test(f)){found[repoKey(f)]=url;return res()}let im=new Image();im.onload=()=>{found[repoKey(f)]=url;res()};im.onerror=()=>res();im.src=url})));
  REPO=found;let n=Object.keys(found).length;REPO_STATUS=n?n+' graphics loaded from the GitHub repo ('+REPO_NAME+'/assets).':'Could not reach the GitHub repo; using the copies built into this file.';
  if(!Object.keys(ASSETS).length){$('assetStatus').textContent=REPO_STATUS;let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC)}render()}
 const BUILTIN={water:TOKENS.water,prevention:TOKENS.prevention,infection_rate:TOKENS.infection,outbreak:TOKENS.outbreak,railroad:TOKENS.rail};
