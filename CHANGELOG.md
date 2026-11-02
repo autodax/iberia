@@ -1,5 +1,7 @@
 ## Latest
 
+- Hospitals sit a little further from their city circle and are drawn on top of the pulsing ring.
+
 - Cube clusters sit a few units further from the city circles.
 
 - One or two cubes sit close to their city again (the pyramid box was pushing them lower, under the action buttons).
