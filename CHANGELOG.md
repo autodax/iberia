@@ -1,5 +1,7 @@
 ## Latest
 
+- Role action buttons describe the action instead of naming the role: "Give Valladolid card", "Swap Valladolid card" (current city), "Look at top 3 cards", "Add water to adjacent region".
+
 - New sound when a hospital is founded or moved: a low wooden thunk followed by a bell note (assets/sounds/hospital.mp3).
 
 - The pulsing rings on available cities now just fade from transparent to opaque and back (3 s cycle), with no glow or blur.
