@@ -1,5 +1,7 @@
 ## Latest
 
+- Politician swap discard pile is sorted by colour, most outbreak-prone colour first (most cities with 3 cubes, then 2 cubes, then most cubes on the board).
+
 - Politician swap discard pile and the Player-deck peek use the gently shrunk card copies (no more shimmering/moire); the discard-pile cards zoom on hover.
 
 - Chain reactions: a cube flies from the outbreak city into the full city it sets off, and is absorbed there without adding to the cubes shown.
