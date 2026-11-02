@@ -1,5 +1,7 @@
 ## Latest
 
+- Hidden hand cards now slide out of the way (and slide back); hovering the small infection cards in the Time Traveler's hand shows them enlarged.
+
 - While picking a card for an action, cards that can't be used are hidden and the usable ones close up (a note says how many are hidden) instead of being dimmed. Event cards stay visible.
 
 - Alert titles (Epidemic, Outbreak, Hospital Overrun, Chain Reaction…) are title case and centred; text is larger in the Menu, Log and Online windows; other players' hands are back to full colour (the muted look stays for non-pickable hand cards and discard piles).

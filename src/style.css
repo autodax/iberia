@@ -527,5 +527,11 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #menu,#logDialog,#onlineDialog{font-size:16px}#menu p,#logDialog p,#onlineDialog p{font-size:15px}#menu h3,#logDialog h3,#onlineDialog h3{font-size:16.5px}#menu button,#logDialog button,#onlineDialog button,#menu input,#onlineDialog input,#menu select,#menu label,#onlineDialog label{font-size:15px}#logContent{font-size:15px}
 
 /* cards that can't be used for the current action slide out of the way */
-#app.bm button.card.thumb.gone{display:none}
+#app.bm button.card.thumb.gone{height:calc(var(--aw,168px)*1.5);margin-top:calc(var(--aw,168px)*-1.5);visibility:hidden;pointer-events:none;box-shadow:none}
+#app.bm button.card.thumb.gone.goneNew{visibility:visible;animation:goneOut .35s ease-in forwards}
+@keyframes goneOut{from{margin-top:calc(var(--aw,168px)*-1.14);visibility:visible}to{margin-top:calc(var(--aw,168px)*-1.5);visibility:visible}}
+#app.bm button.card.thumb.comeBack{animation:comeBack .35s ease-out}
+@keyframes comeBack{from{margin-top:calc(var(--aw,168px)*-1.5)}}
+@media(prefers-reduced-motion:reduce){#app.bm button.card.thumb.goneNew,#app.bm button.card.thumb.comeBack{animation:none}}
+#cardPreview.land .bigCard.art{width:min(calc(var(--aw,120px)*var(--cs,1.4)*1.9),40vw)}
 #app.bm .handCards[data-gone]::after{content:attr(data-gone) ' other card(s) not usable here';display:block;margin-top:6px;font-size:12px;color:#6a5a3c;text-align:center}
