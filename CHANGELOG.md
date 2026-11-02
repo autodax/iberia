@@ -1,4 +1,6 @@
 ## Latest
+
+- One shared de-emphasis for dimmed hand cards, other players' idle hands and the discard piles: 30% desaturated, same brightness, fully opaque.
 - New board picture with clearer, larger city names (the original is kept as assets/board_original_backup.jpeg).
 - Board picture updated again.
 - Board picture updated once more.
