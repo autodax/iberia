@@ -1,5 +1,7 @@
 ## Latest
 
+- Politician swap discard pile and the Player-deck peek use the gently shrunk card copies (no more shimmering/moire); the discard-pile cards zoom on hover.
+
 - Chain reactions: a cube flies from the outbreak city into the full city it sets off, and is absorbed there without adding to the cubes shown.
 
 - The "other cards not usable here" note under the hand wraps as "N other card(s)" / "not usable here".
