@@ -338,7 +338,7 @@ aside #phaseLabel{display:none}
 #app.bm #bar{display:none}
 
 #app.bm button.card.thumb.pick{outline:3px solid #ffd54a;box-shadow:0 0 12px #ffd54a}
-#app.bm button.card.thumb.dim{opacity:.4;filter:grayscale(.6)}
+#app.bm button.card.thumb.dim{opacity:.72;filter:grayscale(.35)}
 #app.bm button.card.thumb.selected{outline:4px solid #fff;box-shadow:0 0 14px #fff}
 /* bigger on-board counts */
 #cubeCounts{top:20.2%}
