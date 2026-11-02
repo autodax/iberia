@@ -1,6 +1,6 @@
 ## Latest
 
-- Large buttons that were medium green (Begin game, Confirm, End actions, Continue, chosen action buttons) are now the olive of the page background, with dark text. Dark-green selected buttons are unchanged.
+- Large green buttons (Begin game, Confirm, Continue, chosen action buttons) are a darker green (#3d5a4b) with cream text.
 
 - The page background and the frame around the board are now olive (#aaa474, averaged from your swatch); the side panel stays cream.
 
