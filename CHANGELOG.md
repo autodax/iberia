@@ -4,7 +4,7 @@
 - Board picture updated once more.
 - The board picture is now always the one built into the page, so a stale cached copy from the repo can no longer replace it after a moment.
 - "Disease researched" banner: text is centred and in title case (for example "Yellow fever researched!") instead of all capitals.
-- While picking cards for an action (such as Purify Water), Event cards in your hand are no longer greyed out (they can be played at any time), and the other cards are darkened rather than made see-through (same for other players' idle hands).
+- While picking cards for an action (such as Purify Water), Event cards in your hand are no longer greyed out (they can be played at any time), and the other cards are shown lighter and desaturated rather than see-through (same for other players' idle hands and the discard piles on the board).
 - The board picture now reloads fresh after each update (it could show the new board briefly, then an older cached copy).
 - Politician Swap: the discard-pile choices are small cards again (they had grown huge and run off the screen).
 - Starting choices buttons are shorter vertically (same font); hover-to-zoom is back on the active player's cards.
