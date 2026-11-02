@@ -251,8 +251,8 @@ aside #undo{padding:4px 10px}
 #roleFields.rolesGrid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
 
 /* active player: dark green outline; the players waiting are dimmed */
-aside .hand.idle{opacity:.62;filter:saturate(.75)}
-aside .hand.idle:hover{opacity:.9}
+aside .hand.idle{opacity:1;filter:saturate(.7) brightness(.9)}
+aside .hand.idle:hover{filter:none}
 /* a chosen city button keeps its color stripe */
 .choiceGroup .chip.city.blue.on,aside .choiceGroup .chip.city.blue.on{border-left-color:#3059c8}
 .choiceGroup .chip.city.red.on,aside .choiceGroup .chip.city.red.on{border-left-color:#b0262a}
@@ -338,7 +338,7 @@ aside #phaseLabel{display:none}
 #app.bm #bar{display:none}
 
 #app.bm button.card.thumb.pick{outline:3px solid #ffd54a;box-shadow:0 0 12px #ffd54a}
-#app.bm button.card.thumb.dim{opacity:.72;filter:grayscale(.35)}
+#app.bm button.card.thumb.dim{opacity:1;filter:grayscale(.5) brightness(.62)}
 #app.bm button.card.thumb.selected{outline:4px solid #fff;box-shadow:0 0 14px #fff}
 /* bigger on-board counts */
 #cubeCounts{top:20.2%}
