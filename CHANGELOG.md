@@ -1,5 +1,7 @@
 ## Latest
 
+- The "other cards not usable here" note under the hand wraps as "N other card(s)" / "not usable here".
+
 - All 48 infection card pictures adjusted: contrast +10%, saturation −10%. The originals are kept in `backup/infection_cards_original/`.
 
 - City highlight rings re-centred on the city markers of the current board (40 of 48 cities adjusted by up to ~2.5 map units).
