@@ -300,8 +300,8 @@ aside #phaseLabel{display:none}
 #app.bm button.card.thumb.disc{color:#fff;font-size:22px;text-shadow:0 0 4px #000,0 0 4px #000}
 /* the active player's hand: one overlapped column of larger cards */
 #app.bm .hand.active .handCards{display:flex;flex-direction:column;align-items:center;padding:4px 0 10px;gap:0}
-#app.bm .hand.active button.card.thumb{width:var(--aw,168px);flex:none;border-radius:8px;box-shadow:0 3px 8px #0009;margin-top:calc(var(--aw,168px)*-1.14)}
-#app.bm .hand.active button.card.thumb:first-child{margin-top:0}
+#app.bm .hand.active button.card.thumb{width:var(--aw,168px);flex:none;border-radius:8px;box-shadow:0 3px 8px #0009;}
+#app.bm .hand.active button.card.thumb:not(.gone)~button.card.thumb:not(.gone){margin-top:calc(var(--aw,168px)*-1.14)}
 #app.bm .hand.active button.card.thumb.disc{font-size:18px;text-align:right;padding-right:8px;align-items:flex-start;line-height:30px}
 #app.bm .holdRow{display:flex;gap:6px;padding:4px 2px}#app.bm .holdRow img{height:26px}#app.bm .holdRow img.wide{height:20px}
 #app.bm .ttBox>div:first-child{display:none}
@@ -525,3 +525,7 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 /* larger text in the Menu, Log and Online windows */
 #menu,#logDialog,#onlineDialog{font-size:16px}#menu p,#logDialog p,#onlineDialog p{font-size:15px}#menu h3,#logDialog h3,#onlineDialog h3{font-size:16.5px}#menu button,#logDialog button,#onlineDialog button,#menu input,#onlineDialog input,#menu select,#menu label,#onlineDialog label{font-size:15px}#logContent{font-size:15px}
+
+/* cards that can't be used for the current action slide out of the way */
+#app.bm button.card.thumb.gone{display:none}
+#app.bm .handCards[data-gone]::after{content:attr(data-gone) ' other card(s) not usable here';display:block;margin-top:6px;font-size:12px;color:#6a5a3c;text-align:center}

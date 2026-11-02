@@ -1,5 +1,7 @@
 ## Latest
 
+- While picking a card for an action, cards that can't be used are hidden and the usable ones close up (a note says how many are hidden) instead of being dimmed. Event cards stay visible.
+
 - Alert titles (Epidemic, Outbreak, Hospital Overrun, Chain Reaction…) are title case and centred; text is larger in the Menu, Log and Online windows; other players' hands are back to full colour (the muted look stays for non-pickable hand cards and discard piles).
 
 - One shared de-emphasis for dimmed hand cards, other players' idle hands and the discard piles: less colour and contrast, and tinted toward what they sit on (light yellow in the side panel, yellow-green under the city discard, brown under the infection discard), always fully opaque. Idle hands were not being dimmed at all in board view; fixed.
