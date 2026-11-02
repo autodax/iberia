@@ -1,5 +1,7 @@
 ## Latest
 
+- New sound when a hospital is founded or moved: a low wooden thunk followed by a bell note (assets/sounds/hospital.mp3).
+
 - The pulsing rings on available cities now just fade from transparent to opaque and back (3 s cycle), with no glow or blur.
 
 - Politician swap discard pile is sorted by colour, most outbreak-prone colour first (most cities with 3 cubes, then 2 cubes, then most cubes on the board).
