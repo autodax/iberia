@@ -1,5 +1,7 @@
 ## Latest
 
+- One or two cubes sit close to their city again (the pyramid box was pushing them lower, under the action buttons).
+
 - Cube clusters are now a tight pyramid: one cube alone, two side by side, three as two on the bottom with one on top (different colours sit side by side).
 
 - Board pieces look the same in Brave/Chrome as in Safari: removed the two CSS filters Safari ignores (the red-cube darkening and the pawn badge shadow).
