@@ -1,5 +1,7 @@
 ## Latest
 
+- Light text on dark buttons is now always the same cream (the ring's End actions and Confirm buttons and the action tooltips were white).
+
 - Large green buttons (Begin game, Confirm, Continue, chosen action buttons) are a darker green (#3d5a4b) with cream text.
 
 - The page background and the frame around the board are now olive (#aaa474, averaged from your swatch); the side panel stays cream.
