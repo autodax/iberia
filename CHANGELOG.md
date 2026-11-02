@@ -1,5 +1,7 @@
 ## Latest
 
+- All 48 infection card pictures adjusted: contrast +10%, saturation −10%. The originals are kept in `backup/infection_cards_original/`.
+
 - City highlight rings re-centred on the city markers of the current board (40 of 48 cities adjusted by up to ~2.5 map units).
 
 - City highlight rings are solid instead of dashed (checked all 48 against the board image: centred to within about 0.2 map units).
