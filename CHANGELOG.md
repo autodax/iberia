@@ -1,5 +1,7 @@
 ## Latest
 
+- Hover zoom on the Time Traveler's infection cards is half its previous size.
+
 - Hospitals sit a little further from their city circle and are drawn on top of the pulsing ring.
 
 - Cube clusters sit a few units further from the city circles.

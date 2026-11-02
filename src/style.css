@@ -535,5 +535,5 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 @keyframes goneOut0{from{margin-bottom:calc(var(--aw,168px)*-1.14);visibility:visible}to{visibility:visible}}
 @keyframes comeBack{from{margin-bottom:calc(var(--aw,168px)*-.36)}}
 @media(prefers-reduced-motion:reduce){#app.bm button.card.thumb.goneNew,#app.bm button.card.thumb.comeBack{animation:none}}
-#cardPreview.land .bigCard.art{width:min(calc(var(--aw,120px)*var(--cs,1.4)*1.9),40vw)}
+#cardPreview.land .bigCard.art{width:min(calc(var(--aw,120px)*var(--cs,1.4)*.95),20vw)}
 #app.bm .handCards[data-gone]::after{content:attr(data-gone) ' other card(s)\A not usable here';white-space:pre;display:block;margin-top:6px;font-size:12px;color:#6a5a3c;text-align:center}
