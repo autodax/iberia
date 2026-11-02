@@ -1,5 +1,7 @@
 ## Latest
 
+- Large buttons that were medium green (Begin game, Confirm, End actions, Continue, chosen action buttons) are now the olive of the page background, with dark text. Dark-green selected buttons are unchanged.
+
 - The page background and the frame around the board are now olive (#aaa474, averaged from your swatch); the side panel stays cream.
 
 - Hover zoom on the Time Traveler's infection cards is half its previous size.

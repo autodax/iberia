@@ -1,5 +1,5 @@
 /* Approved v05 aesthetic: muted green surroundings, parchment panels, tan buttons, cream cards with colored edge accents. */
-:root{--green:#516b60;--greenDark:#3f574d;--greenDeep:#2f453c;--parch:#ecdcb9;--parchLight:#f6e8cd;--tan:#e6cf9f;--tanHover:#dcc08a;--tanBorder:#b39463;--ink:#2e4339;--inkSoft:#5c6f62;--title:#f1dcae;--accent:#4c6b5c;--warn:#9c3b25;--cyan:#d9a400}
+:root{--green:#516b60;--greenDark:#3f574d;--greenDeep:#2f453c;--parch:#ecdcb9;--parchLight:#f6e8cd;--tan:#e6cf9f;--tanHover:#dcc08a;--tanBorder:#b39463;--ink:#2e4339;--inkSoft:#5c6f62;--title:#f1dcae;--accent:#4c6b5c;--olive:#aaa474;--oliveHover:#9b9566;--warn:#9c3b25;--cyan:#d9a400}
 *{box-sizing:border-box}[hidden]{display:none!important}
 html,body{height:100%;margin:0;overflow:hidden;background:#aaa474;color:var(--ink);font:14px system-ui,-apple-system,Segoe UI,sans-serif}
 body{display:grid;place-items:center}
@@ -34,7 +34,7 @@ aside{min-height:0;min-width:0;background:var(--parch);border:1px solid var(--ta
 h2{font-size:15px;margin:0 0 6px;color:var(--ink)}
 #actionButtons{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:5px}
 .action{font-size:13px;padding:6px 4px}
-.action.chosen{background:var(--accent);color:var(--parchLight);border-color:var(--greenDeep)}
+.action.chosen{background:var(--olive);color:var(--ink);border-color:var(--greenDeep)}
 #actionForm{display:grid;gap:12px;margin-top:8px}#actionForm label{font-size:13px}#actionForm select{font-size:15px;padding:7px 8px;min-height:36px;margin-bottom:4px}aside.roomy #actionForm select{font-size:16px;min-height:40px}
 label{display:block;font-size:12px}label select,label input:not([type=checkbox]){display:block;width:100%;margin-top:3px}
 .check{display:flex;align-items:center;gap:6px}.check input{margin:0}
@@ -42,8 +42,8 @@ label{display:block;font-size:12px}label select,label input:not([type=checkbox])
 .label{font-size:12px;margin-bottom:4px}
 .cardPicker{display:flex;gap:4px;flex-wrap:wrap}.cardPicker .label{width:100%}
 .miniCard{font-size:11px;padding:3px 6px;background:#f3e6c8;border:1px solid #8b7a5a;border-left:4px solid #aaa;border-radius:4px}
-.primary,#confirm,#begin,#nextPhase,#eventConfirm{background:var(--accent);color:var(--parchLight);border-color:var(--greenDeep);width:100%}
-.primary:hover,#confirm:hover,#begin:hover,#nextPhase:hover,#eventConfirm:hover{background:#3f5c4e}
+.primary,#confirm,#begin,#nextPhase,#eventConfirm{background:var(--olive);color:var(--ink);border-color:var(--greenDeep);width:100%}
+.primary:hover,#confirm:hover,#begin:hover,#nextPhase:hover,#eventConfirm:hover{background:var(--oliveHover)}
 #actionHint{font-size:12px;line-height:1.4;color:var(--inkSoft);margin:6px 0 0}
 #message{font-size:12px;color:var(--accent);line-height:1.4;min-height:16px;overflow-wrap:anywhere}
 .error{color:var(--warn)!important}
@@ -73,7 +73,7 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 .fxRow{display:flex;gap:16px;align-items:center}
 .fxCaption{background:var(--parch);border:1px solid var(--tanBorder);border-radius:6px;padding:5px 12px;font-size:14px;font-weight:600;color:var(--ink);box-shadow:0 4px 16px #0005}
 .fxSkip{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--parchLight);text-shadow:0 1px 2px #000}
-.fxSkip button{background:var(--accent);color:var(--parchLight);border-color:var(--greenDeep);font-size:15px;font-weight:600;padding:7px 22px;text-shadow:none;box-shadow:0 4px 14px #0006}
+.fxSkip button{background:var(--olive);color:var(--ink);border-color:var(--greenDeep);font-size:15px;font-weight:600;padding:7px 22px;text-shadow:none;box-shadow:0 4px 14px #0006}
 .fxBar{width:160px;height:4px;border-radius:2px;background:#ffffff33;overflow:hidden}.fxBar i{display:block;height:100%;background:var(--parchLight);transform-origin:left;animation:fxbar linear forwards}
 @keyframes fxbar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 .bigCard{width:150px;height:210px;border-radius:10px;background:#f3e6c8;border:2px solid #8b7a5a;box-shadow:0 8px 28px #0007;display:flex;flex-direction:column;overflow:hidden;color:#2b2b22}
@@ -227,7 +227,7 @@ aside{background:#d5bf92;border:none;box-shadow:inset 0 0 0 1px rgba(90,65,25,.1
 aside button,aside a.btn{background:#f1e5c6;border:1px solid transparent;box-shadow:0 1px 2px rgba(70,50,15,.22)}
 aside button:hover{background:#f8efd6}
 aside button:disabled{box-shadow:none}
-aside .action.chosen,aside .primary,aside #confirm,aside #nextPhase{background:var(--accent);color:var(--parchLight);border-color:transparent}
+aside .action.chosen,aside .primary,aside #confirm,aside #nextPhase{background:var(--olive);color:var(--ink);border-color:transparent}
 aside #nextPhase:hover,aside #confirm:hover{background:#3f5c4e}
 aside .choiceGroup .chip.on{background:var(--greenDeep);color:var(--parchLight);border-color:transparent}
 aside select,aside input{border:1px solid rgba(90,65,25,.22);background:#f4ead0}
