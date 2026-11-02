@@ -1,7 +1,5 @@
 ## Latest
 
-- Map highlights (available cities, railroad lines, purification zones, passenger rings) use the sea-green of the window background instead of yellow, so yellow cities no longer blend into the rings.
-
 - Hidden hand cards now slide out of the way (and slide back); hovering the small infection cards in the Time Traveler's hand shows them enlarged.
 
 - While picking a card for an action, cards that can't be used are hidden and the usable ones close up (a note says how many are hidden) instead of being dimmed. Event cards stay visible.
