@@ -448,10 +448,18 @@ let cubeView=null,flyTimer=null,flyTarget=null;
 function cubeSpot(cid,color,j,view){let [ox,oy]=cubeOrigin(cid,view),cx=ox;for(let k of COLORS){let n=view[cid][k];if(!n)continue;if(k===color)return [cx+j*9+9.5,oy+3-(j%2)*3+9.5];cx+=19+(n-1)*9+3}let c=C[cid];return [c.x+20,c.y-5]}
 function settleCubes(){if(flyTimer)return;if(!fxCurrent&&!fxQueue.length&&cubeView){cubeView=null;paint()}}
 function outbreakRings(cid){let g=$('flyers'),c=C[cid];if(!c)return;for(let n=0;n<4;n++){let r=svg('circle',{cx:c.x,cy:c.y,r:16,fill:'none',stroke:'#ff2a2a','stroke-width':5,class:'outRing','pointer-events':'none',style:'animation-delay:'+n*.2+'s'},g);setTimeout(()=>r.remove(),1700+n*200)}}
+// Chain reaction: the cube that could not fit in a full city flies there from the outbreak that sent it, then is absorbed (it is not added to the count shown).
+function phantomCube(fromId,toId,k){let g=$('flyers'),a=C[fromId],b=C[toId];if(!a||!b)return;let img=asset('tokens/cube-'+k),node;
+ if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:'cube-'+k,'pointer-events':'none'},g);else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5,'pointer-events':'none'},g);
+ let ox=a.x,oy=a.y,tx=b.x,ty=b.y,cx=(ox+tx)/2,cy=Math.min(oy,ty)-Math.min(170,40+Math.hypot(tx-ox,ty-oy)*.3),P=[],cum=[0];
+ for(let n=0;n<=60;n++){let u=n/60,q=(1-u)*(1-u),w=2*(1-u)*u,e=u*u;P.push([q*ox+w*cx+e*tx,q*oy+w*cy+e*ty]);if(n)cum.push(cum[n-1]+Math.hypot(P[n][0]-P[n-1][0],P[n][1]-P[n-1][1]))}
+ let frames=[],N=28;for(let q=0;q<=N;q++){let fr=q/N,d=fr*cum[60],m=1;while(m<60&&cum[m]<d)m++;let w=cum[m]>cum[m-1]?(d-cum[m-1])/(cum[m]-cum[m-1]):0,x=P[m-1][0]+(P[m][0]-P[m-1][0])*w,y=P[m-1][1]+(P[m][1]-P[m-1][1])*w;frames.push({transform:`translate(${x}px,${y}px) scale(${1.4-.4*fr})`,opacity:q===N?0:Math.min(1,fr*12),offset:fr})}
+ node.animate(frames,{duration:900,easing:'linear',fill:'both'});setTimeout(()=>node.remove(),950)}
 function flushFly(){if(!flyTimer)return;clearTimeout(flyTimer);flyTimer=null;$('flyers').replaceChildren();cubeView=flyTarget;flyTarget=null}
 function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[];
  for(let c of MAP.cities)for(let k of COLORS){let d=(next[c.id][k]||0)-(from[c.id][k]||0);for(let j=0;j<d;j++)adds.push([c.id,k,(from[c.id][k]||0)+j])}
- let speed=+$('fxSpeed').value;if(f&&f.kind==='outbreak'&&adds.length&&speed>=0&&!f.ringed&&!matchMedia('(prefers-reduced-motion: reduce)').matches){f.ringed=true;outbreakRings(f.city);flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;flyTarget=null;applyCubes(next,f)},950);return}
+ let speed=+$('fxSpeed').value;if(f&&f.kind==='outbreak'&&f.from&&!f.phantom&&speed>=0&&!matchMedia('(prefers-reduced-motion: reduce)').matches){f.phantom=true;phantomCube(f.from,f.city,f.color)}
+ if(f&&f.kind==='outbreak'&&adds.length&&speed>=0&&!f.ringed&&!matchMedia('(prefers-reduced-motion: reduce)').matches){f.ringed=true;outbreakRings(f.city);flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;flyTarget=null;applyCubes(next,f)},950);return}
  if(!f||!adds.length||speed<0||matchMedia('(prefers-reduced-motion: reduce)').matches){if(adds.length)playSound('cube');cubeView=next;paint();settleCubes();return}
  let g=$('flyers'),src0=f.kind==='outbreak'?[C[f.city].x,C[f.city].y]:[760,520],dur=f.kind==='outbreak'?1000:1250,step=Math.min(200,1000/adds.length),last=0;
  // keep the arriving cubes hidden until they land

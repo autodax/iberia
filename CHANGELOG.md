@@ -1,5 +1,7 @@
 ## Latest
 
+- Chain reactions: a cube flies from the outbreak city into the full city it sets off, and is absorbed there without adding to the cubes shown.
+
 - The "other cards not usable here" note under the hand wraps as "N other card(s)" / "not usable here".
 
 - All 48 infection card pictures adjusted: contrast +10%, saturation −10%. The originals are kept in `backup/infection_cards_original/`.
