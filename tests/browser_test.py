@@ -245,7 +245,7 @@ async def main():
     if await pg.evaluate("$('choiceDialog').open"):await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(300)
     await pg.evaluate("resetFx();mode='';render()");await pg.wait_for_timeout(700)
     q=await pg.evaluate("quickMoves().size")
-    ok(q>0 and await pg.evaluate("document.querySelectorAll('#board circle[stroke-dasharray=\"4 3\"]').length===quickMoves().size"),'reachable cities highlighted with no action chosen')
+    ok(q>0 and await pg.evaluate("document.querySelectorAll('#board circle.reachDot').length===quickMoves().size"),'reachable cities highlighted with no action chosen')
     to=await pg.evaluate("let p=state.players[state.active];[...quickMoves()].find(([k,v])=>v.type==='carriage'&&C[k].region_ids.length>1)?.[0]||null")
     if to:
         await pg.evaluate("to=>{quickMove(to)}",to);await pg.wait_for_timeout(300)
