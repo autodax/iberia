@@ -1,5 +1,7 @@
 ## Latest
 
+- The pulsing rings on available cities now just fade from transparent to opaque and back (3 s cycle), with no glow or blur.
+
 - Politician swap discard pile is sorted by colour, most outbreak-prone colour first (most cities with 3 cubes, then 2 cubes, then most cubes on the board).
 
 - Politician swap discard pile and the Player-deck peek use the gently shrunk card copies (no more shimmering/moire); the discard-pile cards zoom on hover.
