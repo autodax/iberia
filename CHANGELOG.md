@@ -1,5 +1,7 @@
 ## Latest
 
+- City highlight rings are solid instead of dashed (checked all 48 against the board image: centred to within about 0.2 map units).
+
 - Map highlights are back to yellow (the green was too hard to see); yellow cities get blue highlight rings so they don't blend in.
 
 - Hidden hand cards now slide out of the way (and slide back); hovering the small infection cards in the Time Traveler's hand shows them enlarged.
