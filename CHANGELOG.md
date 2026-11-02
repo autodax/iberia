@@ -1,6 +1,6 @@
 ## Latest
 
-- One shared de-emphasis for dimmed hand cards, other players' idle hands and the discard piles: 60% desaturated, same brightness, fully opaque (discard piles use an SVG filter so Safari/iPad shows it too).
+- One shared de-emphasis for dimmed hand cards, other players' idle hands and the discard piles: less colour and contrast, and tinted toward what they sit on (light yellow in the side panel, yellow-green under the city discard, brown under the infection discard), always fully opaque. Idle hands were not being dimmed at all in board view; fixed.
 - New board picture with clearer, larger city names (the original is kept as assets/board_original_backup.jpeg).
 - Board picture updated again.
 - Board picture updated once more.

@@ -586,19 +586,23 @@ document.addEventListener('click',()=>hidePreview(true));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&bmOn&&mode&&mode!=='peek'&&!document.querySelector('dialog[open]')){mode='';selectedCards=[];render()}
  if(e.key==='Escape'&&ringOpen){ringOpen=false;positionRing()}
  if(e.key==='Escape')hidePreview(true)});
+// De-emphasis: a card loses saturation and contrast and takes on the colour of what it sits on (never see-through).
+(function(){let S=.5,K=.55,lr=.2126,lg=.7152,lb=.0722,rows=[[lr,lg,lb],[lr,lg,lb],[lr,lg,lb]].map((r,i)=>r.map((w,j)=>K*((i===j?1:0)*S+w*(1-S))));
+ let mk=(id,c)=>'<filter id="'+id+'" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="'+rows.map((r,i)=>r.map(v=>v.toFixed(4)).join(' ')+' 0 '+((1-K)*c[i]/255).toFixed(4)).join(' ')+' 0 0 0 1 0"/></filter>';
+ document.body.insertAdjacentHTML('beforeend','<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'+mk('dimPanel',[229,217,182])+mk('dimCity',[158,165,132])+mk('dimInf',[133,111,87])+'</defs></svg>')})();
 // Deck pictures on the board: the Infection deck and discard (top), the Player deck and discard (bottom right).
 const DECK_SLOTS={infDeck:[987,27,240,172],infDisc:[1256,24,250,173],plDeck:[1120,813,178,240],plDisc:[1325,813,174,240]};
 function drawDecks(T){
  let put=(slot,href,n,label,dim)=>{let [x,y,w,h]=DECK_SLOTS[slot];if(!href||!n)return;let g=svg('g',{class:'deckArt'},T);svg('title',{},g).textContent=label+': '+n;
-  svg('image',{href,x,y,width:w,height:h,preserveAspectRatio:'xMidYMid slice','clip-path':'inset(0 round 10px)',...(dim?{filter:'url(#dimSat)'}:{})},g);
+  svg('image',{href,x,y,width:w,height:h,preserveAspectRatio:'xMidYMid slice','clip-path':'inset(0 round 10px)',...(dim?{filter:'url(#'+dim+')'}:{})},g);
   let bw=14+9.5*String(n).length;svg('rect',{x:x+w-bw-6,y:y+h-28,width:bw,height:22,rx:11,fill:'#f3e6c8',stroke:'#6b5a3a','stroke-width':1.1},g);let t=svg('text',{x:x+w-6-bw/2,y:y+h-12,'text-anchor':'middle','font-size':15.5,'font-weight':700,'font-family':'system-ui, sans-serif',fill:'#222',stroke:'none','stroke-width':0,style:'stroke:none;fill:#222;font:700 15.5px system-ui,sans-serif'},g);t.textContent=n};
  let ib=asset('tokens/infection-back'),cb=asset('tokens/city-back');
  put('infDeck',ib,state.infectionDeck.length,'Infection deck');
  put('plDeck',cb,state.playerDeck.length,'Player deck');
  let ti=state.infectionDiscard[state.infectionDiscard.length-1],tp=state.discard[state.discard.length-1];
- if(ti)put('infDisc',cardArt(ti,true),state.infectionDiscard.length,'Infection discard',true);
- if(tp)put('plDisc',cardArt(tp,false),state.discard.length,'Player discard',true)}
-function paint(){armed=null;armList=[];drawCityList();for(let k of ['areas','tracks','pieces'])$(k).replaceChildren();let A=$('areas'),T=$('tracks'),P=$('pieces');drawDecks(T);if(!$('hg'))$('board').insertAdjacentHTML('afterbegin','<defs><radialGradient id="hg"><stop offset="0" stop-color="#ff1c1c" stop-opacity=".95"/><stop offset=".5" stop-color="#ff2a2a" stop-opacity=".5"/><stop offset="1" stop-color="#ff2a2a" stop-opacity="0"/></radialGradient><filter id="dimSat" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values=".4"/></filter><filter id="hb" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter></defs>');
+ if(ti)put('infDisc',cardArt(ti,true),state.infectionDiscard.length,'Infection discard','dimInf');
+ if(tp)put('plDisc',cardArt(tp,false),state.discard.length,'Player discard','dimCity')}
+function paint(){armed=null;armList=[];drawCityList();for(let k of ['areas','tracks','pieces'])$(k).replaceChildren();let A=$('areas'),T=$('tracks'),P=$('pieces');drawDecks(T);if(!$('hg'))$('board').insertAdjacentHTML('afterbegin','<defs><radialGradient id="hg"><stop offset="0" stop-color="#ff1c1c" stop-opacity=".95"/><stop offset=".5" stop-color="#ff2a2a" stop-opacity=".5"/><stop offset="1" stop-color="#ff2a2a" stop-opacity="0"/></radialGradient><filter id="hb" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter></defs>');
  {let cv=cubeView||state.cubes;for(let k in cv){if(C[k]&&COLORS.some(c=>(cv[k][c]||0)>=3)){let [ox,oy]=cubeOrigin(k,cv),W2=cubeWidth(k,cv);svg('ellipse',{cx:ox+W2/2,cy:oy+10,rx:W2/2+34,ry:38,fill:'url(#hg)',filter:'url(#hb)',class:'hotPulse','pointer-events':'none'},A)}}}
  if(ringAvail()||(bmOn&&canAct()&&!mapPick)){let [gx,gy]=pawnPos(state.active,state);svg('ellipse',{cx:gx,cy:gy+2,rx:30,ry:13,fill:PAWN[state.players[state.active].role]||'#fff',filter:'url(#hb)',class:'hotPulse','pointer-events':'none'},A)}let p=state.players[state.active];let occupied=new Set(state.players.flatMap(q=>[q.city,q.city2]).filter(Boolean));
  let quick=quickMoves(),regionMode=['purify','agronomist'].includes(mode)&&canAct(),targets=['carriage','train','ship','build'].includes(mode)&&canAct()?new Set((legal[mode]||[]).map(c=>c.to)):new Set();
