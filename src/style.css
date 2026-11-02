@@ -150,7 +150,6 @@ header .sndBtn.off .cross{display:inline}
 .cardPicker .miniCard.selected::before{content:'✓ ';color:var(--greenDeep)}
 aside.roomy .cardPicker .miniCard{font-size:14.5px;min-height:32px}
 .cube-black{filter:url(#cubeBlackFx)}
-.cube-red{filter:saturate(.75) brightness(.86)}
 .logList{display:flex;flex-direction:column;gap:1px;font-size:13.5px;margin-bottom:10px}.logL.l0{font-weight:700;margin-top:8px;padding:2px 6px;background:var(--parchLight);border-left:5px solid var(--accent);border-radius:3px}.logL.l0:first-child{margin-top:0}.logL.l1{padding-left:22px}.logL.l2{padding-left:44px;color:var(--warn)}.logL.l1::before,.logL.l2::before{content:'· ';color:var(--inkSoft)}
 
 #choiceDialog.mapPick{position:fixed;left:16px;bottom:16px;top:auto;right:auto;margin:0;max-width:360px;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.35)}

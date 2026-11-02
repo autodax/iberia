@@ -1,5 +1,7 @@
 ## Latest
 
+- Board pieces look the same in Brave/Chrome as in Safari: removed the two CSS filters Safari ignores (the red-cube darkening and the pawn badge shadow).
+
 - Browser tab title is now "Iberia board game".
 
 - Role action buttons describe the action instead of naming the role: "Give Valladolid card", "Swap Valladolid card" (current city), "Look at top 3 cards", "Add water to adjacent region".
