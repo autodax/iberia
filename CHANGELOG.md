@@ -1,5 +1,7 @@
 ## Latest
 
+- Alert titles (Epidemic, Outbreak, Hospital Overrun, Chain Reaction…) are title case and centred; text is larger in the Menu, Log and Online windows; other players' hands are back to full colour (the muted look stays for non-pickable hand cards and discard piles).
+
 - One shared de-emphasis for dimmed hand cards, other players' idle hands and the discard piles: less colour and contrast, and tinted toward what they sit on (light yellow in the side panel, yellow-green under the city discard, brown under the infection discard), always fully opaque. Idle hands were not being dimmed at all in board view; fixed.
 - New board picture with clearer, larger city names (the original is kept as assets/board_original_backup.jpeg).
 - Board picture updated again.
