@@ -1,5 +1,7 @@
 ## Latest
 
+- The page background and the frame around the board are now olive (#aaa474, averaged from your swatch); the side panel stays cream.
+
 - Hover zoom on the Time Traveler's infection cards is half its previous size.
 
 - Hospitals sit a little further from their city circle and are drawn on top of the pulsing ring.

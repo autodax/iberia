@@ -1,13 +1,13 @@
 /* Approved v05 aesthetic: muted green surroundings, parchment panels, tan buttons, cream cards with colored edge accents. */
 :root{--green:#516b60;--greenDark:#3f574d;--greenDeep:#2f453c;--parch:#ecdcb9;--parchLight:#f6e8cd;--tan:#e6cf9f;--tanHover:#dcc08a;--tanBorder:#b39463;--ink:#2e4339;--inkSoft:#5c6f62;--title:#f1dcae;--accent:#4c6b5c;--warn:#9c3b25;--cyan:#d9a400}
 *{box-sizing:border-box}[hidden]{display:none!important}
-html,body{height:100%;margin:0;overflow:hidden;background:var(--greenDark);color:var(--ink);font:14px system-ui,-apple-system,Segoe UI,sans-serif}
+html,body{height:100%;margin:0;overflow:hidden;background:#aaa474;color:var(--ink);font:14px system-ui,-apple-system,Segoe UI,sans-serif}
 body{display:grid;place-items:center}
 button,select,input{font:inherit}
 button{cursor:pointer;border:1px solid var(--tanBorder);background:var(--tan);color:var(--ink);border-radius:6px;padding:6px 9px}
 button:hover{background:var(--tanHover)}button:disabled{opacity:.45;cursor:default}
 select,input{background:var(--parchLight);color:var(--ink);border:1px solid var(--tanBorder);border-radius:4px;padding:5px;max-width:100%}
-#app{position:relative;width:var(--appW,100vw);height:var(--appH,100dvh);display:grid;grid-template-rows:minmax(0,1fr);padding:6px;gap:6px;background:var(--green);border-radius:9px;box-shadow:0 12px 40px #0005}
+#app{position:relative;width:var(--appW,100vw);height:var(--appH,100dvh);display:grid;grid-template-rows:minmax(0,1fr);padding:6px;gap:6px;background:#aaa474;border-radius:9px;box-shadow:0 12px 40px #0005}
 header{display:flex;gap:8px;align-items:center;min-width:0}
 header strong{font-size:15px;white-space:nowrap;color:var(--title)}
 header button{padding:4px 10px}
