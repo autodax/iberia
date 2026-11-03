@@ -1,5 +1,7 @@
 ## Latest
 
+- Online: new "Host a saved game…" button in the Online window. Choose a file made with Save Game and it starts a new room (new code) at the saved position; guests join and take open seats. How-to added to the Online instructions.
+
 - Online games also preselect each player's starting city (most cubes), and the pick can still be changed. Windows closed to show a question (Menu, Log, Online) now reopen after it is answered.
 
 - At setup, each local player's starting city is preselected: the City card in their hand whose city has the most cubes (they can still change it).

@@ -117,7 +117,7 @@ function createNet(cfg){
     people=new Map([[NET_HOST_ID,{id:NET_HOST_ID,name:net.name,token:'',conn:null,connected:true,lastSeen:now()}]]);
     if(beat)every(10000,()=>{const t=now();for(const p of people.values()){if(p.id!==NET_HOST_ID&&p.connected&&t-p.lastSeen>35000)dropConn(p)}});
   }
-  net.host=async function(name){
+  net.host=async function(name,saved){
     if(net.active)throw Error('Already in a room');
     leaving=false;fatal=false;hostBase(name);net.status='connecting';emit();
     let lastErr=null;
@@ -127,7 +127,14 @@ function createNet(cfg){
       catch(e){lastErr=e;if(!(e&&e.code==='taken'))break}
     }
     if(lastErr){resetLocal();throw lastErr}
-    resizeSeats();if(lobby.seats[0]==null)lobby.seats[0]=NET_HOST_ID;net.status='connected';broadcastLobby();return net.code;
+    resizeSeats();if(lobby.seats[0]==null)lobby.seats[0]=NET_HOST_ID;
+    if(saved&&saved.state){   // start the room straight into a saved game; other people take the seats they want
+      const st=saved.state;lobby.settings.players=st.players.length;lobby.settings.difficulty=st.difficulty||lobby.settings.difficulty;lobby.settings.roles=st.players.map(p=>p.role);
+      lobby.seats=st.players.map((_,i)=>i===0?NET_HOST_ID:null);
+      try{H.loadState(st,saved.commands)}catch(e){resetLocal();throw e}
+      lobby.phase='playing';net.seq=0;
+    }
+    net.status='connected';broadcastLobby();return net.code;
   };
   net.resumeHost=async function(name){
     if(net.active)throw Error('Already in a room');

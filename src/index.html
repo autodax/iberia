@@ -58,13 +58,18 @@
 <ol><li>The host opens this page <b>in the same browser on the same device</b> that was hosting, then clicks <b>Online</b>.</li>
 <li>Click <b>Resume hosting</b> (not Host a new game). The same room code comes back and the game continues where it stopped.</li>
 <li>Everyone else clicks <b>Join</b> with the same code or link. They get their seats back by name.</li></ol>
+<h3>Continue a saved game online (any browser or device)</h3>
+<ol><li>While you play (online or not), open <b>Menu</b> and click <b>Save Game</b> to download a game file. Keep it somewhere you can find it.</li>
+<li>Later, on any computer, open this page, click <b>Online</b>, type your name and click <b>Host a saved game…</b>, then choose the file.</li>
+<li>You get a <b>new</b> room code and invite link, with the game exactly where it was saved. The saved seats are open: you take the first seat, and each guest joins with the code and clicks <b>Take this seat</b> on the seat they want. Seats nobody takes are played by you.</li>
+<li>Use this if the host's computer or browser changed, or if <b>Resume hosting</b> is not offered.</li></ol>
 <h3>Good to know</h3>
 <ul><li><b>Host a new game</b> always starts a fresh room and a fresh game. Use it only for a new game.</li>
 <li>Only the host's browser can resume, and it remembers one room at a time. Hosting a new room replaces the remembered one.</li>
 <li>Never open the same room as host in two windows or devices at once. They push each other out and the game keeps dropping.</li>
 <li>The host's page runs the game, so the host should keep it open and awake (no sleeping laptop or locked iPad).</li></ul></details>
 <label>Your name<input id="onName" maxlength="20" autocomplete="nickname" placeholder="Shown to the other players"></label>
-<div class="dialogButtons"><button id="onHost" class="primary" style="width:auto">Host a new game</button></div>
+<div class="dialogButtons"><button id="onHost" class="primary" style="width:auto">Host a new game</button><button id="onHostSaved" title="Pick a game file you saved earlier and host it as a new room">Host a saved game…</button></div><input id="onSaveFile" type="file" accept=".json,application/json" hidden>
 <div id="onResume" hidden><p id="onResumeText"></p><div class="dialogButtons"><button id="onResumeBtn">Resume hosting</button></div></div>
 <h3>Join a game</h3>
 <label>Room code<input id="onCode" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Five letters and numbers"></label>
