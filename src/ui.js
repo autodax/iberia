@@ -57,7 +57,9 @@ const DISEASE={red:'#b0262a',blue:'#3059c8',yellow:'#f0bf0a',black:'#2a2828'};
 const HOSP={red:'#b0262a',blue:'#3059c8',yellow:'#f0bf0a',black:'#2a2828'};
 const REVEALS=new Set(['start','pick','draw','infect','epidemic','peek','ttswap','profdraw']);
 function newSeed(){let a=new Uint32Array(2);try{crypto.getRandomValues(a)}catch(e){a[0]=Math.random()*2**32;a[1]=Date.now()}return a[0].toString(36)+a[1].toString(36).slice(0,3)}
-function randRoles(){let pool=Object.keys(ROLES);for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,5)}
+const BASE_ROLES=['sailor','agronomist','railwayman','politician','nurse','scientist','rural_doctor'];
+function roleList(){let b=document.getElementById('baseRoles');return b&&b.checked?BASE_ROLES:Object.keys(ROLES)}
+function randRoles(){let pool=roleList().slice();for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,5)}
 let avoidShapes={cities:[],polys:[]},holdActive=null,drawHide=new Map(),slideIn=new Map();
 function shownActive(){return holdActive!=null?holdActive:state.active}
 function releaseHold(){if(holdActive==null)return;if(fxCurrent||fxQueue.length||flyTimer){setTimeout(releaseHold,200);return}setTimeout(()=>{if(fxCurrent||fxQueue.length||flyTimer)return releaseHold();holdActive=null;render();flashActive()},1500)}
@@ -246,7 +248,7 @@ function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=docu
  let R=$('rightStrip');if(!R){R=el('div',{id:'rightStrip'});main.appendChild(R)}
  app.classList.toggle('bm',on);$('ringToggle').onclick=toggleRing;
  let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',innerHTML:'v'+UI_VERSION+'<br>built __BUILD__'},bf);svg('svg',{id:'ringLines'},ring)}
- for(let id of ['rulesLink','guideLink','logButton','onlineButton','menuButton'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
+ for(let id of ['menuButton','logButton','onlineButton','rulesLink'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
  if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));let pp=$('pawnPanel');if(!pp)pp=el('div',{id:'pawnPanel',hidden:true},bf);el('div',{id:'pawnNote'},pp);for(let id of ['actionForm','confirm','actionHint'])pp.appendChild($(id));aside.style.display='none';R.style.display=''}
  else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));{let aa=$('actionArea');for(let id of ['actionForm','confirm','actionHint'])aa.appendChild($(id));let pp=$('pawnPanel');if(pp)pp.hidden=true}aside.style.display='';R.style.display='none'}
  ringOpen=false;if(typeof state!=='undefined'&&state)setTimeout(render,0)}
@@ -765,10 +767,10 @@ function drawChallengeFields(box,opts,change,heading){box.replaceChildren();el('
  el('div',{className:'chSub',textContent:'Historical diseases (each one you choose behaves differently)'},box);let row=el('div',{className:'chRow'},box);
  for(let k of COLORS){let li=el('label',{className:'check',title:HIST_TEXT[k]},row),c=el('input',{type:'checkbox',checked:(opts.hist||[]).includes(k)},li);li.append(DISEASES[k]);c.onchange=()=>{opts.hist=COLORS.filter(x=>x===k?c.checked:(opts.hist||[]).includes(x));change()}}
  let rb=el('button',{type:'button',textContent:'Pick historical diseases at random',className:'chRandom'},box);rb.onclick=()=>{let n=1+Math.floor(Math.random()*4),pool=COLORS.slice().sort(()=>Math.random()-.5).slice(0,n);opts.hist=COLORS.filter(k=>pool.includes(k));change();drawChallengeFields(box,opts,change,heading)}}
-function drawRoleFields(){drawChallengeFields($('challengeBox'),chLocal,()=>{});let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++)field('Role '+(i+1),'role'+i,Object.entries(ROLES),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},box)}
+function drawRoleFields(){drawChallengeFields($('challengeBox'),chLocal,()=>{});let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++)field('Role '+(i+1),'role'+i,Object.entries(ROLES).filter(([k])=>roleList().includes(k)||k===roleChoice[i]),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},box)}
 $('playerCount').onchange=drawRoleFields;
 for(let id of ['playerCount','difficulty','fxSpeed'])buttonize($(id));
-$('randomRoles').onclick=()=>{roleChoice=randRoles();drawRoleFields()};
+$('randomRoles').onclick=()=>{roleChoice=randRoles();drawRoleFields()};$('baseRoles').onchange=()=>{if($('baseRoles').checked&&roleChoice.some(r=>!BASE_ROLES.includes(r)))roleChoice=randRoles();drawRoleFields()};
 $('newGame').onclick=async()=>{if(Net.active){notice('You are in an online room. Use the Online button to leave it or go back to the lobby.',true);$('menu').close();return}if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;let seed=$('seed').value.trim()||newSeed();state=initial(seed,+$('difficulty').value,roleChoice.slice(0,n),{influx:chLocal.influx,hist:chLocal.hist.slice()});roleChoice=randRoles();drawRoleFields();$('seed').value='';history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.'+(challengeText(state.challenges)?' Challenges: '+challengeText(state.challenges)+'.':''))}catch(e){notice(e.message,true)}};
 try{$('saveName').value=localStorage.getItem('iberia-save-name')||''}catch(e){}
 $('saveButton').onclick=()=>{let nm=$('saveName').value.replace(/[\\\/:*?"<>|]+/g,'').trim().slice(0,60);try{localStorage.setItem('iberia-save-name',nm)}catch(e){}let u=URL.createObjectURL(new Blob([JSON.stringify(envelope(),null,2)],{type:'application/json'})),a=el('a',{href:u,download:(nm?nm+' - turn '+state.turn:'iberia-save-v09-turn'+state.turn)+'.json'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};

@@ -1,5 +1,8 @@
 ## Latest
 
+- New-game section of the Menu has a "Use only the rule book's 7 base roles" checkbox (off by default); it limits Random roles and the role pickers.
+- Top buttons are now Menu, Log, Online, Rules (in that order); the Guide link moved to a Help section at the bottom of the Menu. The Display and Graphics sections were removed from the Menu.
+
 - Black cubes now stay black while they fly into place (the shading lightened them to grey in flight); the shading returns when they land.
 
 - Questions and approvals asked from inside the Menu, Log or Online window now close that window first, so the question appears on top right away instead of sitting dimmed behind it.
