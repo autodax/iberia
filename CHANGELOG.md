@@ -1,5 +1,7 @@
 ## Latest
 
+- Black cubes now stay black while they fly into place (the shading lightened them to grey in flight); the shading returns when they land.
+
 - Questions and approvals asked from inside the Menu, Log or Online window now close that window first, so the question appears on top right away instead of sitting dimmed behind it.
 
 - Light text on dark buttons is now always the same cream (the ring's End actions and Confirm buttons and the action tooltips were white).

@@ -459,7 +459,7 @@ function settleCubes(){if(flyTimer)return;if(!fxCurrent&&!fxQueue.length&&cubeVi
 function outbreakRings(cid){let g=$('flyers'),c=C[cid];if(!c)return;for(let n=0;n<4;n++){let r=svg('circle',{cx:c.x,cy:c.y,r:16,fill:'none',stroke:'#ff2a2a','stroke-width':5,class:'outRing','pointer-events':'none',style:'animation-delay:'+n*.2+'s'},g);setTimeout(()=>r.remove(),1700+n*200)}}
 // Chain reaction: the cube that could not fit in a full city flies there from the outbreak that sent it, then is absorbed (it is not added to the count shown).
 function phantomCube(fromId,toId,k){let g=$('flyers'),a=C[fromId],b=C[toId];if(!a||!b)return;let img=asset('tokens/cube-'+k),node;
- if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:'cube-'+k,'pointer-events':'none'},g);else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5,'pointer-events':'none'},g);
+ if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:k==='black'?'':'cube-'+k,'pointer-events':'none'},g);else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5,'pointer-events':'none'},g);
  let ox=a.x,oy=a.y,tx=b.x,ty=b.y,cx=(ox+tx)/2,cy=Math.min(oy,ty)-Math.min(170,40+Math.hypot(tx-ox,ty-oy)*.3),P=[],cum=[0];
  for(let n=0;n<=60;n++){let u=n/60,q=(1-u)*(1-u),w=2*(1-u)*u,e=u*u;P.push([q*ox+w*cx+e*tx,q*oy+w*cy+e*ty]);if(n)cum.push(cum[n-1]+Math.hypot(P[n][0]-P[n-1][0],P[n][1]-P[n-1][1]))}
  let frames=[],N=28;for(let q=0;q<=N;q++){let fr=q/N,d=fr*cum[60],m=1;while(m<60&&cum[m]<d)m++;let w=cum[m]>cum[m-1]?(d-cum[m-1])/(cum[m]-cum[m-1]):0,x=P[m-1][0]+(P[m][0]-P[m-1][0])*w,y=P[m-1][1]+(P[m][1]-P[m-1][1])*w;frames.push({transform:`translate(${x}px,${y}px) scale(${1.4-.4*fr})`,opacity:q===N?0:Math.min(1,fr*12),offset:fr})}
@@ -474,7 +474,7 @@ function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[
  // keep the arriving cubes hidden until they land
  let hold=JSON.parse(JSON.stringify(from));for(let [cid,k] of adds)hold[cid][k]=hold[cid][k]||0;cubeView=hold;paint();
  adds.forEach(([cid,k,j],i)=>{let [tx,ty]=cubeSpot(cid,k,j,next),img=asset('tokens/cube-'+k),node;
-  if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:'cube-'+k},g);else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},g);
+  if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:k==='black'?'':'cube-'+k},g)   // black cubes fly unfiltered so they stay black; the shading filter returns once they land;else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},g);
   let [ox,oy]=src0;
   // one smooth arc at constant speed: a quadratic curve sampled by arc length, linear easing, size easing down to 1
   let cx=(ox+tx)/2,cy=Math.min(oy,ty)-170,P=[],cum=[0];for(let n=0;n<=60;n++){let u=n/60,a=(1-u)*(1-u),b=2*(1-u)*u,c=u*u;P.push([a*ox+b*cx+c*tx,a*oy+b*cy+c*ty]);if(n)cum.push(cum[n-1]+Math.hypot(P[n][0]-P[n-1][0],P[n][1]-P[n-1][1]))}
