@@ -1,5 +1,7 @@
 ## Latest
 
+- Outbreak chains: the cube that triggers a later outbreak now lands in that city before the city's outbreak rings and cubes start, so events happen in order.
+
 - Online: new "Host a saved game…" button in the Online window. Choose a file made with Save Game and it starts a new room (new code) at the saved position; guests join and take open seats. How-to added to the Online instructions.
 
 - Online games also preselect each player's starting city (most cubes), and the pick can still be changed. Windows closed to show a question (Menu, Log, Online) now reopen after it is answered.

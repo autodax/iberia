@@ -469,7 +469,7 @@ function phantomCube(fromId,toId,k){let g=$('flyers'),a=C[fromId],b=C[toId];if(!
 function flushFly(){if(!flyTimer)return;clearTimeout(flyTimer);flyTimer=null;$('flyers').replaceChildren();cubeView=flyTarget;flyTarget=null}
 function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[];
  for(let c of MAP.cities)for(let k of COLORS){let d=(next[c.id][k]||0)-(from[c.id][k]||0);for(let j=0;j<d;j++)adds.push([c.id,k,(from[c.id][k]||0)+j])}
- let speed=+$('fxSpeed').value;if(f&&f.kind==='outbreak'&&f.from&&!f.phantom&&speed>=0&&!matchMedia('(prefers-reduced-motion: reduce)').matches){f.phantom=true;phantomCube(f.from,f.city,f.color)}
+ let speed=+$('fxSpeed').value;if(f&&f.kind==='outbreak'&&f.from&&!f.phantom&&speed>=0&&!matchMedia('(prefers-reduced-motion: reduce)').matches){f.phantom=true;phantomCube(f.from,f.city,f.color);flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;flyTarget=null;applyCubes(next,f)},950);return}   // the cube lands first; only then does this city's outbreak start
  if(f&&f.kind==='outbreak'&&adds.length&&speed>=0&&!f.ringed&&!matchMedia('(prefers-reduced-motion: reduce)').matches){f.ringed=true;outbreakRings(f.city);flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;flyTarget=null;applyCubes(next,f)},950);return}
  if(!f||!adds.length||speed<0||matchMedia('(prefers-reduced-motion: reduce)').matches){if(adds.length)playSound('cube');cubeView=next;paint();settleCubes();return}
  let g=$('flyers'),src0=f.kind==='outbreak'?[C[f.city].x,C[f.city].y]:[760,520],dur=f.kind==='outbreak'?1000:1250,step=Math.min(200,1000/adds.length),last=0;
