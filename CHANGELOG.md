@@ -1,5 +1,7 @@
 ## Latest
 
+- Online games also preselect each player's starting city (most cubes), and the pick can still be changed. Windows closed to show a question (Menu, Log, Online) now reopen after it is answered.
+
 - At setup, each local player's starting city is preselected: the City card in their hand whose city has the most cubes (they can still change it).
 
 - New-game section of the Menu has a "Use only the rule book's 7 base roles" checkbox (off by default); it limits Random roles and the role pickers.

@@ -213,10 +213,10 @@ let chooseQueue=Promise.resolve();
 function choose(title,options,labels,noCancel,card){let p=chooseQueue.then(()=>chooseNow(title,options,labels,noCancel,card));chooseQueue=p.catch(()=>{});return p}
 let dlgClosedAt=0;
 async function dialogGap(){let t0=Date.now();while((fxCurrent||fxQueue.length)&&Date.now()-t0<20000)await new Promise(r=>setTimeout(r,150));let w=450-(Date.now()-dlgClosedAt);if(w>0&&dlgClosedAt)await new Promise(r=>setTimeout(r,w))}
-function chooseNow(title,options,labels,noCancel,card){return dialogGap().then(()=>new Promise(res=>{for(let id of ['menu','logDialog','onlineDialog']){let m=$(id);if(m&&m.open)m.close()}   // a question asked from inside a window would otherwise sit dimmed behind it
+function chooseNow(title,options,labels,noCancel,card){return dialogGap().then(()=>new Promise(res=>{let wasOpen=[];for(let id of ['menu','logDialog','onlineDialog']){let m=$(id);if(m&&m.open){wasOpen.push(id);m.close()}}   // a question asked from inside a window would otherwise sit dimmed behind it; the window comes back once it is answered
  let d=$('choiceDialog');dragOff.dlg=[0,0];d.style.translate='';d.classList.toggle('noCancel',!!noCancel);let cc=$('choiceCard');cc.replaceChildren();cc.hidden=!card;d.classList.toggle('withCard',!!card);if(card)cc.appendChild(cardFace(card));$('choiceTitle').textContent=title;let box=$('choiceOptions');box.replaceChildren();
  let kind=options.length&&options.every(o=>typeof o==='string'&&R[o])?'region':options.length&&options.every(o=>typeof o==='string'&&C[o])?'city':null;
- let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();dlgClosedAt=Date.now();d.classList.remove('mapPick','pawnAlert','btnAlert','withCardAlert','sideChoice');d.style.width=d.style.maxWidth='';if($('panelLine'))pawnLine(0,0,null);d.style.left=d.style.top=d.style.right=d.style.bottom='';if(mapPick){mapPick=null;paint()}res(v)};
+ let yn=options.length===2&&options[0]==='yes'&&options[1]==='no';d.classList.toggle('yesno',yn);let finish=v=>{d.close();dlgClosedAt=Date.now();for(let id of wasOpen)showDialog(id);d.classList.remove('mapPick','pawnAlert','btnAlert','withCardAlert','sideChoice');d.style.width=d.style.maxWidth='';if($('panelLine'))pawnLine(0,0,null);d.style.left=d.style.top=d.style.right=d.style.bottom='';if(mapPick){mapPick=null;paint()}res(v)};
  box.classList.toggle('mapOnly',!!kind&&(options.length>8||bmOn));
  options.forEach((o,i)=>{let isCube=COLORS.includes(o)&&asset('tokens/cube-'+o),b=el('button',{textContent:isCube?'':labels?.[i]??o,title:isCube?(labels?.[i]??o):'',className:isCube?'cubeBtn':'',onclick:()=>finish(o)},box);if(isCube)el('img',{src:asset('tokens/cube-'+o),alt:o},b);if(kind){b.onmouseenter=()=>{if(mapPick){mapPick.hover=o;paint()}};b.onmouseleave=()=>{if(mapPick){mapPick.hover=null;paint()}}}});
  $('choiceCancel').onclick=()=>finish(null);d.oncancel=e=>{e.preventDefault();if(!noCancel)finish(null)};
@@ -511,13 +511,15 @@ function drawHands(){goneNext=new Set();let box=$('hands'),top=$('activeHand'),n
 
 /* ---------- action panel ---------- */
 // suggested starting city: the one in hand with the most disease cubes (first in hand on a tie)
+const autoPicked=new Set();
 function bestStart(opts){let best=opts[0][0],bn=-1;for(let [k] of opts){let n=COLORS.reduce((t,c)=>t+((state.cubes[k]||{})[c]||0),0);if(n>bn){bn=n;best=k}}return best}
 function drawSetup(){let box=$('startFields');box.replaceChildren();let online=Net.active,host=!online||Net.isHost,step=0;
  state.players.forEach((p,i)=>{let items=p.hand.filter(k=>C[k]);let opts=(items.length?items:Object.keys(C)).map(k=>[k,C[k].name]);
   if(!mine(i)){el('p',{className:'detail',textContent:plabel(i)+': '+(p.city?'starts in '+C[p.city].name:'is choosing a starting city…')},box);return}
   step++;
+  if(online&&!p.city){let key=state.seed+':'+i;if(!autoPicked.has(key)){autoPicked.add(key);let c=bestStart(opts),tries=0,go=async()=>{if(state.phase!=='setup'||state.players[i].city||++tries>4)return;if(await perform({type:'pick',seat:i,city:c}))setTimeout(go,1200)};setTimeout(go,0)}}   // online: preselect too; retried only if a pick went through but was lost, and a cancelled question is left alone
   let cur=p.city||(online?'':sel['start'+i]);if(cur&&!opts.some(([v])=>v===cur))cur=online?'':bestStart(opts);if(!online&&!cur)cur=bestStart(opts);sel['start'+i]=cur;
-  field(step+'. '+plabel(i)+': pick a starting city'+(online&&!p.city?' (required)':''),'start'+i,opts,cur,v=>{sel['start'+i]=v;perform({type:'pick',seat:i,city:v})},box,{blank:online&&!p.city})});
+  field(step+'. '+plabel(i)+': pick a starting city'+'','start'+i,opts,cur,v=>{sel['start'+i]=v;perform({type:'pick',seat:i,city:v})},box,{blank:online&&!p.city})});
  let fp=$('firstPlayer'),lab=fp.parentElement,done=state.players.every(q=>q.city);lab.hidden=!host;$('begin').hidden=!host;if($('firstLabel'))$('firstLabel').textContent=(step+1)+'. Who goes first?';$('begin').textContent=(step+2)+'. Begin game';$('begin').disabled=online&&!done;
  if(!host){$('firstHint').textContent=done?'Everyone has chosen. Waiting for the host to begin the game.':'Choose your starting city from a City card in your hand. The host begins the game when everyone has chosen.';return}
  let sug=suggestFirst(),key=state.seed+':'+state.players.map(q=>q.hand.join()).join('|');fp.replaceChildren();state.players.forEach((p,i)=>{let k=oldestCard(p);el('option',{value:i,textContent:plabel(i)+(k?' · '+C[k].name+' '+fmtYear(FOUNDED[k]):'')},fp)});if(fp.dataset.key!==key){fp.dataset.key=key;fp.value=sug?String(sug.i):'0'}else if(+fp.dataset.v<state.players.length)fp.value=fp.dataset.v;fp.onchange=()=>fp.dataset.v=fp.value;fp.dataset.v=fp.value;buttonize(fp);

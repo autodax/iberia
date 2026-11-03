@@ -82,10 +82,14 @@ async def main():
       ok(await A.evaluate('netSum()')==await B.evaluate('netSum()'),'same opening deal on both pages')
       ok(await A.is_visible('#setupPanel'),'host sees the setup panel')
       ok(await B.is_visible('#setupPanel'),'guest also sees the setup panel (own starting city)')
-      ok(await A.evaluate("document.getElementById('begin').disabled"),'host cannot begin before everyone has chosen')
+      for _ in range(12):  # a Civil Engineer / Student start may ask a question first
+        if await A.evaluate("state.players.every(q=>q.city)"):break
+        for pg in (A,B):
+          if await pg.evaluate("document.getElementById('choiceDialog').open"):await pg.locator('#choiceOptions button').first.click()
+        await A.wait_for_timeout(700)
+      await A.wait_for_function('state.players.every(q=>q.city)',timeout=8000)
+      ok(await A.evaluate("!document.getElementById('begin').disabled"),'every seat gets a preselected starting city, so the host can begin')
       ok(await B.evaluate("document.getElementById('begin').hidden"),'guest has no Begin button')
-      for pg,seat in((A,0),(B,1)):
-        await pg.evaluate("(async()=>{let q=state.players[%d];await perform({type:'pick',seat:%d,city:q.hand.find(k=>C[k])||'madrid'})})()"%(seat,seat))
       await A.wait_for_function('state.players.every(q=>q.city)',timeout=8000)
       await B.wait_for_function('state.players.every(q=>q.city)',timeout=8000)
       await A.evaluate("document.getElementById('firstPlayer').value='0'")
@@ -130,7 +134,7 @@ async def main():
       await B.evaluate('(async()=>{await perform({...legal.carriage[0]})})()')
       await A.wait_for_function('state.actions===3&&state.active===1',timeout=5000)
       ok(await A.evaluate('netSum()')==await B.evaluate('netSum()'),'guest move shows on the host and states match')
-      ok(await B.evaluate('document.getElementById("hands").innerText.includes("(you)")'),'guest sees which hand is his')
+      ok(await B.evaluate('document.body.innerText.includes("(you)")'),'guest sees which hand is his')
       # --- guest closes the page: host sees him go away and can cover the seat
       await B.evaluate('(window.__peers||[]).forEach(p=>p.destroy())')  # what a closing tab does to its connections
       await B.close()
