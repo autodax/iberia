@@ -1,5 +1,7 @@
 ## Latest
 
+- At setup, each local player's starting city is preselected: the City card in their hand whose city has the most cubes (they can still change it).
+
 - New-game section of the Menu has a "Use only the rule book's 7 base roles" checkbox (off by default); it limits Random roles and the role pickers.
 - Top buttons are now Menu, Log, Online, Rules (in that order); the Guide link moved to a Help section at the bottom of the Menu. The Display and Graphics sections were removed from the Menu.
 
