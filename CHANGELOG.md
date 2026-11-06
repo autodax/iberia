@@ -1,5 +1,7 @@
 ## Latest
 
+- Railroad tokens now sit on the printed line of their connection (and follow its tilt, including curved lines) for 63 connections; the flying-in animation lands in the same spot. Cartagena–Alicante is nudged a little to the left.
+
 - Outbreak chains: the cube that triggers a later outbreak now lands in that city before the city's outbreak rings and cubes start, so events happen in order.
 
 - Online: new "Host a saved game…" button in the Online window. Choose a file made with Save Game and it starts a new room (new code) at the saved position; guests join and take open seats. How-to added to the Online instructions.
