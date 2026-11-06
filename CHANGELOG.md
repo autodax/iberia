@@ -1,5 +1,7 @@
 ## Latest
 
+- Barcelona–Girona railroad token moved 2 map pixels to the right.
+
 - Cartagena–Alicante railroad token moved 6 map pixels to the right.
 
 - Railroad tokens now sit on the printed line of their connection (and follow its tilt, including curved lines) for 63 connections; the flying-in animation lands in the same spot. Cartagena–Alicante is nudged a little to the left.
