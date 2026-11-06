@@ -1,5 +1,7 @@
 ## Latest
 
+- Cartagena–Alicante railroad token moved 6 map pixels to the right.
+
 - Railroad tokens now sit on the printed line of their connection (and follow its tilt, including curved lines) for 63 connections; the flying-in animation lands in the same spot. Cartagena–Alicante is nudged a little to the left.
 
 - Outbreak chains: the cube that triggers a later outbreak now lands in that city before the city's outbreak rings and cubes start, so events happen in order.
