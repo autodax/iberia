@@ -167,6 +167,11 @@ async def main():
       await A.wait_for_selector('#choiceDialog[open]',timeout=8000)
       await C.wait_for_function('__q.some(s=>s.includes("preview"))',timeout=6000)
       ok(True,'the other player sees the drawn infection card before the token is chosen')
+      await C.wait_for_selector('#remoteNote',timeout=6000)
+      ok('is deciding' in await C.inner_text('#remoteNote'),'the other player sees who is deciding and what: '+(await C.inner_text('#remoteNote'))[:70])
+      await A.click('#choiceOptions button:first-child')
+      await C.wait_for_selector('#remoteNote',state='detached',timeout=8000)
+      ok(True,'the notice goes away once the choice is made')
       await b.close()
   finally:
     srv.terminate()

@@ -540,3 +540,6 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 .pawnHop{animation:pawnHop .95s ease-out both}
 @keyframes pawnHop{0%,100%{transform:translateY(0)}18%{transform:translateY(-34px)}36%{transform:translateY(0)}54%{transform:translateY(-20px)}72%{transform:translateY(0)}86%{transform:translateY(-7px)}}
+
+#remoteNote{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:9999;max-width:min(560px,92vw);display:flex;align-items:center;gap:10px;padding:8px 14px;background:#f3e6c8;color:#2f3a31;border:2px solid #c9a24a;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.35);font-size:15px;pointer-events:none}
+#remoteNote .rnText{line-height:1.25}

@@ -1,5 +1,7 @@
 ## Latest
 
+- Online: while one player answers a question or fills in an Event popup, everyone else sees a notice at the top of their screen, "<role> is deciding: ...", with a short description. It disappears when the decision is made.
+
 - Railroad tokens on Porto–Lisboa and Lisboa–Albufeira moved onto the printed lines.
 
 - Online: when a drawn infection (or epidemic) card is protected by purification tokens, the other players now see the card and the protection right away, instead of waiting until the token has been chosen.
