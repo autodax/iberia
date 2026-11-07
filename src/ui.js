@@ -453,6 +453,8 @@ function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();bo
  let sk=el('div',{className:'fxSkip'},b);let btn=!sticky?null:el('button',{textContent:(()=>{let n=fxQueue.filter(x=>!(x.kind==='outbreak'&&x.chainTotal>1&&x.chainIndex>1)).length;return n?'Continue ('+n+' more)':'Continue'})()},sk);if(btn)btn.onclick=e=>{e.stopPropagation();nextFx()};
  if(!sticky){let bar=el('div',{className:'fxBar',title:'Closes automatically; click to continue now'},sk);el('i',{style:'animation-duration:'+ms+'ms'},bar);fxTimer=setTimeout(nextFx,ms)}
  box.className='on';box.onclick=()=>nextFx();if(btn)setTimeout(()=>btn.focus({preventScroll:true}),0)}
+// Space bar: show where every pawn is (this screen only)
+document.addEventListener('keydown',e=>{if(e.key!==' '||e.repeat||fxCurrent||!bmOn||document.querySelector('dialog[open]')||/INPUT|SELECT|TEXTAREA|BUTTON|A/.test(document.activeElement?.tagName||''))return;e.preventDefault();state.players.forEach((_,i)=>pawnPing(i))});
 document.addEventListener('keydown',e=>{if(fxCurrent&&(e.key==='Enter'||e.key===' '||e.key==='Escape')&&!document.querySelector('dialog[open]')){e.preventDefault();nextFx()}});
 
 
