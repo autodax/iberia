@@ -1,11 +1,10 @@
 ## Latest
 
-- Pawns hop higher, and the hop replaces the ring animation at the start of a turn (the space bar still hops every pawn).
 - Cube clusters in neighbouring cities no longer pile onto each other; the later city moves its cubes to another side (or above/below), still avoiding names and other pieces.
 
 - Log entries write blue, black, red and yellow in lower case.
 
-- Press the space bar to make every pawn on the board hop up and down (a test of this animation; the turn-change pulse is unchanged). It only happens on your own screen (including in online games) and is ignored while a window is open or a button or field has focus.
+- Press the space bar to make every pawn on the board pulse the same way pawns do when the turn changes. It only happens on your own screen (including in online games) and is ignored while a window is open or a button or field has focus.
 
 - Barcelona–Girona railroad token moved 2 map pixels to the right.
 
