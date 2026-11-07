@@ -1,5 +1,7 @@
 ## Latest
 
+- The Event card kept on the University Professor's role card now zooms on hover for the active player too.
+
 - Cube clusters in neighbouring cities no longer pile onto each other; the later city moves its cubes to another side (or above/below), still avoiding names and other pieces.
 
 - Log entries write blue, black, red and yellow in lower case.
