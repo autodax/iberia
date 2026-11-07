@@ -159,6 +159,14 @@ async def main():
       ok(await C.evaluate('netSum()')==sumBefore,'a guest joining the saved game sees the same position')
       await C.evaluate('Net.claim(1)');await A.wait_for_function('Net.lobby.seats[1]!==null&&Net.lobby.seats[1]!==Net.myId',timeout=8000)
       ok(await C.evaluate('Net.mine(1)'),'the guest can take an open seat in the saved game')
+      # --- a protected city is shown to the other player while the host is still choosing the token
+      await C.evaluate('window.__q=[];let oq=queueFx;queueFx=function(l){__q.push(JSON.stringify(l).slice(0,120));return oq(l)}')
+      await A.evaluate('''(()=>{let id=MAP.cities.map(c=>c.id).find(k=>Object.keys(R).filter(r=>R[r].adjacent_cities.includes(k)).length>=2);let rs=Object.keys(R).filter(r=>R[r].adjacent_cities.includes(id));
+        state.prevention=null;for(let r in state.water)state.water[r]=0;state.water[rs[0]]=1;state.water[rs[1]]=1;state.waterSupply=Math.max(0,state.waterSupply-2);
+        state.infectionDeck=state.infectionDeck.filter(k=>k!==id);state.infectionDeck.unshift(id);state.phase='infection';state.infectionRemaining=1;state.actions=0;state.active=0;render();void perform({type:'infect'})})()''')
+      await A.wait_for_selector('#choiceDialog[open]',timeout=8000)
+      await C.wait_for_function('__q.some(s=>s.includes("preview"))',timeout=6000)
+      ok(True,'the other player sees the drawn infection card before the token is chosen')
       await b.close()
   finally:
     srv.terminate()

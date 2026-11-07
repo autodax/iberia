@@ -184,6 +184,7 @@ function createNet(cfg){
       case 'rewind':return hostRewind(p.id,m.idx,m.line).then(r=>send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error}));
       case 'undo':return hostUndo(p.id).then(r=>send(conn,r.ok?{t:'ack',cid:m.cid,ok:true}:{t:'ack',cid:m.cid,ok:false,error:r.error}));
       case 'ask':return hostAsk(p.id,m.seat,m.q).then(ok=>send(conn,{t:'askresult',id:m.id,ok}));
+      case 'hint':broadcast({t:'hint',h:m.h},p.id);try{H.onHint&&H.onHint(m.h)}catch(e){console.error(e)}return;   // a live heads-up from the player who is still deciding
       case 'answer':{const a=asks.get(m.id);if(a&&a.owner===p.id){asks.delete(m.id);finishAsk(a,!!m.ok)}return}
     }
   }
@@ -354,6 +355,7 @@ function createNet(cfg){
       case 'applied':return guestApplied(m);
       case 'ack':{const p=pending.get(m.cid);if(p){pending.delete(m.cid);clearTimeout(p.timer);p.resolve(m.ok?{ok:true}:{ok:false,error:m.error||'Rejected'})}return}
       case 'notice':net.notice=m.text;emit();return;
+      case 'hint':try{H.onHint&&H.onHint(m.h)}catch(e){console.error(e)}return;
       case 'ask':Promise.resolve(H.ask(m.q)).catch(()=>false).then(ok=>{if(guestConn)send(guestConn,{t:'answer',id:m.id,ok:!!ok})});return;
       case 'askresult':{const a=asks.get(m.id);if(a){asks.delete(m.id);finishAsk(a,!!m.ok)}return}
     }
@@ -395,6 +397,7 @@ function createNet(cfg){
     if(net.isHost){const p=people.get(NET_HOST_ID);p.name=uniqueName(name,NET_HOST_ID);broadcastLobby()}
     else if(guestConn)send(guestConn,{t:'rename',name});
   };
+  net.hint=function(h){if(net.status!=='connected')return;if(guestConn)send(guestConn,{t:'hint',h});else broadcast({t:'hint',h})};   // not stored; only shown on the other screens
   net.submit=function(cmd){
     if(!net.active)return Promise.resolve({ok:false,error:'Not in an online game'});
     if(net.isHost)return Promise.resolve(hostRun(NET_HOST_ID,cmd));
