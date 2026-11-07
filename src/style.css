@@ -539,4 +539,4 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #app.bm .handCards[data-gone]::after{content:attr(data-gone) ' other card(s)\A not usable here';white-space:pre;display:block;margin-top:6px;font-size:12px;color:#6a5a3c;text-align:center}
 
 .pawnHop{animation:pawnHop .95s ease-out both}
-@keyframes pawnHop{0%,100%{transform:translateY(0)}18%{transform:translateY(-20px)}36%{transform:translateY(0)}54%{transform:translateY(-12px)}72%{transform:translateY(0)}86%{transform:translateY(-4px)}}
+@keyframes pawnHop{0%,100%{transform:translateY(0)}18%{transform:translateY(-34px)}36%{transform:translateY(0)}54%{transform:translateY(-20px)}72%{transform:translateY(0)}86%{transform:translateY(-7px)}}
