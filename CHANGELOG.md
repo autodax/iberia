@@ -1,5 +1,7 @@
 ## Latest
 
+- Railroad tokens on Porto–Lisboa and Lisboa–Albufeira moved onto the printed lines.
+
 - Online: when a drawn infection (or epidemic) card is protected by purification tokens, the other players now see the card and the protection right away, instead of waiting until the token has been chosen.
 
 - The Event card kept on the University Professor's role card now zooms on hover for the active player too.
