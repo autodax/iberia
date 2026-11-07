@@ -543,3 +543,7 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 #remoteNote{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:9999;max-width:min(560px,92vw);display:flex;align-items:center;gap:10px;padding:8px 14px;background:#f3e6c8;color:#2f3a31;border:2px solid #c9a24a;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.35);font-size:15px;pointer-events:none}
 #remoteNote .rnText{line-height:1.25}
+/* Event window: form scrolls inside, Play Event button always stays inside the window and on screen */
+#eventDialog.sideDialog[open]{display:flex;flex-direction:column;max-height:calc(100vh - 16px);overflow:hidden}
+#eventDialog.sideDialog #eventForm{max-height:none;flex:1 1 auto;min-height:0;overflow:auto}
+#eventDialog.sideDialog #eventConfirm,#eventDialog.sideDialog #eventConsent{flex:0 0 auto}

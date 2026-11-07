@@ -456,7 +456,7 @@ function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();bo
  else if(f.kind==='patient'){let a=el('div',{className:'alert patient'},b);let h=el('h3',{textContent:'Patient on the Move'},a);let ph=tokenImg('hospital-'+f.color);if(ph)h.prepend(el('img',{className:'tok',src:ph}));el('p',{textContent:'A '+f.color+' patient goes from '+C[f.from].name+' to '+C[f.to].name+', toward the '+f.color+' hospital in '+C[f.hospital].name+'.'},a);dur=2200;playSound('move')}
  else if(f.kind==='end'){let a=el('div',{className:'alert'+(state.status==='won'?' win':'')},b);el('h3',{textContent:state.status==='won'?'Victory':'Defeat'},a);el('p',{textContent:f.text},a);dur=6000;playSound(state.status==='won'?'win':'lose')}
  if(f.blocked)blockedNote(f,b);
- let sticky=f.kind==='outbreak'||f.kind==='end'||speed===0||(f.blocked&&speed<0),ms=dur*(speed>0?speed:1);
+ let sticky=f.kind==='end'||speed===0||(f.blocked&&speed<0),ms=dur*(speed>0?speed:1);
  let sk=el('div',{className:'fxSkip'},b);let btn=!sticky?null:el('button',{textContent:(()=>{let n=fxQueue.filter(x=>!(x.kind==='outbreak'&&x.chainTotal>1&&x.chainIndex>1)).length;return n?'Continue ('+n+' more)':'Continue'})()},sk);if(btn)btn.onclick=e=>{e.stopPropagation();nextFx()};
  if(!sticky){let bar=el('div',{className:'fxBar',title:'Closes automatically; click to continue now'},sk);el('i',{style:'animation-duration:'+ms+'ms'},bar);fxTimer=setTimeout(nextFx,ms)}
  box.className='on';box.onclick=()=>nextFx();if(btn)setTimeout(()=>btn.focus({preventScroll:true}),0)}
@@ -683,7 +683,7 @@ function render(){if(bmOn){if(mode!==lastMode){lastMode=mode;modeState=state}els
  fitLayout();drawAction();if(bmOn&&mode&&mode!=='peek'&&canAct())el('button',{className:'cancelMode',textContent:'Cancel',onclick:()=>{mode='';selectedCards=[];render()}},$('actionForm'));onlineHint();drawHands();paint();positionRing()}
 
 /* ---------- events ---------- */
-function eventForm(card,box,seat,onChange){let m={},n=state.players.length,activeLabel=null,refresh=()=>{box.replaceChildren();build();onChange&&onChange()};m._auto={};
+function eventForm(card,box,seat,onChange){let m={},n=state.players.length,activeLabel=null,refresh=()=>{box.replaceChildren();build();onChange&&onChange();requestAnimationFrame(()=>fitEventDialog())};m._auto={};
  // Board view: choose cities / railway lines on the map; the dialog sits in the side strip and says what to click
  function mapField(label,o){let row=el('div',{className:'field mapFld'},box);el('div',{className:'label',textContent:label},row);el('p',{className:'detail',textContent:o.text},row);
   let activate=()=>{activeLabel=label;mapPick={kind:o.kind,options:new Set(o.options),selected:new Set(o.selected||[]),ev:true,hover:null,pick:v=>{o.onPick(v)}};paint()};
@@ -734,7 +734,8 @@ function openEvent(seat,card,fromRole){evSeat=seat;if(['setup','ended'].includes
  btn.onclick=async()=>{let args=f.args,mm=f.missing&&f.missing(card==='when_plans_were_good'?args.inner:args);if(mm){notice(mm,true);return}if(f.consentNeeded(args)){if(card==='when_plans_were_good')args.inner.consent=true;else args.consent=true}$('eventDialog').close();if(!await perform({type:'event',seat,card,args,...(fromRole?{fromRole:true}:{})}))showDialog('eventDialog')};showDialog('eventDialog')}
 
 /* ---------- wiring ---------- */
-function showDialog(id){let d=$(id);if(d.open)return;if(id==='eventDialog')setTimeout(()=>hintPend($('eventTitle').textContent+' (choosing options)',evSeat),0);if(bmOn&&id==='eventDialog'){d.classList.add('sideDialog');dragOff.ev=[0,0];d.style.translate='';d.show();let bf=$('boardFrame').getBoundingClientRect();let w=Math.min(300,bf.width-24);d.style.width=w+'px';d.style.left=(bf.right-w-12)+'px';d.style.right='auto';d.style.bottom='auto';d.style.top=Math.max(bf.top+8,Math.min(bf.top+bf.height*.36,innerHeight-Math.min(innerHeight*.6,460)-8))+'px';addGrips()}else{d.classList.remove('sideDialog');d.showModal()}}
+function fitEventDialog(){let d=$('eventDialog');if(!d.open||!d.classList.contains('sideDialog'))return;let r=d.getBoundingClientRect(),t=parseFloat(d.style.top)||r.top,over=r.bottom-(innerHeight-8);if(over>0)d.style.top=Math.max(8,t-over)+'px'}
+function showDialog(id){let d=$(id);if(d.open)return;if(id==='eventDialog')setTimeout(()=>hintPend($('eventTitle').textContent+' (choosing options)',evSeat),0);if(bmOn&&id==='eventDialog'){d.classList.add('sideDialog');dragOff.ev=[0,0];d.style.translate='';d.show();let bf=$('boardFrame').getBoundingClientRect();let w=Math.min(300,bf.width-24);d.style.width=w+'px';d.style.left=(bf.right-w-12)+'px';d.style.right='auto';d.style.bottom='auto';d.style.top=Math.max(bf.top+8,Math.min(bf.top+bf.height*.36,innerHeight-Math.min(innerHeight*.6,460)-8))+'px';addGrips();requestAnimationFrame(()=>fitEventDialog())}else{d.classList.remove('sideDialog');d.showModal()}}
 $('eventDialog').addEventListener('close',()=>{hintPend(null,evSeat);if(!$('eventDialog').open&&mapPick&&mapPick.ev){mapPick=null;paint()}})
 for(let id of ['menu','eventDialog','logDialog']){let d=$(id);d.querySelector('.close').onclick=()=>d.close();d.addEventListener('click',e=>{if(e.target===d&&!d.classList.contains('sideDialog'))d.close()})}
 $('confirm').onclick=async()=>{let cmd=await makeCmd();if(cmd)perform(cmd)};

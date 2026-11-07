@@ -1,5 +1,9 @@
 ## Latest
 
+- Fixed: the Government Mobilization Event window (and any tall Event window) could run off the bottom of the screen so the Play Event button was out of reach. The form now scrolls inside the window and the button always stays visible.
+
+- Outbreak banners now count down and dismiss themselves like card draws, with no Continue button (the Defeat/Victory banner and the Off reveal speed still wait for a click).
+
 - Online: while one player answers a question or fills in an Event popup, everyone else sees a notice at the top of their screen, "<role> is deciding: ...", with a short description. It disappears when the decision is made.
 
 - Railroad tokens on Porto–Lisboa and Lisboa–Albufeira moved onto the printed lines.
