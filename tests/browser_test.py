@@ -39,12 +39,12 @@ async def main():
     await pg.evaluate("(()=>{let s=CP(state);s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;state=s;recompute();render()})()")
     cid=await pg.evaluate("state.infectionDeck[0]");shown=f"COLORS.reduce((a,k)=>a+(cubeView||state.cubes)['{cid}'][k],0)";real=f"COLORS.reduce((a,k)=>a+state.cubes['{cid}'][k],0)"
     b0=await pg.evaluate(real);await pg.evaluate("perform({type:'infect'})");await pg.wait_for_timeout(400)
-    ok(await pg.evaluate(real)>b0 and await pg.evaluate(shown)==b0,'new cube hidden while the infection popup is up')
-    ok(await pg.evaluate("!document.querySelector('#fx .fxSkip button')&&!!document.querySelector('#fx .fxBar')"),'timed popups have no Continue button, just the countdown bar')
-    await pg.click('#fx',position={'x':20,'y':20});await pg.wait_for_timeout(300)
-    ok(await pg.evaluate("$('flyers').children.length>0"),'cube flies in after the popup closes')
-    await pg.wait_for_timeout(1000)
-    ok(await pg.evaluate(f"{shown}==={real}&&cubeView===null&&$('flyers').children.length===0"),'cube lands and the board matches the game state')
+    ok(await pg.evaluate(real)>b0 and await pg.evaluate(shown)==b0,'new cube hidden while the infection card is on its way')
+    ok(await pg.evaluate("!!document.getElementById('infFx')&&!document.querySelector('#fx .fxBox')"),'infection card flies to the discard pile on the board, no center popup')
+    await pg.wait_for_function("document.querySelectorAll('#infFx path').length>0",timeout=6000);await pg.wait_for_timeout(150)
+    ok(await pg.evaluate("$('flyers').children.length>0&&document.querySelectorAll('#infFx path').length===1"),'cube flies from the card to the city with a dotted guide path')
+    await pg.wait_for_function("!document.getElementById('infFx')",timeout=8000)
+    ok(await pg.evaluate(f"{shown}==={real}&&cubeView===null&&$('flyers').children.length===0&&!document.getElementById('infFx')"),'cube lands, the card overlay is gone and the board matches the game state')
     await pg.close()
     # supply icons and rules links
     pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(400)
