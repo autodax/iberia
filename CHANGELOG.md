@@ -1,5 +1,7 @@
 ## Latest
 
+- City-card draws are now one continuous motion: each card arcs from its pile to the point where the old slide-in starts, then glides straight into its slot in the hand (same size as the hand card), and the real card takes its place with no jump.
+
 - Epidemics now use the same animation as infections: the infection card flies to the discard pile with an "Epidemic! Infection rate: N" badge on it, then the 3 cubes arc out of the card.
 
 - City-card draws: the cards no longer shrink; each flies to just beside the spot where it will sit in the hand, and the old slide-in animation finishes the move. The dotted path (and the cubes) for an infection now start at the edge of the infection card instead of its center.
