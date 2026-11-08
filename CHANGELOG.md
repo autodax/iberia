@@ -1,5 +1,9 @@
 ## Latest
 
+- Protected cities use the new infection animation too: the card flies to the discard pile and a small "Infection prevented" badge (with the token used) sits on the card, under the city name, for about three seconds before the card dims.
+
+- New city-card draw: no more center pop-up. The two drawn cards appear face up over the player deck and the discard pile for about two seconds (longer at Slow), then fly into the active player's hand, which lights up briefly. An epidemic card shows over the pile the same way and fades, then the epidemic banner plays as before. Plays for every player in a network game. At the start of a turn the turn banner still comes first.
+
 - New infection draw: no more center pop-up. The infection card flies from the infection deck to the discard pile, then the cube(s) arc out of that card to the city, with a dotted gold path and a ring around the city; afterwards the card fades to its dimmed look. Plays for every player in a network game. Protected-city, epidemic and outbreak banners are unchanged.
 
 - At the start of a turn, the "<role>'s turn" banner now shows first, then a short pause, then the cards drawn (they used to appear together).

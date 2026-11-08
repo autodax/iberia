@@ -46,6 +46,15 @@ async def main():
     await pg.wait_for_function("!document.getElementById('infFx')",timeout=8000)
     ok(await pg.evaluate(f"{shown}==={real}&&cubeView===null&&$('flyers').children.length===0&&!document.getElementById('infFx')"),'cube lands, the card overlay is gone and the board matches the game state')
     await pg.close()
+    # drawn city cards appear over the piles for 2 s, then fly into the hand
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate("document.querySelector('#begin').click()");await pg.wait_for_timeout(300)
+    await pg.evaluate("resetFx();(()=>{let s=CP(state);s.phase='actions';s.actions=0;state=s;recompute();render()})()")
+    h0=await pg.evaluate("state.players[state.active].hand.length");await pg.evaluate("void perform({type:'draw'})");await pg.wait_for_timeout(1900)
+    ok(await pg.evaluate("document.querySelectorAll('#drawFx>div').length===2&&!document.querySelector('#fx .fxBox')"),'two drawn cards show over the player piles, no center pop-up')
+    ok(await pg.evaluate(f"state.players[state.active].hand.length>{h0}&&document.querySelectorAll('.hand.active .handCards button').length===({h0})"),'drawn cards stay out of the hand while they are on display')
+    await pg.wait_for_function("!document.getElementById('drawFx')",timeout=9000);await pg.wait_for_timeout(200)
+    ok(await pg.evaluate("document.querySelectorAll('.hand.active .handCards button').length===state.players[state.active].hand.length"),'drawn cards are in the hand after they fly over')
+    await pg.close()
     # supply icons and rules links
     pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(400)
     ok(await pg.evaluate("[...document.querySelectorAll('#resources img')].filter(i=>!i.hidden&&i.getAttribute('src')).length>=12"),'supply icons shown (4 counters, 4 cubes, 4 research)')
@@ -211,8 +220,8 @@ async def main():
     ok(c1==c2 and c1[0]=='replay-me','typed seed replays the same deal')
     ok(await pg.evaluate("$('seed').value===''"),'seed field clears after a new game')
     # prevented infections
-    await pg.evaluate("window.soundLog=[];$('fxSpeed').value='2';resetFx();let c=MAP.cities[10].id,r=C[c].region_ids[0];queueFx([{kind:'infection',city:c,pre:CP(state.cubes),after:CP(state.cubes),blocked:[{city:c,by:'water',region:r,left:1,n:1}]}])");await pg.wait_for_timeout(200)
-    ok(await pg.evaluate("!!document.querySelector('#fx.on .blocked')&&/Infection prevented/.test(document.querySelector('#fx .blocked').textContent)&&/purification token used/.test(document.querySelector('#fx .blocked').textContent)"),'prevented infection shown in popup')
+    await pg.evaluate("window.soundLog=[];$('fxSpeed').value='2';resetFx();let c=MAP.cities[10].id,r=C[c].region_ids[0];queueFx([{kind:'infection',city:c,pre:CP(state.cubes),after:CP(state.cubes),blocked:[{city:c,by:'water',region:r,left:1,n:1}]}])");await pg.wait_for_timeout(1300)
+    ok(await pg.evaluate("!!document.getElementById('infBadge')&&/Infection prevented/.test(document.getElementById('infBadge').textContent)&&/urification token used/.test(document.getElementById('infBadge').textContent)&&!document.querySelector('#fx .blocked')"),'prevented infection shown as a badge on the discarded card')
     await pg.evaluate("nextFx()");await pg.wait_for_timeout(150)
     ok(await pg.evaluate("document.querySelectorAll('#flyers .shield').length===1"),'prevented city highlighted on board')
     await pg.wait_for_timeout(500);ok(await pg.evaluate("window.soundLog.includes('blocked')"),'prevented sound')
