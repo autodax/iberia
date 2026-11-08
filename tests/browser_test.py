@@ -63,6 +63,13 @@ async def main():
     await pg.wait_for_function("document.querySelectorAll('#infFx path').length>0",timeout=6000)
     ok(await pg.evaluate("document.getElementById('flyers').children.length>0"),'epidemic cubes fly out of the card')
     await pg.close()
+    # an infection that overflows a city: the cube flies in from the card first, then the outbreak starts
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
+    await pg.evaluate("resetFx();$('fxSpeed').value='0.5';document.querySelectorAll('dialog[open]').forEach(d=>d.close());(()=>{let s=CP(state);s.players.forEach(q=>{if(!q.city)q.city=MAP.cities[3].id});s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;let id=s.infectionDeck[0],col=C[id].color,d=3-s.cubes[id][col];s.cubes[id][col]=3;s.supply[col]-=d;state=s;recompute();render()})()")
+    await pg.evaluate("window.seq=[];(function w(){let k=fxCurrent&&fxCurrent.kind,b=!!document.querySelector('#fx .alert.outbreak');let l=window.seq[window.seq.length-1];if(!l||l[0]!==k||l[1]!==b)window.seq.push([k,b]);setTimeout(w,40)})()");await pg.evaluate("void perform({type:'infect'})")
+    await pg.wait_for_function("window.seq.some(x=>x[0]==='outbreak'&&x[1])",timeout=9000)
+    ok(await pg.evaluate("(()=>{let q=window.seq.map(x=>x[0]+(x[1]?'+banner':''));let i=q.indexOf('cubeIn'),j=q.findIndex(x=>x==='outbreak+banner');return i>=0&&j>i&&q.indexOf('infection')<i})()"),'overflow: cube flies in from the infection card before the outbreak banner')
+    await pg.close()
     # supply icons and rules links
     pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(400)
     ok(await pg.evaluate("[...document.querySelectorAll('#resources img')].filter(i=>!i.hidden&&i.getAttribute('src')).length>=12"),'supply icons shown (4 counters, 4 cubes, 4 research)')

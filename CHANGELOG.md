@@ -1,5 +1,7 @@
 ## Latest
 
+- Fixed: when an infection overflows a city, the outbreak banner and sound no longer cut in before the cause. A cube now flies from the infection card to the city first (with the dotted path), and the outbreak starts when it lands.
+
 - Fixed: the city-card draw animation was flying to the wrong hand box (an idle player's box below the active hand). Cards now land exactly on their real slot in the active hand.
 
 - City-card draws are now one continuous motion: each card arcs from its pile to the point where the old slide-in starts, then glides straight into its slot in the hand (same size as the hand card), and the real card takes its place with no jump.
