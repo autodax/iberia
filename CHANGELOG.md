@@ -1,5 +1,7 @@
 ## Latest
 
+- The turn announcement, the "<role> is deciding" notice, and choice/approval boxes now appear in the middle of the board instead of at the top or side. Card reveals and outbreak/epidemic banners were already centered. Event windows and the small alerts next to a pawn stay where they were.
+
 - Fixed: the Government Mobilization Event window (and any tall Event window) could run off the bottom of the screen so the Play Event button was out of reach. The form now scrolls inside the window and the button always stays visible.
 
 - Outbreak banners now count down and dismiss themselves like card draws, with no Continue button (the Defeat/Victory banner and the Off reveal speed still wait for a click).
