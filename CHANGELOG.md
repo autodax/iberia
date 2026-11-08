@@ -1,5 +1,9 @@
 ## Latest
 
+- Epidemics now use the same animation as infections: the infection card flies to the discard pile with an "Epidemic! Infection rate: N" badge on it, then the 3 cubes arc out of the card.
+
+- City-card draws: the cards no longer shrink; each flies to just beside the spot where it will sit in the hand, and the old slide-in animation finishes the move. The dotted path (and the cubes) for an infection now start at the edge of the infection card instead of its center.
+
 - Protected cities use the new infection animation too: the card flies to the discard pile and a small "Infection prevented" badge (with the token used) sits on the card, under the city name, for about three seconds before the card dims.
 
 - New city-card draw: no more center pop-up. The two drawn cards appear face up over the player deck and the discard pile for about two seconds (longer at Slow), then fly into the active player's hand, which lights up briefly. An epidemic card shows over the pile the same way and fades, then the epidemic banner plays as before. Plays for every player in a network game. At the start of a turn the turn banner still comes first.

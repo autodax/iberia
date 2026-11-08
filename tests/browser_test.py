@@ -55,6 +55,14 @@ async def main():
     await pg.wait_for_function("!document.getElementById('drawFx')",timeout=9000);await pg.wait_for_timeout(200)
     ok(await pg.evaluate("document.querySelectorAll('.hand.active .handCards button').length===state.players[state.active].hand.length"),'drawn cards are in the hand after they fly over')
     await pg.close()
+    # epidemic: infection card flies to the discard pile with an Epidemic badge, then cubes follow
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
+    await pg.evaluate("resetFx();$('fxSpeed').value='0.5';(()=>{let id=MAP.cities[5].id,a=CP(state.cubes);a[id][C[id].color]=(a[id][C[id].color]||0)+3;queueFx([{kind:'epidemic',city:id,rate:3,rateIndex:2,after:a}])})()")
+    await pg.wait_for_function("document.getElementById('infBadge')",timeout=5000)
+    ok(await pg.evaluate("/Epidemic!/.test(document.getElementById('infBadge').textContent)&&/rate: 3/.test(document.getElementById('infBadge').textContent)&&!document.querySelector('#fx .fxBox')"),'epidemic shown as a badge on the discarded infection card')
+    await pg.wait_for_function("document.querySelectorAll('#infFx path').length>0",timeout=6000)
+    ok(await pg.evaluate("document.getElementById('flyers').children.length>0"),'epidemic cubes fly out of the card')
+    await pg.close()
     # supply icons and rules links
     pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(400)
     ok(await pg.evaluate("[...document.querySelectorAll('#resources img')].filter(i=>!i.hidden&&i.getAttribute('src')).length>=12"),'supply icons shown (4 counters, 4 cubes, 4 research)')
