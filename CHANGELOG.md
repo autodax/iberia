@@ -1,5 +1,9 @@
 ## Latest
 
+- At the start of a turn, the "<role>'s turn" banner now shows first, then a short pause, then the cards drawn (they used to appear together).
+
+- iPad / narrow screens: the other players' hands now squeeze their overlapping cards together to fit instead of running off the right edge.
+
 - The turn announcement, the "<role> is deciding" notice, and choice/approval boxes now appear in the middle of the board instead of at the top or side. Card reveals and outbreak/epidemic banners were already centered. Event windows and the small alerts next to a pawn stay where they were.
 
 - Fixed: the Government Mobilization Event window (and any tall Event window) could run off the bottom of the screen so the Play Event button was out of reach. The form now scrolls inside the window and the button always stays visible.
