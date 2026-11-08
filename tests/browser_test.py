@@ -65,11 +65,34 @@ async def main():
     await pg.close()
     # an infection that overflows a city: the cube flies in from the card first, then the outbreak starts
     pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
-    await pg.evaluate("resetFx();$('fxSpeed').value='0.5';document.querySelectorAll('dialog[open]').forEach(d=>d.close());(()=>{let s=CP(state);s.players.forEach(q=>{if(!q.city)q.city=MAP.cities[3].id});s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;let id=s.infectionDeck[0],col=C[id].color,d=3-s.cubes[id][col];s.cubes[id][col]=3;s.supply[col]-=d;state=s;recompute();render()})()")
-    await pg.evaluate("window.seq=[];(function w(){let k=fxCurrent&&fxCurrent.kind,b=!!document.querySelector('#fx .alert.outbreak');let l=window.seq[window.seq.length-1];if(!l||l[0]!==k||l[1]!==b)window.seq.push([k,b]);setTimeout(w,40)})()");await pg.evaluate("void perform({type:'infect'})")
-    await pg.wait_for_function("window.seq.some(x=>x[0]==='outbreak'&&x[1])",timeout=9000)
+    await pg.evaluate("resetFx();$('fxSpeed').value='0.5';document.querySelectorAll('dialog[open]').forEach(d=>d.close());(()=>{let s=CP(state);s.players.forEach((q,i)=>{q.role=['politician','agronomist','railwayman','scientist'][i%4]});s.prevention=null;s.players.forEach(q=>{if(!q.city)q.city=MAP.cities[3].id});s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;let id=s.infectionDeck[0],col=C[id].color,d=3-s.cubes[id][col];s.cubes[id][col]=3;s.supply[col]-=d;state=s;recompute();render()})()")
+    await pg.evaluate("window.seq=[];(function w(){let k=fxCurrent&&fxCurrent.kind,b=!!document.querySelector('#fx .alert.outbreak');let l=window.seq[window.seq.length-1];if(!l||l[0]!==k||l[1]!==b)window.seq.push([k,b]);setTimeout(w,40)})()");await pg.evaluate("(busy=false,void perform({type:'infect'}))")
+    try: await pg.wait_for_function("window.seq.some(x=>x[0]==='outbreak'&&x[1])",timeout=9000)
+    except Exception: print('DEBUG overflow',await pg.evaluate("[JSON.stringify(window.seq),state.phase,state.outbreaks,state.infectionRemaining,state.pendingEvent||null,document.querySelectorAll('dialog[open]').length,state.over||null]"))
     ok(await pg.evaluate("(()=>{let q=window.seq.map(x=>x[0]+(x[1]?'+banner':''));let i=q.indexOf('cubeIn'),j=q.findIndex(x=>x==='outbreak+banner');return i>=0&&j>i&&q.indexOf('infection')<i})()"),'overflow: cube flies in from the infection card before the outbreak banner')
     await pg.close()
+    # sailing by ship as a non-Sailor: one matching card -> warn it will be used; several -> told to choose
+    SHIP_SETUP="""(n)=>{let s=CP(state);s.players.forEach((q,i)=>{q.role=['politician','agronomist','railwayman','scientist'][i%4]});s.prevention=null;s.phase='actions';s.actions=4;let P=s.players[s.active];let ports=MAP.cities.filter(c=>c.port);let a=ports[0],d=ports.find(c=>c.id!==a.id&&!ADJ[a.id].includes(c.id)&&c.color!==a.color&&C[a.id].port);P.city=a.id;state=s;recompute();{let only=ports.find(c=>c.id!==a.id&&(legal.ship||[]).some(m=>m.to===c.id)&&!(legal.carriage||[]).some(m=>m.to===c.id)&&!(legal.train||[]).some(m=>m.to===c.id));if(only)d=only}
+ let col=d.color,deck=s.playerDeck;
+ // normalise hand: exactly n cards of color col (swap with deck cards)
+ let isCol=k=>C[k]&&C[k].color===col;
+ for(let i=0;i<P.hand.length;i++){if(isCol(P.hand[i])&&P.hand.filter(isCol).length>n){let j=deck.findIndex(k=>C[k]&&!isCol(k));let t=P.hand[i];P.hand[i]=deck[j];deck[j]=t}}
+ for(let i=0;i<P.hand.length&&P.hand.filter(isCol).length<n;i++){if(!isCol(P.hand[i])&&C[P.hand[i]]){let j=deck.findIndex(k=>isCol(k)&&k!==d.id);let t=P.hand[i];P.hand[i]=deck[j];deck[j]=t}}
+ window.__d=d.id;state=s;recompute();render();return [P.hand.filter(isCol).length,d.name,col]}"""
+    for n in (1,2):
+      pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
+      await pg.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close())");await pg.evaluate("("+SHIP_SETUP+")("+str(n)+")");await pg.wait_for_timeout(200)
+      await pg.evaluate("busy=false;void quickMove(window.__d)");await pg.wait_for_timeout(700)
+      if n==1:
+        ok(await pg.evaluate("document.getElementById('choiceDialog').open&&/will be discarded/.test(document.getElementById('choiceTitle').textContent)&&state.actions===4"),'one matching card: ship move warns that the card will be used')
+        print('DEBUG ship',await pg.evaluate("[document.getElementById('choiceDialog').open,document.getElementById('choiceOptions').innerHTML.length,state.actions,mode]")) if not await pg.evaluate("!!document.querySelector('#choiceOptions button:last-child')") else None
+        await pg.evaluate("(document.querySelector('#choiceOptions button:last-child')||{click(){}}).click()");await pg.wait_for_timeout(300)
+        ok(await pg.evaluate("state.actions===4&&mode===''"),'declining the warning cancels the ship move')
+      else:
+        try: await pg.wait_for_function("mode==='ship'",timeout=2500)
+        except Exception: pass
+        ok(await pg.evaluate("!document.getElementById('choiceDialog').open&&mode==='ship'&&/Choose which/.test(document.getElementById('actionHint').textContent)"),'several matching cards: player is told to choose one')
+      await pg.close()
     # supply icons and rules links
     pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(400)
     ok(await pg.evaluate("[...document.querySelectorAll('#resources img')].filter(i=>!i.hidden&&i.getAttribute('src')).length>=12"),'supply icons shown (4 counters, 4 cubes, 4 research)')
@@ -238,8 +261,8 @@ async def main():
     await pg.evaluate("window.soundLog=[];$('fxSpeed').value='2';resetFx();let c=MAP.cities[10].id,r=C[c].region_ids[0];queueFx([{kind:'infection',city:c,pre:CP(state.cubes),after:CP(state.cubes),blocked:[{city:c,by:'water',region:r,left:1,n:1}]}])");await pg.wait_for_timeout(1300)
     ok(await pg.evaluate("!!document.getElementById('infBadge')&&/Infection prevented/.test(document.getElementById('infBadge').textContent)&&/urification token used/.test(document.getElementById('infBadge').textContent)&&!document.querySelector('#fx .blocked')"),'prevented infection shown as a badge on the discarded card')
     await pg.evaluate("nextFx()");await pg.wait_for_timeout(150)
-    ok(await pg.evaluate("document.querySelectorAll('#flyers .shield').length===1"),'prevented city highlighted on board')
-    await pg.wait_for_timeout(500);ok(await pg.evaluate("window.soundLog.includes('blocked')"),'prevented sound')
+    ok(await pg.evaluate("document.querySelectorAll('#flyers .shield').length===0"),'no second shield animation after the badge')
+    await pg.wait_for_timeout(500);ok(await pg.evaluate("window.soundLog.filter(x=>x==='blocked').length===1"),'prevented sound plays once')
     await pg.evaluate("$('fxSpeed').value='-1';resetFx();let c=MAP.cities[12].id;queueFx([{kind:'infection',city:c,pre:CP(state.cubes),after:CP(state.cubes),blocked:[{city:c,by:'nurse',region:C[c].region_ids[0],n:1}]}])");await pg.wait_for_timeout(200)
     ok(await pg.evaluate("!!document.querySelector('#fx.on .blocked .brow.nurse')"),'prevented infection shown even with reveals Off')
     await pg.evaluate("nextFx();$('fxSpeed').value='2'")
@@ -334,6 +357,8 @@ async def main():
       c0=await tp.evaluate("state.players[state.active].city");await tp.mouse.click(q[0],q[1]);await tp.wait_for_timeout(400)
       ok(await tp.evaluate("state.players[state.active].city")==c0,'touch: first tap only previews the move')
       q=await pos();await tp.mouse.click(q[0],q[1]);await tp.wait_for_timeout(700)
+      if await tp.evaluate("document.getElementById('choiceDialog').open&&/will be discarded/.test(document.getElementById('choiceTitle').textContent)"):
+        await tp.evaluate("document.querySelector('#choiceOptions button').click()");await tp.wait_for_timeout(700)
       ok(await tp.evaluate("state.players[state.active].city")!=c0,'touch: second tap completes the move')
     else:ok(False,'touch: reachable city found')
     # Government Mobilization: Play Event button stays on screen and plays

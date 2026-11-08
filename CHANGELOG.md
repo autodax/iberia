@@ -1,5 +1,11 @@
 ## Latest
 
+- The infection card you just drew no longer shows dimmed on the discard pile before the animated card lands; the pile keeps showing the previous card until the new one arrives.
+
+- Protected infections no longer repeat the sound and the shield animation at the city after the badge; the badge on the card (with its single sound) is now the only notice.
+
+- Sailing by ship (anyone but the Sailor): if you hold exactly one City card of the destination's color, you now get a warning naming the card that will be discarded, with Yes/No. If you hold several, the hint tells you to choose which card to discard.
+
 - Fixed: when an infection overflows a city, the outbreak banner and sound no longer cut in before the cause. A cube now flies from the infection card to the city first (with the dotted path), and the outbreak starts when it lands.
 
 - Fixed: the city-card draw animation was flying to the wrong hand box (an idle player's box below the active hand). Cards now land exactly on their real slot in the active hand.
