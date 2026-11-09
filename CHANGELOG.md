@@ -1,5 +1,7 @@
 ## Latest
 
+- Drawn city cards now slide into gaps: as they leave the piles the hand spreads apart (the other cards glide aside), the drawn cards start their slide further to the left, land in the empty slots, and no longer replay the old slide-in at the end.
+
 - Railroad tokens realigned to the printed connection lines: Málaga–Almería, Gijón–Santander, Salamanca–Cáceres, Toledo–Cáceres, Madrid–Salamanca, Madrid–Toledo, Valladolid–Madrid, Porto–Coimbra and Coimbra–Cáceres were measured against the board art and nudged onto the line.
 
 - The dashed guide line for the infection cube fly-in is gone; the cube just flies from the card edge to the city.
