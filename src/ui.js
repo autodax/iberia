@@ -842,7 +842,7 @@ function drawChallengeFields(box,opts,change,heading){box.replaceChildren();el('
  el('div',{className:'chSub',textContent:'Historical diseases (each one you choose behaves differently)'},box);let row=el('div',{className:'chRow'},box);
  for(let k of COLORS){let li=el('label',{className:'check',title:HIST_TEXT[k]},row),c=el('input',{type:'checkbox',checked:(opts.hist||[]).includes(k)},li);li.append(DISEASES[k]);c.onchange=()=>{opts.hist=COLORS.filter(x=>x===k?c.checked:(opts.hist||[]).includes(x));change()}}
  let rb=el('button',{type:'button',textContent:'Pick historical diseases at random',className:'chRandom'},box);rb.onclick=()=>{let n=1+Math.floor(Math.random()*4),pool=COLORS.slice().sort(()=>Math.random()-.5).slice(0,n);opts.hist=COLORS.filter(k=>pool.includes(k));change();drawChallengeFields(box,opts,change,heading)}}
-function drawRoleFields(){drawChallengeFields($('challengeBox'),chLocal,()=>{});let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++)field('Role '+(i+1),'role'+i,Object.entries(ROLES).filter(([k])=>roleList().includes(k)||k===roleChoice[i]),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},box)}
+function drawRoleFields(){drawChallengeFields($('challengeBox'),chLocal,()=>{});let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++){let w=el('div',{className:'roleSeat'},box);field('Role '+(i+1),'role'+i,Object.entries(ROLES).filter(([k])=>roleList().includes(k)||k===roleChoice[i]),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},w);el('div',{className:'roleText',textContent:ROLE_TEXT[roleChoice[i]]||''},w)}}
 $('playerCount').onchange=drawRoleFields;
 for(let id of ['playerCount','difficulty','fxSpeed'])buttonize($(id));
 $('randomRoles').onclick=()=>{roleChoice=randRoles();drawRoleFields()};$('baseRoles').onchange=()=>{if($('baseRoles').checked&&roleChoice.some(r=>!BASE_ROLES.includes(r)))roleChoice=randRoles();drawRoleFields()};
@@ -932,6 +932,7 @@ function drawOnline(){
       let sel=el('select',{title:'Role'},who);for(let [v,t] of Object.entries(ROLES))el('option',{value:v,textContent:t,selected:v===role},sel);
       sel.onchange=()=>{let roles=L.settings.roles.slice(),j=roles.indexOf(sel.value);if(j>=0&&j!==i)roles[j]=roles[i];roles[i]=sel.value;Net.setSettings({roles})}
     }else el('span',{textContent:roleName(role)},who);
+    if(ROLE_TEXT[role])el('div',{className:'roleText',textContent:ROLE_TEXT[role]},r);
     let by=el('div',{className:'onBy'},r);
     if(Net.isHost){
       let sel=el('select',{title:'Who plays this seat'},by);el('option',{value:'',textContent:'Unassigned'},sel);

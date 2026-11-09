@@ -553,3 +553,6 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 #cubeCounts b.low{animation:cubeLow 2s ease-in-out infinite}@keyframes cubeLow{0%,100%{background:#f3e6c8;color:#3a2f1c}50%{background:#d12b2b;color:#fff}}
 @media (prefers-reduced-motion:reduce){#cubeCounts b.low{animation:none;background:#d12b2b;color:#fff}}
+
+.roleText{font-size:12.5px;line-height:1.35;color:#4a3d24;background:#f3e6c8;border-left:3px solid #b79b5a;border-radius:4px;padding:5px 8px;margin:-2px 0 9px}
+.onSeat .roleText{margin:4px 0 2px}
