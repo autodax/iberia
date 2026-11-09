@@ -80,7 +80,7 @@ async def main():
  for(let i=0;i<P.hand.length&&P.hand.filter(isCol).length<n;i++){if(!isCol(P.hand[i])&&C[P.hand[i]]){let j=deck.findIndex(k=>isCol(k)&&k!==d.id);let t=P.hand[i];P.hand[i]=deck[j];deck[j]=t}}
  window.__d=d.id;state=s;recompute();render();return [P.hand.filter(isCol).length,d.name,col]}"""
     for n in (1,2):
-      pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
+      pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(1500)
       await pg.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close())");await pg.evaluate("("+SHIP_SETUP+")("+str(n)+")");await pg.wait_for_timeout(200)
       await pg.evaluate("busy=false;void quickMove(window.__d)");await pg.wait_for_timeout(700)
       if n==1:

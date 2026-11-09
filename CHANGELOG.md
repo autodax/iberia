@@ -1,5 +1,7 @@
 ## Latest
 
+- Smoother city-card draw: the active hand now opens a full-size gap for each drawn card, the card slides into it from the left (no more popping in on top of the other cards), and then the cards below slide up over it.
+
 - Drawn city cards now slide into gaps: as they leave the piles the hand spreads apart (the other cards glide aside), the drawn cards start their slide further to the left, land in the empty slots, and no longer replay the old slide-in at the end.
 
 - Railroad tokens realigned to the printed connection lines: Málaga–Almería, Gijón–Santander, Salamanca–Cáceres, Toledo–Cáceres, Madrid–Salamanca, Madrid–Toledo, Valladolid–Madrid, Porto–Coimbra and Coimbra–Cáceres were measured against the board art and nudged onto the line.

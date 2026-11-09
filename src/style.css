@@ -553,3 +553,9 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 #cubeCounts b.low{animation:cubeLow 2s ease-in-out infinite}@keyframes cubeLow{0%,100%{background:#f3e6c8;color:#3a2f1c}50%{background:#d12b2b;color:#fff}}
 @media (prefers-reduced-motion:reduce){#cubeCounts b.low{animation:none;background:#d12b2b;color:#fff}}
+
+/* drawn cards: the hand opens a full-size gap, the card lands in it, then the cards below slide up over it */
+#app.bm .hand.active button.card.thumb.gapSlot+button.card.thumb{margin-top:0!important}
+@keyframes gapClose{from{margin-top:0}}
+#app.bm .hand.active button.card.thumb.gapClosing{animation:gapClose .6s cubic-bezier(.3,.1,.2,1) both}
+@media (prefers-reduced-motion:reduce){#app.bm .hand.active button.card.thumb.gapClosing{animation:none}}
