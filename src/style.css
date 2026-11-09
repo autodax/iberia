@@ -550,3 +550,6 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 /* Alerts and notices sit in the middle of the board */
 #remoteNote{top:50%;left:50%;transform:translate(-50%,-50%)}
+
+#cubeCounts b.low{animation:cubeLow 2s ease-in-out infinite}@keyframes cubeLow{0%,100%{background:#f3e6c8;color:#3a2f1c}50%{background:#d12b2b;color:#fff}}
+@media (prefers-reduced-motion:reduce){#cubeCounts b.low{animation:none;background:#d12b2b;color:#fff}}

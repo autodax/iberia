@@ -41,8 +41,8 @@ async def main():
     b0=await pg.evaluate(real);await pg.evaluate("perform({type:'infect'})");await pg.wait_for_timeout(400)
     ok(await pg.evaluate(real)>b0 and await pg.evaluate(shown)==b0,'new cube hidden while the infection card is on its way')
     ok(await pg.evaluate("!!document.getElementById('infFx')&&!document.querySelector('#fx .fxBox')"),'infection card flies to the discard pile on the board, no center popup')
-    await pg.wait_for_function("document.querySelectorAll('#infFx path').length>0",timeout=6000);await pg.wait_for_timeout(150)
-    ok(await pg.evaluate("$('flyers').children.length>0&&document.querySelectorAll('#infFx path').length===1"),'cube flies from the card to the city with a dotted guide path')
+    await pg.wait_for_function("document.getElementById('flyers').children.length>0",timeout=6000);await pg.wait_for_timeout(150)
+    ok(await pg.evaluate("$('flyers').children.length>0&&document.querySelectorAll('#infFx path').length===0"),'cube flies from the card to the city (no guide line)')
     await pg.wait_for_function("!document.getElementById('infFx')",timeout=8000)
     ok(await pg.evaluate(f"{shown}==={real}&&cubeView===null&&$('flyers').children.length===0&&!document.getElementById('infFx')"),'cube lands, the card overlay is gone and the board matches the game state')
     await pg.close()
@@ -60,7 +60,7 @@ async def main():
     await pg.evaluate("resetFx();$('fxSpeed').value='0.5';(()=>{let id=MAP.cities[5].id,a=CP(state.cubes);a[id][C[id].color]=(a[id][C[id].color]||0)+3;queueFx([{kind:'epidemic',city:id,rate:3,rateIndex:2,after:a}])})()")
     await pg.wait_for_function("document.getElementById('infBadge')",timeout=5000)
     ok(await pg.evaluate("/Epidemic!/.test(document.getElementById('infBadge').textContent)&&/rate: 3/.test(document.getElementById('infBadge').textContent)&&!document.querySelector('#fx .fxBox')"),'epidemic shown as a badge on the discarded infection card')
-    await pg.wait_for_function("document.querySelectorAll('#infFx path').length>0",timeout=6000)
+    await pg.wait_for_function("document.getElementById('flyers').children.length>0",timeout=6000)
     ok(await pg.evaluate("document.getElementById('flyers').children.length>0"),'epidemic cubes fly out of the card')
     await pg.close()
     # an infection that overflows a city: the cube flies in from the card first, then the outbreak starts
@@ -93,6 +93,11 @@ async def main():
         except Exception: pass
         ok(await pg.evaluate("!document.getElementById('choiceDialog').open&&mode==='ship'&&/Choose which/.test(document.getElementById('actionHint').textContent)"),'several matching cards: player is told to choose one')
       await pg.close()
+    # low cube counts pulse red
+    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
+    await pg.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());(()=>{let s=CP(state);s.supply[COLORS[0]]-=s.supply[COLORS[0]]-9;state=s;recompute();render()})()");await pg.wait_for_timeout(300)
+    ok(await pg.evaluate("(()=>{let bs=[...document.querySelectorAll('#cubeCounts .cc:not(.tc) b')];return bs.filter(x=>x.classList.contains('low')).length===bs.filter(x=>+x.textContent<10).length&&bs.some(x=>x.classList.contains('low'))&&getComputedStyle(bs.find(x=>x.classList.contains('low'))).animationName==='cubeLow'})()"),'cube counts below 10 pulse red')
+    await pg.close()
     # supply icons and rules links
     pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F);await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(400)
     ok(await pg.evaluate("[...document.querySelectorAll('#resources img')].filter(i=>!i.hidden&&i.getAttribute('src')).length>=12"),'supply icons shown (4 counters, 4 cubes, 4 research)')

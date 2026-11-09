@@ -1,5 +1,9 @@
 ## Latest
 
+- The dashed guide line for the infection cube fly-in is gone; the cube just flies from the card edge to the city.
+
+- Remaining-cube counters pulse red (cream to red and back every 2 seconds) once a color has fewer than 10 cubes left.
+
 - The infection card you just drew no longer shows dimmed on the discard pile before the animated card lands; the pile keeps showing the previous card until the new one arrives.
 
 - Protected infections no longer repeat the sound and the shield animation at the city after the badge; the badge on the card (with its single sound) is now the only notice.
