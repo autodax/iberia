@@ -468,7 +468,7 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #tokCounts{top:calc(20.2% + 58px*var(--bs,1))}#tokCounts .tcol{gap:calc(14px*var(--bs,1))}#tokCounts .tc{width:calc(46px*var(--bs,1))}
 #cubeCounts{display:grid;grid-template-columns:repeat(4,1fr);justify-items:center;align-items:center;row-gap:calc(12px*var(--bs,1))}#cubeCounts .tc{grid-column:1;display:flex;align-items:center;justify-content:center}#cubeCounts .tc.water{grid-row:2}#cubeCounts .tc.rail{grid-row:3}#cubeCounts .tc img{filter:drop-shadow(0 1px 2px #000a);width:auto;height:auto;max-width:calc(40px*var(--bs,1));max-height:calc(40px*var(--bs,1));object-fit:contain}#cubeCounts .tc.rail img{max-width:calc(50px*var(--bs,1));max-height:calc(30px*var(--bs,1))}#tokCounts{display:none!important}
 #cubeCounts .tc.water img{transform:translateX(calc(-3px*var(--bs,1)))}#cubeCounts .tc.rail img{max-width:calc(44px*var(--bs,1));transform:translateX(calc(-3px*var(--bs,1)))}
-@keyframes handSlide{0%{transform:translateX(-140px);opacity:0}100%{transform:none;opacity:1}}.handCards .card.slideIn{animation:handSlide .9s cubic-bezier(.2,.8,.25,1) both}@media (prefers-reduced-motion:reduce){.handCards .card.slideIn{animation:none}}
+@keyframes handSlide{0%{transform:translateX(-260px);opacity:0}100%{transform:none;opacity:1}}.handCards .card.slideIn{animation:handSlide .9s cubic-bezier(.2,.8,.25,1) both}@media (prefers-reduced-motion:reduce){.handCards .card.slideIn{animation:none}}
 .fxInf .bigCard.art.landscape{width:calc(var(--aw,120px)*1.46*var(--cs,1.4)*.8)}.fxInf .bigCard.landscape:not(.art){width:176px;height:120px}
 #choiceDialog.pawnAlert.withCardAlert #choiceCard{display:flex;justify-content:center;margin:0 0 8px}#choiceDialog.pawnAlert.withCardAlert #choiceCard[hidden]{display:none}#choiceDialog.pawnAlert.withCardAlert #choiceCard .bigCard.art{width:min(210px,70%)}#choiceDialog.pawnAlert.withCardAlert{width:min(280px,90vw)}
 #choiceDialog.pawnAlert.withCardAlert{width:176px;padding:6px 7px}#choiceDialog.pawnAlert.withCardAlert #choiceTitle{font-size:12px;margin:0 0 4px}#choiceDialog.pawnAlert.withCardAlert #choiceCard{margin:0 0 4px}#choiceDialog.pawnAlert.withCardAlert #choiceCard .bigCard.art{width:min(160px,100%)}#choiceDialog.pawnAlert.withCardAlert .mapHint{font-size:11.5px;margin:0 0 5px}#choiceDialog.pawnAlert.withCardAlert .dialogButtons button{padding:4px 8px;font-size:13px}
@@ -553,9 +553,3 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 
 #cubeCounts b.low{animation:cubeLow 2s ease-in-out infinite}@keyframes cubeLow{0%,100%{background:#f3e6c8;color:#3a2f1c}50%{background:#d12b2b;color:#fff}}
 @media (prefers-reduced-motion:reduce){#cubeCounts b.low{animation:none;background:#d12b2b;color:#fff}}
-
-/* drawn cards: the hand opens a full-size gap, the card lands in it, then the cards below slide up over it */
-#app.bm .hand.active button.card.thumb.gapSlot+button.card.thumb{margin-top:0!important}
-@keyframes gapClose{from{margin-top:0}}
-#app.bm .hand.active button.card.thumb.gapClosing{animation:gapClose .6s cubic-bezier(.3,.1,.2,1) both}
-@media (prefers-reduced-motion:reduce){#app.bm .hand.active button.card.thumb.gapClosing{animation:none}}

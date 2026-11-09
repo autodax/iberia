@@ -484,8 +484,8 @@ let drawFxTimers=[];
 function drawFxClear(){drawFxTimers.forEach(clearTimeout);drawFxTimers=[];let o=document.getElementById('drawFx');if(o)o.remove()}
 // spread the hand apart so each drawn card has an empty slot waiting for it (the other cards glide aside)
 function openHandGaps(f){let hs=drawHide.get(f.seat);if(!hs||!hs.size)return;let held=f.cards.filter(k=>hs.has(k)&&C[k]);if(!held.length)return;let rects=new Map(),q=()=>document.querySelectorAll('.hand[data-seat="'+f.seat+'"] .handCards button[data-k]');for(let b of q())rects.set(b.dataset.k,b.getBoundingClientRect());
- drawGap.set(f.seat,new Set(held));held.forEach(k=>noSlide.add(k));render();
- for(let b of q()){let o=rects.get(b.dataset.k);if(!o)continue;let n=b.getBoundingClientRect(),dx=o.left-n.left,dy=o.top-n.top;if(Math.abs(dx)<.5&&Math.abs(dy)<.5)continue;b.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:650,easing:'cubic-bezier(.3,.1,.2,1)'})}}
+ drawGap.set(f.seat,new Set(held));render();
+ for(let b of q()){let o=rects.get(b.dataset.k);if(!o)continue;let n=b.getBoundingClientRect(),dx=o.left-n.left,dy=o.top-n.top;if(Math.abs(dx)<.5&&Math.abs(dy)<.5)continue;b.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:480,easing:'cubic-bezier(.3,.1,.2,1)'})}}
 function drawCardsFlight(f,speed){drawFxClear();f.flown=true;let m=$('board').getScreenCTM(),sc=m.a,P=(x,y)=>[m.a*x+m.e,m.d*y+m.f];
  let [dx,dy,dw,dh]=DECK_SLOTS.plDeck,[tx,ty,tw,th]=DECK_SLOTS.plDisc,dc=P(dx+dw/2,dy+dh/2),tc=P(tx+tw/2,ty+th/2),w=dw*sc,h=dh*sc;
  let hd=document.querySelector('.hand[data-seat="'+f.seat+'"]'),hr=hd?hd.getBoundingClientRect():null;
@@ -501,11 +501,10 @@ function drawCardsFlight(f,speed){drawFxClear();f.flown=true;let m=$('board').ge
   let sl=slots[k]||fb;   // one continuous path: arc to the point where the old slide-in begins, then glide into the slot
   flyers.push([d,cx,cy,rot,ep,sl[0]-300,sl[1],sl[0],sl[1],sl[2]/w,sl[3]/h,0])});
  playSound('draw');
- drawFxTimers.push(setTimeout(()=>{openHandGaps(f);flyers.forEach(([d,cx,cy,rot,ep,ax,ay,fx,fy,sx,sy,clip],i)=>{if(ep){d.animate([{opacity:1},{opacity:0}],{duration:400,fill:'both'});return}
-   let aX=ax-cx,aY=ay-cy,fX=fx-cx,fY=fy-cy,sa=(sx+sy)/2;
-   d.animate([{transform:`rotate(${rot}deg) scale(1.12)`,offset:0,easing:'cubic-bezier(.45,0,.75,.6)'},{transform:`translate(${aX*.55}px,${aY*.55-70}px) rotate(${rot*.4}deg) scale(${(1.12+sa)/2})`,offset:.32,easing:'cubic-bezier(.25,.4,.5,1)'},{transform:`translate(${aX}px,${aY}px) rotate(0deg) scale(${sa})`,clipPath:'inset(0px 0px 0px 0px)',offset:.575,easing:'cubic-bezier(.2,.8,.25,1)'},{transform:`translate(${fX*.9+aX*.1}px,${fY*.9+aY*.1}px) rotate(0deg) scale(${sx},${sy})`,clipPath:'inset(0px 0px 0px 0px)',boxShadow:'0 3px 8px #0009',offset:.82,easing:'ease-in-out'},{transform:`translate(${fX}px,${fY}px) rotate(0deg) scale(${sx},${sy})`,clipPath:`inset(0px 0px ${clip}px 0px)`,boxShadow:'0 3px 8px #0009',offset:1}],{duration:fly+slideMs,delay:i*stag,fill:'both'})});
-  if(hd)drawFxTimers.push(setTimeout(()=>hd.animate([{boxShadow:'0 0 0 0 #ffd54a00'},{boxShadow:'0 0 0 3px #ffd54a,0 0 22px 4px #ffd54a99'},{boxShadow:'0 0 0 0 #ffd54a00'}],{duration:1100}),fly*.7))},pop+hold));
- let total=pop+hold+fly+slideMs+stag*(n-1);drawFxTimers.push(setTimeout(()=>L.remove(),total+40));fxTimer=setTimeout(nextFx,total)}
+ // reveal over the piles, then fade out while the hand opens a strip-sized gap per card; the real cards then use the original slide-in
+ drawFxTimers.push(setTimeout(()=>{openHandGaps(f);flyers.forEach(([d])=>d.animate([{opacity:1},{opacity:0}],{duration:450,fill:'both',easing:'ease-in'}));
+  if(hd)drawFxTimers.push(setTimeout(()=>hd.animate([{boxShadow:'0 0 0 0 #ffd54a00'},{boxShadow:'0 0 0 3px #ffd54a,0 0 22px 4px #ffd54a99'},{boxShadow:'0 0 0 0 #ffd54a00'}],{duration:1100}),300))},pop+hold));
+ let total=pop+hold+520;drawFxTimers.push(setTimeout(()=>L.remove(),total+40));fxTimer=setTimeout(nextFx,total)}
 const INF_EDGE=cityId=>{let [x,y,w,h]=DECK_SLOTS.infDisc,cx=x+w/2,cy=y+h/2,tx=C[cityId].x,ty=C[cityId].y,dx=tx-cx,dy=ty-cy,t=Math.min((w/2+3)/Math.max(Math.abs(dx),1e-6),(h/2+3)/Math.max(Math.abs(dy),1e-6));return [cx+dx*t,cy+dy*t]};
 let infBadgeTimer=null,infPending=[];
 const infAnim=(f,speed)=>(f.kind==='infection'||f.kind==='epidemic')&&speed>=0&&!!(f.blocked||f.preview||f.after)&&!matchMedia('(prefers-reduced-motion: reduce)').matches;

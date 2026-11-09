@@ -2,7 +2,7 @@
 
 - Pawns no longer block clicks: a railroad (or other board click) next to a pawn can be clicked right through the pawn, e.g. building north from Santiago de Compostela with a pawn standing there.
 
-- Smoother city-card draw: the active hand now opens a full-size gap for each drawn card, the card slides into it from the left (no more popping in on top of the other cards), and then the cards below slide up over it.
+- City-card draw is now: reveal over the piles (2 s), fade out, then the original slide-in from the left into the hand, with a gap just one card-strip tall opening for each new card. The flying-in-from-the-pile step is gone.
 
 - Drawn city cards now slide into gaps: as they leave the piles the hand spreads apart (the other cards glide aside), the drawn cards start their slide further to the left, land in the empty slots, and no longer replay the old slide-in at the end.
 
