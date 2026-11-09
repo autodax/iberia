@@ -1,5 +1,7 @@
 ## Latest
 
+- Railroad tokens realigned to the printed connection lines: Málaga–Almería, Gijón–Santander, Salamanca–Cáceres, Toledo–Cáceres, Madrid–Salamanca, Madrid–Toledo, Valladolid–Madrid, Porto–Coimbra and Coimbra–Cáceres were measured against the board art and nudged onto the line.
+
 - The dashed guide line for the infection cube fly-in is gone; the cube just flies from the card edge to the city.
 
 - Remaining-cube counters pulse red (cream to red and back every 2 seconds) once a color has fewer than 10 cubes left.
