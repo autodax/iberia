@@ -1,5 +1,7 @@
 ## Latest
 
+- Fixed: the drawn city cards' slide-in from the left was being skipped after the reveal; they now slide in as intended.
+
 - The role cards' ability text now appears under each role choice in the Game menu (and next to each seat in the online lobby), so you can read what a role does while choosing, including the roles that aren't in the rule book.
 
 - Pawns no longer block clicks: a railroad (or other board click) next to a pawn can be clicked right through the pawn, e.g. building north from Santiago de Compostela with a pawn standing there.
