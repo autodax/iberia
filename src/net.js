@@ -16,7 +16,8 @@ const NET_PROTO=1,NET_MAX_PEOPLE=8,NET_HOST_ID='host',NET_ACK_TIMEOUT=20000,NET_
 const NET_CODE_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I so a code read aloud is hard to get wrong
 const NET_SAVE_KEY='iberia-online-host';
 
-function netShuffleRoles(){const pool=['sailor','agronomist','railwayman','politician','nurse','scientist','rural_doctor','civil_engineer','palliative_nurse','student','time_traveler','professor'];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,5)}
+let netLastRoles=[];
+function netShuffleRoles(){let lo=[];try{lo=JSON.parse(localStorage.getItem('iberiaLeaveOut')||'[]')}catch(e){}const all=['sailor','agronomist','railwayman','politician','nurse','scientist','rural_doctor','civil_engineer','palliative_nurse','student','time_traveler','professor'];let pool=all.filter(r=>!lo.includes(r));if(pool.length<5)pool=all.slice();const fresh=pool.filter(r=>!netLastRoles.includes(r));const rest=pool.filter(r=>netLastRoles.includes(r));const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};return sh(fresh).concat(sh(rest)).slice(0,5)}
 function netRandom(n,chars){let out='',a=new Uint32Array(n);try{crypto.getRandomValues(a)}catch(e){for(let i=0;i<n;i++)a[i]=Math.random()*4294967296}for(let i=0;i<n;i++)out+=chars[a[i]%chars.length];return out}
 function netNewCode(){return netRandom(5,NET_CODE_CHARS)}
 function netNormalizeCode(t){return String(t||'').toUpperCase().split('').filter(c=>NET_CODE_CHARS.includes(c)).join('')}
@@ -300,12 +301,13 @@ function createNet(cfg){
     const s=lobby.settings;
     const game={seed:cfg.newSeed(),difficulty:s.difficulty,roles:s.roles.slice(0,s.players),challenges:{influx:!!(s.challenges&&s.challenges.influx),hist:((s.challenges&&s.challenges.hist)||[]).slice()}};
     try{H.onStart(game)}catch(e){return {ok:false,error:e.message}}
+    netLastRoles=game.roles.slice();
     lobby.phase='playing';net.seq=0;
     broadcast({t:'start',game});broadcastLobby();return {ok:true};
   };
   net.backToLobby=function(){
     if(!net.isHost)return {ok:false,error:'Only the host can do that'};
-    lobby.phase='lobby';broadcastLobby();return {ok:true};
+    lobby.phase='lobby';lobby.settings.roles=netShuffleRoles();broadcastLobby();return {ok:true};
   };
 
   /* ---------- asking another player a yes/no question (card transfers, passengers) ---------- */
