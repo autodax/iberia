@@ -1,4 +1,5 @@
 ## Latest
+- Pawn rings are now fully opaque pawn color (the black edge no longer tints them).
 - Disease cubes now avoid railroad tracks when there is room (Santiago de Compostela's cubes sit to the left of the city).
 - Disease cubes now keep clear of the city circle and its highlight ring (checked for every city; Santander's three cubes used to sit under the ring).
 - Infection cubes are kept off the city circle and its highlight ring (checked for every city; Santander, Gijón, Santiago de Compostela and Lisboa were overlapping).
