@@ -262,7 +262,7 @@ function setBoardMode(on){if(on===bmOn)return;bmOn=on;let app=$('app'),main=docu
  let R=$('rightStrip');if(!R){R=el('div',{id:'rightStrip'});main.appendChild(R)}
  app.classList.toggle('bm',on);$('ringToggle').onclick=toggleRing;
  let tb=$('topBtns'),bf=$('boardFrame');if(!tb){tb=el('div',{id:'topBtns'},bf);el('div',{id:'cubeCounts'},bf);el('div',{id:'tokTip',hidden:true},bf);el('div',{id:'verTag',innerHTML:'v'+UI_VERSION+'<br>built __BUILD__'},bf);svg('svg',{id:'ringLines'},ring)}
- for(let id of ['menuButton','logButton','onlineButton','rulesLink'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
+ for(let id of ['newButton','menuButton','logButton','rulesLink'])on?tb.appendChild($(id)):$('footer').before($(id));tb.hidden=!on;$('cubeCounts').hidden=!on;
  if(on){for(let id of ['setupPanel','turnBox','hands','message','turnStatus','resources'])R.appendChild($(id));ring.appendChild($('actionButtons'));let pp=$('pawnPanel');if(!pp)pp=el('div',{id:'pawnPanel',hidden:true},bf);el('div',{id:'pawnNote'},pp);for(let id of ['actionForm','confirm','actionHint'])pp.appendChild($(id));aside.style.display='none';R.style.display=''}
  else{for(let id of ASIDE_IDS)aside.appendChild($(id));$('actionArea').insertBefore($('actionButtons'),$('actionForm'));{let aa=$('actionArea');for(let id of ['actionForm','confirm','actionHint'])aa.appendChild($(id));let pp=$('pawnPanel');if(pp)pp.hidden=true}aside.style.display='';R.style.display='none'}
  ringOpen=false;if(typeof state!=='undefined'&&state)setTimeout(render,0)}
@@ -803,7 +803,7 @@ for(let id of ['menu','eventDialog','logDialog']){let d=$(id);d.querySelector('.
 $('confirm').onclick=async()=>{let cmd=await makeCmd();if(cmd)perform(cmd)};
 $('begin').onclick=()=>perform({type:'start',...(Net.active?{}:{cities:state.players.map((_,i)=>sel['start'+i])}),first:+$('firstPlayer').value});
 $('nextPhase').onclick=async()=>{if(fxCurrent||fxQueue.length)return;if(state.phase==='actions'&&state.actions>0){let tt=state.players[state.active].role==='time_traveler',n=state.actions;if(!await ask('You still have '+n+' action'+(n>1?'s':'')+' left. End your actions now and '+(tt?'start the infection step?':'draw two Player cards?')))return}perform({type:state.phase==='actions'?'draw':state.phase==='epidemic'?'epidemic':'infect'})};
-$('menuButton').onclick=()=>{drawRoleFields();syncChips();showDialog('menu')};
+$('menuButton').onclick=()=>{syncChips();showDialog('menu')};
 // Summary shown at the top of the log (final results once the game has ended) and written into the saved log file.
 function gameStats(){let cap=k=>k[0].toUpperCase()+k.slice(1),end=state.status!=='playing',res=state.research.map(cap).join(', ')||'none',cubes=COLORS.map(k=>cap(k)+' '+state.supply[k]).join(' · ');
  let head=state.status==='won'?'Victory — all four diseases researched':state.status==='playing'?'Game in progress':'Defeat — '+state.status.replace('lost: ','');
@@ -851,12 +851,12 @@ function drawLeaveOut(){let box=$('leaveOut');if(!box)return;box.replaceChildren
 $('playerCount').onchange=drawRoleFields;
 for(let id of ['playerCount','difficulty','fxSpeed'])buttonize($(id));
 $('randomRoles').onclick=()=>{roleChoice=randRoles();drawRoleFields()};$('baseRoles').onchange=()=>{if($('baseRoles').checked&&roleChoice.some(r=>!BASE_ROLES.includes(r)))roleChoice=randRoles();drawRoleFields()};
-$('newGame').onclick=async()=>{if(Net.active){notice('You are in an online room. Use the Online button to leave it or go back to the lobby.',true);$('menu').close();return}if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;let seed=$('seed').value.trim()||newSeed();state=initial(seed,+$('difficulty').value,roleChoice.slice(0,n),{influx:chLocal.influx,hist:chLocal.hist.slice()});lastRoles=roleChoice.slice(0,n);roleChoice=randRoles();drawRoleFields();$('seed').value='';history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('menu').close();notice('Choose starting cities.'+(challengeText(state.challenges)?' Challenges: '+challengeText(state.challenges)+'.':''))}catch(e){notice(e.message,true)}};
+$('newGame').onclick=async()=>{if(Net.active){notice('You are in an online room. Use the New button to leave it or go back to the lobby.',true);$('onlineDialog').close();return}if(!await ask('Start a new game? Export a save first if you want to keep this one.'))return;try{let n=+$('playerCount').value;let seed=$('seed').value.trim()||newSeed();state=initial(seed,+$('difficulty').value,roleChoice.slice(0,n),{influx:chLocal.influx,hist:chLocal.hist.slice()});lastRoles=roleChoice.slice(0,n);roleChoice=randRoles();drawRoleFields();$('seed').value='';history=[];commands=[];resetFx();mode='';selectedCards=[];recompute();render();autosave();$('onlineDialog').close();notice('Choose starting cities.'+(challengeText(state.challenges)?' Challenges: '+challengeText(state.challenges)+'.':''))}catch(e){notice(e.message,true)}};
 try{$('saveName').value=localStorage.getItem('iberia-save-name')||''}catch(e){}
 $('saveButton').onclick=()=>{let nm=$('saveName').value.replace(/[\\\/:*?"<>|]+/g,'').trim().slice(0,60);try{localStorage.setItem('iberia-save-name',nm)}catch(e){}let u=URL.createObjectURL(new Blob([JSON.stringify(envelope(),null,2)],{type:'application/json'})),a=el('a',{href:u,download:(nm?nm+' - turn '+state.turn:'iberia-save-v09-turn'+state.turn)+'.json'});a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 function checkSave(o){requireRule(o&&o.app==='iberia-prototype'&&o.mapSignature===MAP_SIGNATURE,'Incompatible save or map');requireRule(/^0\.9\./.test(o.version||''),'This save is from v'+(o.version||'?')+'. Only v0.9 saves can be loaded; start a new game.');fixRails(o.state);invariant(o.state)}
-function restore(o){requireRule(!Net.active,'You are in an online room. Leave it before loading a save.');checkSave(o);state=o.state;if(o.settings)applySettings(o.settings,true);commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';resetFx();selectedCards=[];recompute();render();autosave();$('menu').close();notice('Saved game restored.')}
-$('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('menu').close()}$('loadFile').value=''};
+function restore(o){requireRule(!Net.active,'You are in an online room. Leave it before loading a save.');checkSave(o);state=o.state;if(o.settings)applySettings(o.settings,true);commands=Array.isArray(o.commands)?o.commands:[];history=[];mode='';resetFx();selectedCards=[];recompute();render();autosave();$('onlineDialog').close();notice('Saved game restored.')}
+$('loadButton').onclick=()=>$('loadFile').click();$('loadFile').onchange=async()=>{try{restore(JSON.parse(await $('loadFile').files[0].text()))}catch(e){notice('Load failed: '+e.message,true);$('onlineDialog').close()}$('loadFile').value=''};
 $('resumeButton').onclick=()=>{try{let raw=localStorage.getItem(SAVE_KEY);requireRule(raw,'No automatic save found in this browser yet. Restore Last Game only works on the device and browser that played the game.');restore(JSON.parse(raw))}catch(e){notice(e.message,true)}};
 {let base=/github\.io$/.test(location.hostname)?'':'https://autodax.github.io/iberia/';$('rulesLink').href=base+'docs/Iberia_rulebook.pdf';$('guideLink').href=base+'docs/Guide.pdf'}
 function undoLocal(){if(busy||!history.length||state.status!=='playing')return null;let h=history.pop();state=h.state;commands.length=h.commands;mode='';selectedCards=[];resetFx();recompute();render();autosave();return h.label}
@@ -913,8 +913,8 @@ function roomLink(){let r=relayUrl(),extra=r&&r!==builtInRelay()?'&relay='+encod
 function drawOnline(){
   let L=Net.lobby,active=Net.active;
   $('onlineStart').hidden=active;$('onlineRoom').hidden=!active;
-  $('onlineButton').textContent=active?'Room '+Net.code:'Online';
-  $('onlineButton').classList.toggle('live',active&&Net.status==='connected');
+  $('newButton').textContent=active?'Room '+Net.code:'New';
+  $('newButton').classList.toggle('live',active&&Net.status==='connected');
   if(!active){let sv=Net.savedHost();$('onResume').hidden=!sv;if(sv)$('onResumeText').textContent='You were hosting room '+sv.code+(sv.phase==='playing'?' with a game in progress':'')+'. Resume it and your guests can rejoin with the same code.';return}
   $('onStatus').textContent=Net.status==='connecting'?'Connecting…':Net.status==='reconnecting'?'Connection lost. Trying to reconnect…':Net.status==='closed'?(Net.error||'Disconnected.'):(Net.isHost?'You are the host. Keep this page open while you play.':'Connected to the host.');
   $('onStatus').className='detail'+(Net.status==='closed'||Net.status==='reconnecting'?' error':'');
@@ -985,7 +985,9 @@ Net.onChange(()=>{
   if(seatKey!==onlinePrev.seats){onlinePrev.seats=seatKey;if(Net.active&&phase==='playing'){recompute();render()}}
   drawOnline();
 });
-$('onlineButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;loadRelayBox();drawOnline();showOnlineMsg('');showDialog('onlineDialog')};
+let gameMode='local';function setMode(m){gameMode=m;$('modeLocal').checked=m==='local';$('modeOnline').checked=m==='online';$('localNew').hidden=m!=='local';$('onlinePane').hidden=m!=='online'}
+$('modeLocal').onchange=()=>setMode('local');$('modeOnline').onchange=()=>setMode('online');
+$('newButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;loadRelayBox();drawOnline();showOnlineMsg('');drawRoleFields();setMode(Net.active?'online':gameMode);showDialog('onlineDialog')};
 function loadRelayBox(){try{$('onRelayUrl').value=localStorage.getItem('iberia-relay')||''}catch(e){}}
 $('onRelaySave').onclick=()=>{try{let v=$('onRelayUrl').value.trim();if(v&&!/^(https?|wss?):\/\/[^\s]+$/i.test(v)){showOnlineMsg('That does not look like a web address. It should start with https://',true);return}if(v)localStorage.setItem('iberia-relay',v);else localStorage.removeItem('iberia-relay');relayCache=null;showOnlineMsg(v?'Relay address saved. Press "Test my connection" to check it.':'Using the built-in relay setting.')}catch(e){showOnlineMsg('Could not save settings in this browser.',true)}};
 function describeConnectionTest(r){
@@ -1012,7 +1014,7 @@ $('onStartGame').onclick=()=>{let r=Net.start();if(!r.ok)showOnlineMsg(r.error,t
 $('onBack').onclick=async()=>{if(await ask('Take everyone back to the lobby to start a new game? The current game ends.')){let r=Net.backToLobby();if(!r.ok)showOnlineMsg(r.error,true)}};
 $('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room for good? Everyone is disconnected and the room can NOT be resumed later. The board stays on this page as a one-screen game. (To pause instead, just close this window; you can use Resume hosting later.)':'Leave this room? The board stays on this page as a local game.'))return;Net.leave();$('onlineDialog').close();render();notice('You left the online room.')};
 {let r=/[?&]relay=([^&]+)/.exec(location.search);if(r){try{let v=decodeURIComponent(r[1]).trim();if(/^(https?|wss?):\/\/[^\s]+$/i.test(v))linkRelay=v}catch(e){}}
- let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();showDialog('onlineDialog')}},400)}}
+ let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();setMode('online');showDialog('onlineDialog')}},400)}}
 
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
 

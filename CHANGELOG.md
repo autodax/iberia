@@ -1,4 +1,5 @@
 ## Latest
+- The top bar now has "New" and "Settings". New is one window for starting a game: choose "This device only" or "Play with others online", with save/restore at the bottom. Settings holds reveal speed, sound, card size and the guide link.
 - Random roles no longer repeat the previous game's roles (local and online) when enough other roles exist.
 - New "Leave out of random picks" list in the menu: tick roles you never want drawn at random (you can still pick them by hand; ignored if fewer than 5 would remain). The online host's random roles respect it too.
 - Railroad click area is a few pixels wider, so it wins over the purification region when you click near a track.

@@ -557,3 +557,6 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .roleText{font-size:12.5px;line-height:1.35;color:#4a3d24;background:#f3e6c8;border-left:3px solid #b79b5a;border-radius:4px;padding:5px 8px;margin:-2px 0 9px}
 .onSeat .roleText{margin:4px 0 2px}
 .leaveOut{margin:6px 0;font-size:13px}.leaveOut summary{cursor:pointer;color:#4a3d24}
+.modeTabs{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 12px;padding:8px 10px;background:#f3e6c8;border-radius:6px}
+.modeTabs label{display:flex;flex-direction:row;align-items:center;gap:8px;width:auto;margin:0;font-weight:600}.modeTabs input{width:auto;margin:0}
+.modeTabs label{white-space:nowrap;flex:none}.modeTabs{align-items:center}
