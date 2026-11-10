@@ -1,4 +1,5 @@
 ## Latest
+- Infection cubes are kept off the city circle and its highlight ring (checked for every city; Santander, Gijón, Santiago de Compostela and Lisboa were overlapping).
 - Pawn rings are the pawn's color with a black border.
 - The top bar now has "New" and "Settings". New is one window for starting a game: choose "This device only" or "Play with others online", with save/restore at the bottom. Settings holds reveal speed, sound, card size and the guide link.
 - Random roles no longer repeat the previous game's roles (local and online) when enough other roles exist.

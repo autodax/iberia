@@ -17,7 +17,7 @@ function layoutBase(){if(LAYOUT)return LAYOUT;let labels=[],dots=[];for(let c of
 function ovl(a,b){let w=Math.min(a[2],b[2])-Math.max(a[0],b[0]),h=Math.min(a[3],b[3])-Math.max(a[1],b[1]);return w>0&&h>0?w*h:0}
 function hit(r,list){let s=0;for(let b of list)s+=ovl(r,b);return s}
 // choose the first candidate rectangle that covers the least printed text, then other cities, then other pieces
-function pick(cands,w,h,extra=[],own=null,avoid=[]){let L=layoutBase(),best=null;cands.forEach(([x,y],i)=>{let r=[x,y,x+w,y+h],off=(x<26||x+w>1494||y<38||y+h>1046)?500:0,score=off+hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==own))*3+hit(r,extra)*2+hit(r,avoid)*12+i*3;if(!best||score<best.s)best={x,y,s:score}});return best}
+function pick(cands,w,h,extra=[],own=null,avoid=[],xs=null){let L=layoutBase(),best=null;cands.forEach(([x,y],i)=>{let r=[x,y,x+w,y+h],off=(x<26||x+w>1494||y<38||y+h>1046)?500:0,score=off+hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==own))*3+hit(r,extra)*2+hit(r,avoid)*12+(xs?xs(x,y):0)+i*3;if(!best||score<best.s)best={x,y,s:score}});return best}
 // A cluster of cubes is a tight pyramid: 1 cube alone, 2 side by side, 3 as two on the bottom with one on top.
 function cubeGroupW(n){return n<=1?19:n<=3?39:49}
 function cubeWidth(cid,view){let w=0;for(let k of COLORS){let n=view[cid][k];if(n)w+=cubeGroupW(n)+3}return Math.max(0,w-3)}
@@ -28,7 +28,10 @@ function cubeOrigin(cid,view){let c=C[cid],W=cubeWidth(cid,view),H=cubeHeight(ci
  let x=c.x,y=c.y,cands=[[x+13,y-17],[x-13-W,y-17],[x-W/2,y+14],[x+9,y+10],[x-9-W,y+10],[x+13,y-30],[x-13-W,y-30],[x-W/2,y-62],[x+13,y+28],[x-13-W,y+28],[x-W/2,y+34]];
  if(eng.length)for(let r of [24,40,56])for(let a=0;a<8;a++)cands.push([Math.round(x-W/2+r*Math.cos(a*Math.PI/4)*1.4),Math.round(y-8+r*Math.sin(a*Math.PI/4))]);cands=cands.map(([a,b2])=>{b2-=13;let dx=a+W/2-x,dy=b2+25-y,d=Math.hypot(dx,dy)||1;return [Math.round(a+dx/d*4),Math.round(b2+dy/d*4)]});   // and a few units further from the city circle
     // the cube row sits 16 below the top of the pyramid box (it used to sit 3 below), so shift up to keep single cubes where they were
- let b=pick(cands,W,H,pr,cid,avoid);return L.cache[key]=[b.x,b.y]}
+ for(let r of [26,34,44])for(let a=0;a<12;a++)cands.push([Math.round(x+r*Math.cos(a*Math.PI/6)-W/2),Math.round(y+r*Math.sin(a*Math.PI/6)-H/2)]);
+ let mk=MARK[cid]||[0,0],ccx=c.x+mk[0],ccy=c.y+mk[1],tall=W>=39,near=(rx,ry)=>{let nx=Math.max(rx,Math.min(ccx,rx+W)),ny=Math.max(ry,Math.min(ccy,ry+19));return Math.max(0,20-Math.hypot(nx-ccx,ny-ccy))},
+ xs=(bx,by)=>(near(bx,by+16)+(tall?near(bx+10,by):0))*25;   // keep the cubes themselves off the city circle and its highlight ring
+ let b=pick(cands,W,H,pr,cid,avoid,xs);return L.cache[key]=[b.x,b.y]}
 function hospitalOrigin(cid,n,extra){let c=C[cid],x=c.x,y=c.y,W=30*n,H=30;let cands=[[x-35,y-8],[x+5,y-8],[x-W/2,y+12],[x-14-W,y-15],[x+14,y-15],[x-35,y-48],[x+5,y-48],[x-W/2,y+30]];cands=cands.map(([a,b2])=>{let dx=a+W/2-x,dy=b2+H/2-y,d=Math.hypot(dx,dy)||1;return [Math.round(a+dx/d*7),Math.round(b2+dy/d*7)]});   // a little further from the city circle
  let b=pick(cands,W,H,extra,cid);return [b.x,b.y]}
 function pawnSpot(cid,n){let L=layoutBase(),key='p:'+cid+':'+n;if(L.cache[key])return L.cache[key];let c=C[cid],W=20*(n-1)+30,best=null;
