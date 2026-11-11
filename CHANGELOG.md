@@ -1,5 +1,5 @@
 ## Latest
-- New window: the Challenges headings are now bigger and bolder than the choices under them.
+- Challenges box (New window and online lobby): headings are bigger than the choices, and each challenge (Influx of Patients, Cholera, Typhus, Yellow fever, Malaria) now shows its description under its name instead of only in a tooltip.
 - Removed the second epidemic sound; only the boom when the infection-rate marker advances remains.
 - The next 8 cards of the player deck and of the infection deck are loaded and decoded ahead of time, so card pictures are ready when a card appears.
 - Hover ring has no fill: same outline as the pulsing available-city ring, steady while hovering.
