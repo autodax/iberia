@@ -534,7 +534,7 @@ function infBadge(f){let g=document.getElementById('infFx');if(!g||!(f.blocked||
  let t=svg('text',{x:cx+4,y:top+25,'text-anchor':'middle',style:'font:700 19px system-ui,sans-serif;fill:#2b2418;stroke:none'},bg);t.textContent=epi?'Epidemic!':f.kind==='infection'&&one?'Infection prevented':'Cubes prevented: '+all;
  rows.forEach((x,i)=>{let y=top+34+i*26+12;if(x.img)svg('image',{href:x.img,x:cx-W/2+16,y:y-12,width:24,height:24},bg);
   let r=svg('text',{x:cx-W/2+(x.img?46:20),y:y+5,style:'font:600 14px system-ui,sans-serif;fill:#3a2e1a;stroke:none'},bg);r.textContent=x.txt;if(x.txt.length*7.4>W-60){r.setAttribute('textLength',W-60);r.setAttribute('lengthAdjust','spacingAndGlyphs')}});
- bg.animate([{opacity:0,transform:'scale(.8)'},{opacity:1,transform:'scale(1)'}],{duration:240,easing:'ease-out',fill:'both'});playSound(epi?'epidemic':'blocked')}
+ bg.animate([{opacity:0,transform:'scale(.8)'},{opacity:1,transform:'scale(1)'}],{duration:240,easing:'ease-out',fill:'both'});if(!epi)playSound('blocked')}
 function infFxEnd(fade){let g=document.getElementById('infFx');if(!g)return;if(!fade){g.remove();return}g.animate([{opacity:1},{opacity:0}],{duration:380,fill:'forwards'}).onfinish=()=>g.remove()}
 function infCardFlight(f){let old=document.getElementById('infFx');if(old)old.remove();let g=svg('g',{id:'infFx','pointer-events':'none'},$('board'));let [dx,dy,dw,dh]=DECK_SLOTS.infDeck,[tx,ty,tw,th]=DECK_SLOTS.infDisc,sx=dx+dw/2,sy=dy+dh/2,ex=tx+tw/2,ey=ty+th/2,c=svg('g',{},g);
  svg('rect',{x:-tw/2-6,y:-th/2-6,width:tw+12,height:th+12,rx:16,fill:'none',stroke:'#ffd54a','stroke-width':5,opacity:.9,filter:'url(#hb)'},c);
