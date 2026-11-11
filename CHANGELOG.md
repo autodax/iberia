@@ -1,4 +1,5 @@
 ## Latest
+- The next 8 cards of the player deck and of the infection deck are loaded and decoded ahead of time, so card pictures are ready when a card appears.
 - Hover ring has no fill: same outline as the pulsing available-city ring, steady while hovering.
 - Disease cubes now sit as close as possible to their own city and always closer to their own city than to a neighbouring one (A Coruña/Santiago/Vigo no longer share ambiguous cubes). Placement uses each cube's real position, so two-cube rows no longer get treated as three-cube pyramids.
 - Hover ring now matches the reachable-city ring (smaller) and sits under the pawn and its glow.
