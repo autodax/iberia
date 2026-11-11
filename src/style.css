@@ -567,3 +567,9 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .challengeBox .chItem label.check{font-size:14px;font-weight:600;margin:0;padding:0}.challengeBox .chItem{margin:0}.challengeBox .chList{gap:6px}
 .challengeBox .chItem input{width:auto;margin:0}
 .challengeBox h4{font-size:17px!important}.challengeBox .chSub{font-size:15px!important}.challengeBox .chItem label.check{font-size:14px!important}
+.modeTabs{display:flex;gap:8px;padding:0;background:none}
+.modeTabs label{flex:1 1 0;justify-content:center;text-align:center;padding:11px 14px;font-size:15px;font-weight:700;color:#3a2f1c;background:#f3e6c8;border:2px solid #b79b5a;border-radius:8px;cursor:pointer;white-space:normal;margin:0}
+.modeTabs label:hover{background:#ecd9a8}
+.modeTabs label.on{background:#6b4f1d;border-color:#6b4f1d;color:#fff8e6;box-shadow:inset 0 1px 3px #0005}
+.modeTabs input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.modeTabs label:focus-within{outline:3px solid #ffd93a;outline-offset:2px}

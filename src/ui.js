@@ -1001,7 +1001,7 @@ Net.onChange(()=>{
   if(seatKey!==onlinePrev.seats){onlinePrev.seats=seatKey;if(Net.active&&phase==='playing'){recompute();render()}}
   drawOnline();
 });
-let gameMode='local';function setMode(m){gameMode=m;$('modeLocal').checked=m==='local';$('modeOnline').checked=m==='online';$('localNew').hidden=m!=='local';$('onlinePane').hidden=m!=='online'}
+let gameMode='local';function setMode(m){gameMode=m;for(let [id,k] of [['modeLocal','local'],['modeOnline','online']])$(id).closest('label').classList.toggle('on',k===m);$('modeLocal').checked=m==='local';$('modeOnline').checked=m==='online';$('localNew').hidden=m!=='local';$('onlinePane').hidden=m!=='online'}
 $('modeLocal').onchange=()=>setMode('local');$('modeOnline').onchange=()=>setMode('online');
 $('newButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;loadRelayBox();drawOnline();showOnlineMsg('');drawRoleFields();setMode(Net.active?'online':gameMode);showDialog('onlineDialog')};
 function loadRelayBox(){try{$('onRelayUrl').value=localStorage.getItem('iberia-relay')||''}catch(e){}}
