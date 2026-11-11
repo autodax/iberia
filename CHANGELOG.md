@@ -1,4 +1,8 @@
 ## Latest
+- Hovering cubes (or a city) now shows only the simple yellow ring on the city (blue for yellow cities): no box around the cubes.
+- Cube placement searches a finer grid for the closest spot that avoids text, railroad tracks and the city circle.
+- Hovering a city's cubes (or the city) draws a simple ring on the city and a thin outline around its cubes: yellow, or blue for yellow cities. No glow.
+- Disease cubes sit closer to their city where there is room, still avoiding railroad tracks and city names.
 - Pawn rings are now fully opaque pawn color (the black edge no longer tints them).
 - Disease cubes now avoid railroad tracks when there is room (Santiago de Compostela's cubes sit to the left of the city).
 - Disease cubes now keep clear of the city circle and its highlight ring (checked for every city; Santander's three cubes used to sit under the ring).
