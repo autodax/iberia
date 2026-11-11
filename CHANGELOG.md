@@ -1,4 +1,5 @@
 ## Latest
+- Hover ring now matches the reachable-city ring (smaller) and sits under the pawn and its glow.
 - Hovering cubes (or a city) now shows only the simple yellow ring on the city (blue for yellow cities): no box around the cubes.
 - Cube placement searches a finer grid for the closest spot that avoids text, railroad tracks and the city circle.
 - Hovering a city's cubes (or the city) draws a simple ring on the city and a thin outline around its cubes: yellow, or blue for yellow cities. No glow.
