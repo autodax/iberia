@@ -488,7 +488,7 @@ document.addEventListener('keydown',e=>{if(fxCurrent&&(e.key==='Enter'||e.key===
 
 /* ---------- cubes appear after their alert, flying in ---------- */
 let cubeView=null,flyTimer=null,flyTarget=null;
-function hoverLink(cid,on){let P=$('pieces'),old=P.querySelector('.hoverLink');if(old)old.remove();if(!on||!cid||!C[cid])return;let c=C[cid],CV=cubeView||state.cubes,col=c.color==='yellow'?'#1f5fe0':'#ffe566',m=MARK[cid]||[0,0],g=svg('g',{class:'hoverLink','pointer-events':'none'},P),yl=c.color==='yellow';P.insertBefore(g,P.firstChild);svg('circle',{cx:c.x+m[0],cy:c.y+m[1],r:12,fill:yl?'#3a7bff':'#ffd93a','fill-opacity':.25,stroke:col,'stroke-width':3},g);   // same ring as the reachable-city markers, drawn under the pawns
+function hoverLink(cid,on){let P=$('pieces'),old=P.querySelector('.hoverLink');if(old)old.remove();if(!on||!cid||!C[cid])return;let c=C[cid],CV=cubeView||state.cubes,col=c.color==='yellow'?'#1f5fe0':'#ffe566',m=MARK[cid]||[0,0],g=svg('g',{class:'hoverLink','pointer-events':'none'},P),yl=c.color==='yellow';P.insertBefore(g,P.firstChild);svg('circle',{cx:c.x+m[0],cy:c.y+m[1],r:12,fill:'none',stroke:yl?'#1f5fe0':'#ffd93a','stroke-width':3},g);   // same ring as the reachable-city markers, drawn under the pawns
 
 }
 document.addEventListener('pointerover',e=>{let t=e.target&&e.target.closest&&e.target.closest('[data-hcity]');if(t&&t.closest('#pieces'))hoverLink(t.getAttribute('data-hcity'),true);else if(!(e.target.closest&&e.target.closest('.hoverLink')))hoverLink(null,false)});
