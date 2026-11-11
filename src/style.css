@@ -560,3 +560,5 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .modeTabs{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 12px;padding:8px 10px;background:#f3e6c8;border-radius:6px}
 .modeTabs label{display:flex;flex-direction:row;align-items:center;gap:8px;width:auto;margin:0;font-weight:600}.modeTabs input{width:auto;margin:0}
 .modeTabs label{white-space:nowrap;flex:none}.modeTabs{align-items:center}
+.challengeBox h4{font-size:15px;margin-bottom:6px}.challengeBox .chSub{font-size:14px;margin:8px 0 4px}
+.challengeBox label,.challengeBox .check{font-size:13.5px;font-weight:400}.challengeBox .chRandom{font-size:13px}
