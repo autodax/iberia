@@ -1,4 +1,5 @@
 ## Latest
+- Disease cubes now sit as close as possible to their own city and always closer to their own city than to a neighbouring one (A Coruña/Santiago/Vigo no longer share ambiguous cubes). Placement uses each cube's real position, so two-cube rows no longer get treated as three-cube pyramids.
 - Hover ring now matches the reachable-city ring (smaller) and sits under the pawn and its glow.
 - Hovering cubes (or a city) now shows only the simple yellow ring on the city (blue for yellow cities): no box around the cubes.
 - Cube placement searches a finer grid for the closest spot that avoids text, railroad tracks and the city circle.

@@ -17,7 +17,7 @@ function layoutBase(){if(LAYOUT)return LAYOUT;let labels=[],dots=[];for(let c of
 function ovl(a,b){let w=Math.min(a[2],b[2])-Math.max(a[0],b[0]),h=Math.min(a[3],b[3])-Math.max(a[1],b[1]);return w>0&&h>0?w*h:0}
 function hit(r,list){let s=0;for(let b of list)s+=ovl(r,b);return s}
 // choose the first candidate rectangle that covers the least printed text, then other cities, then other pieces
-function pick(cands,w,h,extra=[],own=null,avoid=[],xs=null){let L=layoutBase(),best=null;cands.forEach(([x,y],i)=>{let r=[x,y,x+w,y+h],off=(x<26||x+w>1494||y<38||y+h>1046)?500:0,score=off+hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==own))*3+hit(r,extra)*2+hit(r,avoid)*12+(xs?xs(x,y):0)+i*3;if(!best||score<best.s)best={x,y,s:score}});return best}
+function pick(cands,w,h,extra=[],own=null,avoid=[],xs=null){let L=layoutBase(),best=null;cands.forEach(([x,y],i)=>{let r=[x,y,x+w,y+h],off=(x<26||x+w>1494||y<38||y+h>1046)?500:0,score=off+hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==own))*3+hit(r,extra)*2+hit(r,avoid)*12+(xs?xs(x,y):0)+Math.min(i,12)*3;if(!best||score<best.s)best={x,y,s:score}});return best}
 // A cluster of cubes is a tight pyramid: 1 cube alone, 2 side by side, 3 as two on the bottom with one on top.
 function cubeGroupW(n){return n<=1?19:n<=3?39:49}
 function cubeWidth(cid,view){let w=0;for(let k of COLORS){let n=view[cid][k];if(n)w+=cubeGroupW(n)+3}return Math.max(0,w-3)}
@@ -29,10 +29,13 @@ function cubeOrigin(cid,view){let c=C[cid],W=cubeWidth(cid,view),H=cubeHeight(ci
  if(eng.length)for(let r of [24,40,56])for(let a=0;a<8;a++)cands.push([Math.round(x-W/2+r*Math.cos(a*Math.PI/4)*1.4),Math.round(y-8+r*Math.sin(a*Math.PI/4))]);cands=cands.map(([a,b2])=>{b2-=13;let dx=a+W/2-x,dy=b2+25-y,d=Math.hypot(dx,dy)||1;return [Math.round(a+dx/d*4),Math.round(b2+dy/d*4)]});   // and a few units further from the city circle
     // the cube row sits 16 below the top of the pyramid box (it used to sit 3 below), so shift up to keep single cubes where they were
  for(let gx=-100;gx<=100;gx+=3)for(let gy=-80;gy<=80;gy+=3)if(Math.hypot(gx-W/2,gy)<110)cands.push([Math.round(x-W/2+gx),Math.round(y-H/2+gy)]);
- let mk=MARK[cid]||[0,0],ccx=c.x+mk[0],ccy=c.y+mk[1],tall=W>=39,dist=(rx,ry)=>{let nx=Math.max(rx,Math.min(ccx,rx+W)),ny=Math.max(ry,Math.min(ccy,ry+19));return Math.hypot(nx-ccx,ny-ccy)},near=(rx,ry)=>Math.max(0,19-dist(rx,ry)),
+ let mk=MARK[cid]||[0,0],ccx=c.x+mk[0],ccy=c.y+mk[1],offs=[],cxo=0;for(let k of COLORS){let n=view[cid][k];if(!n)continue;let m=n===2?3:Math.min(n,4);for(let j=0;j<m;j++){let [qx,qy]=cubePos(m,j,H);offs.push([cxo+qx,qy])}cxo+=cubeGroupW(n)+3}   // where every cube really sits inside the box
+ let cubeRects=(bx,by)=>offs.map(([ox,oy])=>[bx+ox,by+oy,bx+ox+19,by+oy+19]),
+ distTo=(bx,by,px,py)=>Math.min(...cubeRects(bx,by).map(([a,b2,c2,d2])=>Math.hypot(Math.max(a,Math.min(px,c2))-px,Math.max(b2,Math.min(py,d2))-py))),dist=(bx,by)=>distTo(bx,by,ccx,ccy),
+ others=MAP.cities.filter(o=>o.id!==cid&&Math.hypot(o.x-c.x,o.y-c.y)<190).map(o=>[o.x+(MARK[o.id]?MARK[o.id][0]:0),o.y+(MARK[o.id]?MARK[o.id][1]:0)]),
  nr=layoutBase().rails.filter(([px,py])=>Math.hypot(px-ccx,py-ccy)<19+Math.hypot(W,H)+70&&Math.hypot(px-ccx,py-ccy)>=19),
- onRail=(bx,by)=>{let n=0;for(let [px,py] of nr){if(py>by+16-4&&py<by+35+4&&px>bx-4&&px<bx+W+4||tall&&py>by-4&&py<by+19+4&&px>bx+10-4&&px<bx+W-10+4)n++}return n},
- xs=(bx,by)=>(near(bx,by+16)+(tall?near(bx+10,by):0))*25+onRail(bx,by)*24+Math.max(0,Math.min(dist(bx,by+16),tall?dist(bx+10,by):1e9)-18)*3;   // keep the cubes themselves off the city circle and its highlight ring
+ onRail=(bx,by)=>{let n=0,rs=cubeRects(bx,by);for(let [px,py] of nr)if(rs.some(([a,b2,c2,d2])=>px>a-4&&px<c2+4&&py>b2-4&&py<d2+4))n++;return n},
+ xs=(bx,by)=>{let d=dist(bx,by),far=0;for(let [px,py] of others)far+=Math.max(0,d+14-distTo(bx,by,px,py));return Math.max(0,19-d)*50+onRail(bx,by)*24+Math.max(0,d-18)*3+far*8};   // cubes keep off the city circle and its ring, off the tracks, and as close as the text allows
  let b=pick(cands,W,H,pr,cid,avoid,xs);return L.cache[key]=[b.x,b.y]}
 function hospitalOrigin(cid,n,extra){let c=C[cid],x=c.x,y=c.y,W=30*n,H=30;let cands=[[x-35,y-8],[x+5,y-8],[x-W/2,y+12],[x-14-W,y-15],[x+14,y-15],[x-35,y-48],[x+5,y-48],[x-W/2,y+30]];cands=cands.map(([a,b2])=>{let dx=a+W/2-x,dy=b2+H/2-y,d=Math.hypot(dx,dy)||1;return [Math.round(a+dx/d*7),Math.round(b2+dy/d*7)]});   // a little further from the city circle
  let b=pick(cands,W,H,extra,cid);return [b.x,b.y]}
