@@ -1,4 +1,5 @@
 ## Latest
+- Influx of Patients: a patient cube now visibly flies from its old city to the new one (instead of just appearing there) after the "Patient on the Move" alert.
 - Influx of Patients description no longer mentions pieces stuck under hospitals: it now says 2 purification tokens per hospital color stay locked until that hospital is built.
 - Plainer wording for the Influx of Patients description (what happens to the 2 purification tokens under each hospital, and what building a hospital does).
 - New window: "This device only" and "Play with others online" are now two big buttons; the chosen one is dark.

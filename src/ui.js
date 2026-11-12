@@ -554,16 +554,16 @@ function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[
  let speed=+$('fxSpeed').value;if(f&&f.kind==='outbreak'&&f.from&&!f.phantom&&speed>=0&&!matchMedia('(prefers-reduced-motion: reduce)').matches){f.phantom=true;phantomCube(f.from,f.city,f.color);flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;flyTarget=null;applyCubes(next,f)},950);return}   // the cube lands first; only then does this city's outbreak start
  if(f&&f.kind==='outbreak'&&adds.length&&speed>=0&&!f.ringed&&!matchMedia('(prefers-reduced-motion: reduce)').matches){f.ringed=true;outbreakRings(f.city);flyTarget=next;flyTimer=setTimeout(()=>{flyTimer=null;flyTarget=null;applyCubes(next,f)},950);return}
  if(!f||!adds.length||speed<0||matchMedia('(prefers-reduced-motion: reduce)').matches){if(adds.length)playSound('cube');cubeView=next;paint();settleCubes();if(!(f&&fxQueue[0]&&fxQueue[0].kind==='outbreak'&&!fxQueue[0].from&&fxQueue[0].city===f.city))infFxEnd(true);return}
- let g=$('flyers'),fromCard=(f.kind==='infection'||f.kind==='epidemic')&&!!document.getElementById('infFx'),src0=f.kind==='outbreak'?[C[f.city].x,C[f.city].y]:fromCard?INF_EDGE(adds[0][0]):[760,520],dur=f.kind==='outbreak'?1000:1250,step=Math.min(200,1000/adds.length),last=0;
+ let g=$('flyers'),fromCard=(f.kind==='infection'||f.kind==='epidemic')&&!!document.getElementById('infFx'),pat=f.kind==='patient'&&!!f.from,src0=pat?cubeSpot(f.from,f.color,Math.max(0,(from[f.from][f.color]||1)-1),from):f.kind==='outbreak'?[C[f.city].x,C[f.city].y]:fromCard?INF_EDGE(adds[0][0]):[760,520],dur=pat?900:f.kind==='outbreak'?1000:1250,step=Math.min(200,1000/adds.length),last=0;
 
  // keep the arriving cubes hidden until they land
- let hold=JSON.parse(JSON.stringify(from));for(let [cid,k] of adds)hold[cid][k]=hold[cid][k]||0;cubeView=hold;paint();
+ let hold=JSON.parse(JSON.stringify(from));for(let [cid,k] of adds)hold[cid][k]=hold[cid][k]||0;if(pat)hold[f.from][f.color]=Math.min(hold[f.from][f.color]||0,next[f.from][f.color]||0);cubeView=hold;paint();
  adds.forEach(([cid,k,j],i)=>{let [tx,ty]=cubeSpot(cid,k,j,next),img=asset('tokens/cube-'+k),node;
   if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:k==='black'?'':'cube-'+k},g)   // black cubes fly unfiltered so they stay black; the shading filter returns once they land;else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},g);
   let [ox,oy]=src0;
   // one smooth arc at constant speed: a quadratic curve sampled by arc length, linear easing, size easing down to 1
-  let cx=(ox+tx)/2,cy=Math.min(oy,ty)-170,P=[],cum=[0];for(let n=0;n<=60;n++){let u=n/60,a=(1-u)*(1-u),b=2*(1-u)*u,c=u*u;P.push([a*ox+b*cx+c*tx,a*oy+b*cy+c*ty]);if(n)cum.push(cum[n-1]+Math.hypot(P[n][0]-P[n-1][0],P[n][1]-P[n-1][1]))}
-  let s0=f.kind==='outbreak'?1.4:fromCard?1.6:3,frames=[],N=28;for(let q=0;q<=N;q++){let fr=q/N,d=fr*cum[60],m=1;while(m<60&&cum[m]<d)m++;let w=cum[m]>cum[m-1]?(d-cum[m-1])/(cum[m]-cum[m-1]):0,x=P[m-1][0]+(P[m][0]-P[m-1][0])*w,y=P[m-1][1]+(P[m][1]-P[m-1][1])*w;frames.push({transform:`translate(${x}px,${y}px) scale(${s0+(1-s0)*fr})`,opacity:Math.min(1,fr*12),offset:fr})}
+  let cx=(ox+tx)/2,cy=Math.min(oy,ty)-(pat?Math.min(170,40+Math.hypot(tx-ox,ty-oy)*.3):170),P=[],cum=[0];for(let n=0;n<=60;n++){let u=n/60,a=(1-u)*(1-u),b=2*(1-u)*u,c=u*u;P.push([a*ox+b*cx+c*tx,a*oy+b*cy+c*ty]);if(n)cum.push(cum[n-1]+Math.hypot(P[n][0]-P[n-1][0],P[n][1]-P[n-1][1]))}
+  let s0=pat?1:f.kind==='outbreak'?1.4:fromCard?1.6:3,frames=[],N=28;for(let q=0;q<=N;q++){let fr=q/N,d=fr*cum[60],m=1;while(m<60&&cum[m]<d)m++;let w=cum[m]>cum[m-1]?(d-cum[m-1])/(cum[m]-cum[m-1]):0,x=P[m-1][0]+(P[m][0]-P[m-1][0])*w,y=P[m-1][1]+(P[m][1]-P[m-1][1])*w;frames.push({transform:`translate(${x}px,${y}px) scale(${s0+(1-s0)*fr})`,opacity:Math.min(1,fr*12),offset:fr})}
   let delay=i*step;last=Math.max(last,delay+dur);
   node.animate(frames,{duration:dur,delay,easing:'linear',fill:'both'});
   setTimeout(()=>{if(flyTarget!==next)return;playSound('cube');cubeView[cid][k]=Math.max(cubeView[cid][k]||0,j+1);node.remove();paint()},delay+dur)});

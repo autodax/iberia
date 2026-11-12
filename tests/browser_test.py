@@ -232,6 +232,12 @@ async def main():
     ok(await pg.evaluate("window.soundLog.includes('marker')&&!window.soundLog.includes('epidemic')&&!window.soundLog.includes('draw')"),'epidemic: counter sound only');await pg.evaluate("nextFx()")
     await pg.evaluate("window.soundLog=[];queueFx([{kind:'epidemic',city:MAP.cities[5].id,rate:3,rateIndex:2,preview:true}])");await pg.wait_for_timeout(1600)
     ok(await pg.evaluate("!window.soundLog.includes('epidemic')"),'epidemic: no second sound when the card flies to the discard pile');await pg.evaluate("nextFx()")
+    await pg.evaluate("resetFx();$('fxSpeed').value=0.5");
+    r=await pg.evaluate("""(()=>{let a=MAP.cities[0].id,b=MAP.cities[1].id,pre=JSON.parse(JSON.stringify(state.cubes));pre[a].red=2;pre[b].red=0;let nx=JSON.parse(JSON.stringify(pre));nx[a].red=1;nx[b].red=1;cubeView=pre;paint();applyCubes(nx,{kind:'patient',color:'red',from:a,to:b,hospital:b});return {flying:$('flyers').children.length,srcLeft:cubeView[a].red,dstShown:cubeView[b].red,a,b}})()""")
+    ok(r['flying']==1 and r['srcLeft']==1 and r['dstShown']==0,'patient: cube leaves its city and flies to the next one')
+    await pg.wait_for_timeout(1300)
+    r2=await pg.evaluate("[cubeView&&cubeView[MAP.cities[1].id].red,$('flyers').children.length]")
+    ok((r2[0] is None or r2[0]==1) and r2[1]==0,'patient: flight ends and the cube is handed back to the board');await pg.evaluate("resetFx();render()")
     await pg.evaluate("window.soundLog=[];let st=state.status;state.status='won';queueFx([{kind:'end',text:'x'}]);nextFx();state.status='lost';queueFx([{kind:'end',text:'x'}]);nextFx();state.status=st")
     ok(await pg.evaluate("window.soundLog.includes('win')&&window.soundLog.includes('lose')"),'win and lose jingles')
     await pg.evaluate("$('volume').value='30';$('volume').dispatchEvent(new Event('input'))")
