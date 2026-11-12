@@ -1,4 +1,5 @@
 ## Latest
+- Influx of Patients description no longer mentions pieces stuck under hospitals: it now says 2 purification tokens per hospital color stay locked until that hospital is built.
 - Plainer wording for the Influx of Patients description (what happens to the 2 purification tokens under each hospital, and what building a hospital does).
 - New window: "This device only" and "Play with others online" are now two big buttons; the chosen one is dark.
 - Challenges box (New window and online lobby): headings are bigger than the choices, and each challenge (Influx of Patients, Cholera, Typhus, Yellow fever, Malaria) now shows its description under its name instead of only in a tooltip.
