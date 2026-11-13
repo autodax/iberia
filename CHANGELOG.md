@@ -1,4 +1,7 @@
 ## Latest
+- Influx of Patients: when patients are about to move, one prompt offers two buttons: move them all automatically (picking the least crowded cities) or choose the cities yourself.
+- Hospital overrun: the fleeing patients now slide out of the hospital city to their new cities, instead of flying in from the middle of the screen.
+- The status card no longer names the city being infected (the card and animation already show it).
 - A status card at the top of the active player's box says what is happening (Taking actions, Drawing cards, Infecting cities, Patients on the move, Epidemic!), with small progress pips. It replaces the "Actions left" line.
 - Influx of Patients: removed the "Patient on the Move" alert; patient cubes now simply slide in a straight line to their new cities.
 - Influx of Patients: a patient cube now visibly flies from its old city to the new one (instead of just appearing there) after the "Patient on the Move" alert.

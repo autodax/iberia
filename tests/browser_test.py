@@ -245,7 +245,18 @@ async def main():
     await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());state.phase='actions';state.actions=3;render()")
     ok(await sp.evaluate("(()=>{let s=document.querySelector('#activeHand #phaseStatus');return !!s&&s.textContent.includes('Taking actions')&&s.textContent.includes('1 of 4 used')&&s.querySelectorAll('.pips i').length===4})()"),'status card: shows what the active player is doing, with progress pips')
     await sp.evaluate("queueFx([{kind:'playerDraw',cards:state.players[state.active].hand.slice(0,2),seat:state.active}])");await sp.wait_for_timeout(500)
-    ok(await sp.evaluate("(document.querySelector('#phaseStatus')||{textContent:''}).textContent.includes('Drawing cards')"),'status card: says Drawing cards while the draw plays');await sp.close()
+    ok(await sp.evaluate("(document.querySelector('#phaseStatus')||{textContent:''}).textContent.includes('Drawing cards')"),'status card: says Drawing cards while the draw plays')
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close())")
+    await sp.evaluate("""(()=>{let s=initial('ch',4,['sailor','agronomist'],{influx:true}),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
+      for(let c of MAP.cities)for(let k of COLORS){s.supply[k]+=s.cubes[c.id][k];s.cubes[c.id][k]=0}
+      let h=MAP.cities.find(c=>c.color==='red').id;s.hospitals.red=h;s.hospWater.red=0;s.waterSupply=8;let n2=ADJ[h].slice(0,2);for(let x of n2){s.cubes[x].red=1;s.supply.red--}
+      s.phase='actions';s.actions=1;state=s;recompute();render();window.__h=h;window.__n2=n2;window.__done=false;perform({type:'draw'}).then(()=>window.__done=true)})()""");await sp.wait_for_timeout(600)
+    ok(await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/myself/i.test(b.textContent))"),'patients: one prompt offers automatic or manual moves')
+    await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/automatically/i.test(b.textContent)).click()");await sp.wait_for_timeout(2500)
+    ok(await sp.evaluate("window.__done&&state.cubes[window.__h].red===1&&!document.querySelector('dialog[open] #choiceOptions button')"),'patients: automatic mode moves them without more questions')
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());render()")
+    r=await sp.evaluate("""(()=>{let a=MAP.cities[0].id,b=MAP.cities[1].id,c=MAP.cities[2].id,pre=JSON.parse(JSON.stringify(state.cubes));pre[a].red=4;pre[b].red=0;pre[c].red=0;let nx=JSON.parse(JSON.stringify(pre));nx[a].red=0;nx[b].red=2;nx[c].red=2;$('fxSpeed').value=0.5;cubeView=pre;paint();applyCubes(nx,{kind:'overrun',city:a,color:'red',count:4});return {flying:$('flyers').children.length,srcLeft:cubeView[a].red}})()""")
+    ok(r['flying']==4 and r['srcLeft']==0,'overrun: cubes slide out of the hospital city to their new cities');await sp.close()
     await pg.evaluate("window.soundLog=[];let st=state.status;state.status='won';queueFx([{kind:'end',text:'x'}]);nextFx();state.status='lost';queueFx([{kind:'end',text:'x'}]);nextFx();state.status=st")
     ok(await pg.evaluate("window.soundLog.includes('win')&&window.soundLog.includes('lose')"),'win and lose jingles')
     await pg.evaluate("$('volume').value='30';$('volume').dispatchEvent(new Event('input'))")

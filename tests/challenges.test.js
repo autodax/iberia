@@ -42,6 +42,7 @@ group('influx: closest patient moves, ties are a choice, railroads make it fast'
  // two tied patients -> a choice is requested
  let t=begin({influx:true});clearBoard(t);t.hospitals.red=h;t.hospWater.red=0;t.waterSupply=8;let n2=ADJ[h].slice(0,2);for(let x of n2)setCubes(t,x,'red',1);t.phase='actions';t.actions=1;
  let asked=false;try{transact(t,{type:'draw',choices:[]})}catch(e){asked=!!e.needChoice}ok(asked,'tie asks which patient');
+ {let cr=null;try{transact(t,{type:'draw',choices:[]})}catch(e){cr=e.needChoice&&e.needChoice.patients}ok(cr&&cr.kind==='which'&&cr.crowd.length===2,'tie choice carries crowding info for the automatic mode')}
  // rail: patient two steps away reaches the hospital in one move by rail
  let r=begin({influx:true});clearBoard(r);r.hospitals.red=h;r.hospWater.red=0;r.waterSupply=8;
  r.phase='actions';r.actions=1;

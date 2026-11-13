@@ -139,7 +139,7 @@ function overrun(s,id,color,ctx,erupted,pend,from){
  erupted.add(id);let n=s.cubes[id][color];
  s.log.push('Hospital overrun in '+C[id].name+': '+n+' '+color+' patients flee');
  let ofx={kind:'overrun',city:id,color,count:n};pushFx(s,ofx);
- for(let j=0;j<n&&s.status==='playing';j++){let to=choice(ctx,ADJ[id],'Overrun hospital in '+C[id].name+': where does the '+(j+1)+(['st','nd','rd'][j]||'th')+' '+color+' patient go?',ADJ[id].map(k=>C[k].name));
+ for(let j=0;j<n&&s.status==='playing';j++){let to=choice(ctx,ADJ[id],'Overrun hospital in '+C[id].name+': where does the '+(j+1)+(['st','nd','rd'][j]||'th')+' '+color+' patient go?',ADJ[id].map(k=>C[k].name),{patients:{kind:'flee',crowd:ADJ[id].map(k=>s.cubes[k][color]+(s.cubes[k][color]>=3?5:0))}});
   s.cubes[id][color]--;
   if(s.cubes[to][color]>=3){s.supply[color]++;pend.push([to,id,null,color])}else{s.cubes[to][color]++}
   s.log.push('A '+color+' patient moves from '+C[id].name+' to '+C[to].name)}
@@ -163,8 +163,9 @@ function movePatients(s,ctx){
   let info=MAP.cities.map(c=>c.id).filter(id=>id!==h&&s.cubes[id][color]>0).map(id=>({id,d:line[id],dests:[...new Set([...ADJ[id],...railReach(s,id)])].filter(n=>fast[n]===fast[id]-1&&(n===h||s.cubes[n][color]<3))})).filter(x=>x.dests.length&&x.d!=null);
   if(!info.length){s.log.push('No '+color+' patient can move toward the '+color+' hospital in '+C[h].name);continue}
   let best=Math.min(...info.map(x=>x.d)),tie=info.filter(x=>x.d===best);
-  let from=choice(ctx,tie.map(x=>x.id),'Move which '+color+' patient one step toward the '+color+' hospital in '+C[h].name+'?',tie.map(x=>C[x.id].name));
-  let t=tie.find(x=>x.id===from),to=choice(ctx,t.dests,'Where does the '+color+' patient from '+C[from].name+' go?',t.dests.map(x=>C[x].name));
+  let crowd=n=>s.cubes[n][color]+(n===h&&s.cubes[h][color]>=3?10:0);   // how crowded a destination is (the automatic mode picks the least crowded)
+  let from=choice(ctx,tie.map(x=>x.id),'Move which '+color+' patient one step toward the '+color+' hospital in '+C[h].name+'?',tie.map(x=>C[x.id].name),{patients:{kind:'which',crowd:tie.map(x=>Math.min(...x.dests.map(crowd)))}});
+  let t=tie.find(x=>x.id===from),to=choice(ctx,t.dests,'Where does the '+color+' patient from '+C[from].name+' go?',t.dests.map(x=>C[x].name),{patients:{kind:'where',crowd:t.dests.map(crowd)}});
   pushFx(s,{kind:'patient',color,from,to,hospital:h});
   s.cubes[from][color]--;s.cubes[to][color]++;s.log.push('A '+color+' patient moves from '+C[from].name+' to '+C[to].name+' (toward '+C[h].name+')');
   if(to===h&&s.cubes[h][color]>=4){let erupted=new Set(),pend=[];overrun(s,h,color,ctx,erupted,pend,null);while(pend.length&&s.status==='playing'){let [n,f,k2,col]=pend.shift();if(!erupted.has(n))outbreak(s,n,col||color,ctx,erupted,pend,f)}for(let f of erupted.fx||[]){f.chainTotal=erupted.fx.length;f.chain=erupted.fx.map(x=>x.city)}}}}
