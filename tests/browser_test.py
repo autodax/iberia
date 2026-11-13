@@ -265,7 +265,17 @@ async def main():
       state=s;recompute();render();window.__h=h;window.__done=false;perform({type:'infect'}).then(()=>window.__done=true)})()""");await sp.wait_for_timeout(600)
     ok(await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))"),'overrun from an infection card: same automatic or manual prompt')
     await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/automatically/i.test(b.textContent)).click()");await sp.wait_for_timeout(2500)
-    ok(await sp.evaluate("window.__done&&state.cubes[window.__h].red===0&&!document.querySelector('dialog[open] #choiceOptions button')"),'overrun from an infection card: automatic mode places everyone without more questions');await sp.close()
+    ok(await sp.evaluate("window.__done&&state.cubes[window.__h].red===0&&!document.querySelector('dialog[open] #choiceOptions button')"),'overrun from an infection card: automatic mode places everyone without more questions')
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close())")
+    await sp.evaluate("""(()=>{let s=initial('hl',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
+      let p=s.players[s.active];while(p.hand.length<9){let k=s.playerDeck.find(x=>C[x]);s.playerDeck.splice(s.playerDeck.indexOf(k),1);p.hand.push(k)}
+      s.phase='actions';s.actions=4;state=s;recompute();window.__seat=s.active;drawHide.set(s.active,new Set(p.hand.slice(-2)));render()})()""")
+    ok(await sp.evaluate("!document.querySelector('.overNote')&&!document.querySelector('.card.disc')&&fullNow().length===0"),'hand limit: no discard request while the dealt cards are still on their way')
+    await sp.evaluate("drawHide.clear();render()")
+    ok(await sp.evaluate("!!document.querySelector('.overNote')&&fullNow().length===1"),'hand limit: discard request appears once the cards have landed')
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());render()")
+    r=await sp.evaluate("""(()=>{let a=MAP.cities[3].id,pre=JSON.parse(JSON.stringify(state.cubes));pre[a].red=0;let nx=JSON.parse(JSON.stringify(pre));nx[a].red=1;$('fxSpeed').value=0.5;cubeView=pre;paint();let had=!!document.getElementById('infFx');applyCubes(nx,{kind:'infection',city:a});let n=$('flyers').lastElementChild,k=n.getAnimations()[0].effect.getKeyframes()[0].transform,m=/translate\\(([-\\d.]+)px,\\s*([-\\d.]+)px\\)/.exec(k),e=INF_EDGE(a);return {had,flying:$('flyers').children.length,dx:Math.abs(+m[1]-e[0]),dy:Math.abs(+m[2]-e[1])}})()""")
+    ok((not r['had']) and r['flying']==1 and r['dx']<2 and r['dy']<2,'infection cube with no card on screen starts at the infection pile, not the middle of the screen');await sp.close()
     await pg.evaluate("window.soundLog=[];let st=state.status;state.status='won';queueFx([{kind:'end',text:'x'}]);nextFx();state.status='lost';queueFx([{kind:'end',text:'x'}]);nextFx();state.status=st")
     ok(await pg.evaluate("window.soundLog.includes('win')&&window.soundLog.includes('lose')"),'win and lose jingles')
     await pg.evaluate("$('volume').value='30';$('volume').dispatchEvent(new Event('input'))")

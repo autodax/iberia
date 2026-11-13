@@ -1,4 +1,6 @@
 ## Latest
+- Infection cubes no longer fly in from the middle of the screen when you click through before the infection card is shown; they come from the infection pile.
+- Hand limit: the request to discard (and the warning sound) now waits until the newly dealt cards have landed in the hand, instead of appearing while they are still flying in.
 - Hospital overrun caused by an Infection card now asks the same question as patient moves: flee automatically (least crowded cities) or choose each city yourself.
 - Influx of Patients: when patients are about to move, one prompt offers two buttons: move them all automatically (picking the least crowded cities) or choose the cities yourself.
 - Hospital overrun: the fleeing patients now slide out of the hospital city to their new cities, instead of flying in from the middle of the screen.
