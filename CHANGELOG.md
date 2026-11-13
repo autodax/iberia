@@ -1,4 +1,5 @@
 ## Latest
+- Hospital overrun caused by an Infection card now asks the same question as patient moves: flee automatically (least crowded cities) or choose each city yourself.
 - Influx of Patients: when patients are about to move, one prompt offers two buttons: move them all automatically (picking the least crowded cities) or choose the cities yourself.
 - Hospital overrun: the fleeing patients now slide out of the hospital city to their new cities, instead of flying in from the middle of the screen.
 - The status card no longer names the city being infected (the card and animation already show it).
