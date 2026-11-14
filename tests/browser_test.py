@@ -250,7 +250,7 @@ async def main():
     await sp.evaluate("""(()=>{let s=initial('ch',4,['sailor','agronomist'],{influx:true}),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       for(let c of MAP.cities)for(let k of COLORS){s.supply[k]+=s.cubes[c.id][k];s.cubes[c.id][k]=0}
       let h=MAP.cities.find(c=>c.color==='red').id;s.hospitals.red=h;s.hospWater.red=0;s.waterSupply=8;let n2=ADJ[h].slice(0,2);for(let x of n2){s.cubes[x].red=1;s.supply.red--}
-      s.phase='actions';s.actions=1;state=s;recompute();render();window.__h=h;window.__n2=n2;window.__done=false;perform({type:'draw'}).then(()=>window.__done=true)})()""");await sp.wait_for_timeout(600)
+      s.phase='actions';s.actions=1;state=s;recompute();render();window.__h=h;window.__n2=n2;window.__done=false;perform({type:'draw'}).then(()=>window.__done=true)})()""");await sp.wait_for_function("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))",timeout=10000)
     ok(await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/myself/i.test(b.textContent))"),'patients: one prompt offers automatic or manual moves')
     await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/automatically/i.test(b.textContent)).click()");await sp.wait_for_timeout(2500)
     ok(await sp.evaluate("window.__done&&state.cubes[window.__h].red===1&&!document.querySelector('dialog[open] #choiceOptions button')"),'patients: automatic mode moves them without more questions')
@@ -262,7 +262,7 @@ async def main():
       for(let c of MAP.cities)for(let k of COLORS){s.supply[k]+=s.cubes[c.id][k];s.cubes[c.id][k]=0}
       let h=MAP.cities.find(c=>c.color==='red').id;s.hospitals.red=h;s.hospWater.red=0;s.waterSupply=8;s.cubes[h].red=3;s.supply.red-=3;
       s.phase='infection';s.infectionRemaining=1;s.infectionFromBottom=false;s.revealed=[];s.infectionDeck=s.infectionDeck.filter(x=>x!==h);s.infectionDiscard=s.infectionDiscard.filter(x=>x!==h);s.infectionDeck.unshift(h);
-      state=s;recompute();render();window.__h=h;window.__done=false;perform({type:'infect'}).then(()=>window.__done=true)})()""");await sp.wait_for_timeout(600)
+      state=s;recompute();render();window.__h=h;window.__done=false;perform({type:'infect'}).then(()=>window.__done=true)})()""");await sp.wait_for_function("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))",timeout=10000)
     ok(await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))"),'overrun from an infection card: same automatic or manual prompt')
     await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/automatically/i.test(b.textContent)).click()");await sp.wait_for_timeout(2500)
     ok(await sp.evaluate("window.__done&&state.cubes[window.__h].red===0&&!document.querySelector('dialog[open] #choiceOptions button')"),'overrun from an infection card: automatic mode places everyone without more questions')
