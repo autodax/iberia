@@ -261,7 +261,7 @@ aside #undo{padding:4px 10px}
 .fxWho svg{filter:drop-shadow(0 2px 4px #0008)}
 
 /* The active player's hand and the available actions share one dark green box on top; the others sit below, dimmed. */
-#turnBox{--pc:#1f5a3a;border:4px solid var(--pc);border-radius:9px;box-shadow:0 0 0 1px rgba(0,0,0,.55),0 0 9px color-mix(in srgb,var(--pc) 55%,transparent);background:#e8d8b2;padding:6px;display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
+#turnBox{--pc:#1f5a3a;border:4px solid var(--pc);border-radius:9px;box-shadow:0 0 0 1px rgba(0,0,0,.55),0 0 9px color-mix(in srgb,var(--pc) 55%,transparent);background:#d8c697;padding:6px;display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
 #turnBox[hidden]{display:none}
 #turnBox .hand.active,aside #turnBox .hand.active{border:none;box-shadow:none;background:transparent;padding:2px}
 #turnBox #actionArea{border-top:1px solid rgba(31,90,58,.35);padding-top:6px}
@@ -574,7 +574,7 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .modeTabs label:focus-within{outline:3px solid #ffd93a;outline-offset:2px}
 
 /* status card at the top of the active player's box */
-.phaseStatus{--c:#2f8a3f;margin:2px 0 6px 0;background:#fffaf0;border-radius:6px;padding:5px 10px;border-left:6px solid var(--c);box-shadow:0 0 0 1px #0001}
+.phaseStatus{--c:#2f8a3f;margin:2px 0 6px 0;background:#f3e6c8;border-radius:6px;padding:5px 10px;border-left:6px solid var(--c);box-shadow:0 0 0 1px #0001}
 .phaseStatus.g{--c:#2f8a3f}.phaseStatus.b{--c:#2b5fa8}.phaseStatus.r{--c:#b3342b}.phaseStatus.p{--c:#6a3d8f}.phaseStatus.e{--c:#d98a00}
 .phaseStatus .t{font-weight:700;font-size:14px;line-height:18px;color:#3a2f1c}
 .phaseStatus .s{display:flex;align-items:center;font-size:12.5px;color:#7a6a49;margin-top:2px}
