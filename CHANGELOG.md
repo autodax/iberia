@@ -1,4 +1,5 @@
 ## Latest
+- Colors now show in the order red, blue, black, yellow: cube counters, research row, the city list, and the cards in each hand (same-color cards stay together).
 - "Pick historical diseases at random" now uses a fair shuffle (the old method slightly favored some diseases).
 - Infection cubes no longer fly in from the middle of the screen when you click through before the infection card is shown; they come from the infection pile.
 - Hand limit: the request to discard (and the warning sound) now waits until the newly dealt cards have landed in the hand, instead of appearing while they are still flying in.
