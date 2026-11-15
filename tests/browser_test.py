@@ -65,7 +65,7 @@ async def main():
     await pg.close()
     # an infection that overflows a city: the cube flies in from the card first, then the outbreak starts
     pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
-    await pg.evaluate("resetFx();$('fxSpeed').value='0.5';document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;(()=>{let s=CP(state);s.players.forEach((q,i)=>{q.role=['politician','agronomist','railwayman','scientist'][i%4]});s.prevention=null;s.players.forEach(q=>{if(!q.city)q.city=MAP.cities[3].id});s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;let id=s.infectionDeck[0],col=C[id].color,d=3-s.cubes[id][col];s.cubes[id][col]=3;s.supply[col]-=d;state=s;recompute();render()})()")
+    await pg.evaluate("resetFx();$('fxSpeed').value='0.5';document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();(()=>{let s=CP(state);s.players.forEach((q,i)=>{q.role=['politician','agronomist','railwayman','scientist'][i%4]});s.prevention=null;s.players.forEach(q=>{if(!q.city)q.city=MAP.cities[3].id});s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;let id=s.infectionDeck[0],col=C[id].color,d=3-s.cubes[id][col];s.cubes[id][col]=3;s.supply[col]-=d;state=s;recompute();render()})()")
     await pg.evaluate("window.seq=[];(function w(){let k=fxCurrent&&fxCurrent.kind,b=!!document.querySelector('#fx .alert.outbreak');let l=window.seq[window.seq.length-1];if(!l||l[0]!==k||l[1]!==b)window.seq.push([k,b]);setTimeout(w,40)})()");await pg.evaluate("(busy=false,void perform({type:'infect'}))")
     try: await pg.wait_for_function("window.seq.some(x=>x[0]==='outbreak'&&x[1])",timeout=9000)
     except Exception: print('DEBUG overflow',await pg.evaluate("[JSON.stringify(window.seq),state.phase,state.outbreaks,state.infectionRemaining,state.pendingEvent||null,document.querySelectorAll('dialog[open]').length,state.over||null]"))
@@ -81,7 +81,7 @@ async def main():
  window.__d=d.id;state=s;recompute();render();return [P.hand.filter(isCol).length,d.name,col]}"""
     for n in (1,2):
       pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(1500)
-      await pg.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false");await pg.evaluate("("+SHIP_SETUP+")("+str(n)+")");await pg.wait_for_timeout(200)
+      await pg.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()");await pg.evaluate("("+SHIP_SETUP+")("+str(n)+")");await pg.wait_for_timeout(200)
       await pg.evaluate("busy=false;void quickMove(window.__d)");await pg.wait_for_timeout(700)
       if n==1:
         ok(await pg.evaluate("document.getElementById('choiceDialog').open&&/will be discarded/.test(document.getElementById('choiceTitle').textContent)&&state.actions===4"),'one matching card: ship move warns that the card will be used')
@@ -95,7 +95,7 @@ async def main():
       await pg.close()
     # low cube counts pulse red
     pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
-    await pg.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;(()=>{let s=CP(state);s.supply[COLORS[0]]-=s.supply[COLORS[0]]-9;state=s;recompute();render()})()");await pg.wait_for_timeout(300)
+    await pg.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();(()=>{let s=CP(state);s.supply[COLORS[0]]-=s.supply[COLORS[0]]-9;state=s;recompute();render()})()");await pg.wait_for_timeout(300)
     ok(await pg.evaluate("(()=>{let bs=[...document.querySelectorAll('#cubeCounts .cc:not(.tc) b')];return bs.filter(x=>x.classList.contains('low')).length===bs.filter(x=>+x.textContent<10).length&&bs.some(x=>x.classList.contains('low'))&&getComputedStyle(bs.find(x=>x.classList.contains('low'))).animationName==='cubeLow'})()"),'cube counts below 10 pulse red')
     await pg.close()
     # supply icons and rules links
@@ -216,7 +216,7 @@ async def main():
     ok(await pg.evaluate("!sndPrefs.on"),'sound starts muted')
     await pg.evaluate("window.soundLog=[]");await pg.click('#logButton');await pg.wait_for_timeout(50)
     ok(await pg.evaluate("window.soundLog.length===0"),'no sound while muted')
-    await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false")
+    await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()")
     await pg.evaluate("setSound(true)");await pg.wait_for_timeout(300)
     ok(await pg.evaluate("sndPrefs.on&&$('sound').checked"),'sound turns on')
     ok(await pg.evaluate("!window.soundLog.includes('click')"),'no button click sound')
@@ -242,48 +242,51 @@ async def main():
     ok(await pg.evaluate("!document.querySelector('#fx .alert')&&$('fx').className!=='on'"),'patient: no alert box is shown')
     await pg.wait_for_timeout(1800);ok(await pg.evaluate("!fxCurrent&&$('flyers').children.length===0"),'patient: slide finishes and the queue moves on');await pg.evaluate("resetFx();render()")
     sp=await b.new_page(viewport={'width':1366,'height':768});await sp.goto(F.replace('?layout=sidebar',''));await sp.wait_for_timeout(300);await sp.click('#begin');await sp.wait_for_timeout(300)
-    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;state.phase='actions';state.actions=3;render()")
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();state.phase='actions';state.actions=3;render()")
     ok(await sp.evaluate("(()=>{let s=document.querySelector('#activeHand #phaseStatus');return !!s&&s.textContent.includes('Taking actions')&&s.textContent.includes('1 of 4 used')&&s.querySelectorAll('.pips i').length===4})()"),'status card: shows what the active player is doing, with progress pips')
     await sp.evaluate("queueFx([{kind:'playerDraw',cards:state.players[state.active].hand.slice(0,2),seat:state.active}])");await sp.wait_for_timeout(500)
     ok(await sp.evaluate("(document.querySelector('#phaseStatus')||{textContent:''}).textContent.includes('Drawing cards')"),'status card: says Drawing cards while the draw plays')
-    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false")
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()")
     await sp.evaluate("""(()=>{let s=initial('ch',4,['sailor','agronomist'],{influx:true}),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       for(let c of MAP.cities)for(let k of COLORS){s.supply[k]+=s.cubes[c.id][k];s.cubes[c.id][k]=0}
       let h=MAP.cities.find(c=>c.color==='red').id;s.hospitals.red=h;s.hospWater.red=0;s.waterSupply=8;let n2=ADJ[h].slice(0,2);for(let x of n2){s.cubes[x].red=1;s.supply.red--}
-      s.phase='actions';s.actions=1;state=s;recompute();render();window.__h=h;window.__n2=n2;window.__done=false;perform({type:'draw'}).then(()=>window.__done=true)})()""");await sp.wait_for_function("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))",timeout=10000)
+      s.phase='actions';s.actions=1;state=s;recompute();render();window.__h=h;window.__n2=n2;window.__done=false;perform({type:'draw'}).then(()=>window.__done=true)})()""");await sp.wait_for_function("document.getElementById('choiceDialog').open&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))",timeout=20000)
     ok(await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/myself/i.test(b.textContent))"),'patients: one prompt offers automatic or manual moves')
     await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/automatically/i.test(b.textContent)).click()");await sp.wait_for_timeout(2500)
     ok(await sp.evaluate("window.__done&&state.cubes[window.__h].red===1&&!document.querySelector('dialog[open] #choiceOptions button')"),'patients: automatic mode moves them without more questions')
-    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;render()")
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();render()")
     r=await sp.evaluate("""(()=>{let a=MAP.cities[0].id,b=MAP.cities[1].id,c=MAP.cities[2].id,pre=JSON.parse(JSON.stringify(state.cubes));pre[a].red=4;pre[b].red=0;pre[c].red=0;let nx=JSON.parse(JSON.stringify(pre));nx[a].red=0;nx[b].red=2;nx[c].red=2;$('fxSpeed').value=0.5;cubeView=pre;paint();applyCubes(nx,{kind:'overrun',city:a,color:'red',count:4});return {flying:$('flyers').children.length,srcLeft:cubeView[a].red}})()""")
     ok(r['flying']==4 and r['srcLeft']==0,'overrun: cubes slide out of the hospital city to their new cities')
-    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false")
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()")
     await sp.evaluate("""(()=>{let s=initial('ch',4,['sailor','agronomist'],{influx:true}),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       for(let c of MAP.cities)for(let k of COLORS){s.supply[k]+=s.cubes[c.id][k];s.cubes[c.id][k]=0}
       let h=MAP.cities.find(c=>c.color==='red').id;s.hospitals.red=h;s.hospWater.red=0;s.waterSupply=8;s.cubes[h].red=3;s.supply.red-=3;
       s.phase='infection';s.infectionRemaining=1;s.infectionFromBottom=false;s.revealed=[];s.infectionDeck=s.infectionDeck.filter(x=>x!==h);s.infectionDiscard=s.infectionDiscard.filter(x=>x!==h);s.infectionDeck.unshift(h);
-      state=s;recompute();render();window.__h=h;window.__done=false;perform({type:'infect'}).then(()=>window.__done=true)})()""");await sp.wait_for_function("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))",timeout=10000)
+      state=s;recompute();render();window.__h=h;window.__done=false;window.__seenPrev=false;window.__order=null;let iv=setInterval(()=>{if(fxCurrent&&fxCurrent.kind==='overrun'&&fxCurrent.preview)window.__seenPrev=true;if(window.__order===null&&document.getElementById('choiceDialog').open){window.__order=window.__seenPrev;clearInterval(iv)}},30);perform({type:'infect'}).then(()=>window.__done=true)})()""");await sp.wait_for_function("document.getElementById('choiceDialog').open&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))",timeout=20000)
     ok(await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].some(b=>/automatically/i.test(b.textContent))"),'overrun from an infection card: same automatic or manual prompt')
-    await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/automatically/i.test(b.textContent)).click()");await sp.wait_for_timeout(2500)
+    ok(await sp.evaluate("window.__order===true"),'overrun from an infection card: the card and the overrun are shown before the question')
+    await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/automatically/i.test(b.textContent)).click()")
+    try: await sp.wait_for_function("window.__done===true",timeout=20000)
+    except Exception: pass
     ok(await sp.evaluate("window.__done&&state.cubes[window.__h].red===0&&!document.querySelector('dialog[open] #choiceOptions button')"),'overrun from an infection card: automatic mode places everyone without more questions')
-    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false")
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()")
     await sp.evaluate("""(()=>{let s=initial('hl',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       let p=s.players[s.active];while(p.hand.length<9){let k=s.playerDeck.find(x=>C[x]);s.playerDeck.splice(s.playerDeck.indexOf(k),1);p.hand.push(k)}
       s.phase='actions';s.actions=4;state=s;recompute();window.__seat=s.active;drawHide.set(s.active,new Set(p.hand.slice(-2)));render()})()""")
     ok(await sp.evaluate("!document.querySelector('.overNote')&&!document.querySelector('.card.disc')&&fullNow().length===0"),'hand limit: no discard request while the dealt cards are still on their way')
     await sp.evaluate("drawHide.clear();render()")
     ok(await sp.evaluate("!!document.querySelector('.overNote')&&fullNow().length===1"),'hand limit: discard request appears once the cards have landed')
-    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;render()")
+    await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();render()")
     r=await sp.evaluate("""(()=>{let a=MAP.cities[3].id,pre=JSON.parse(JSON.stringify(state.cubes));pre[a].red=0;let nx=JSON.parse(JSON.stringify(pre));nx[a].red=1;$('fxSpeed').value=0.5;cubeView=pre;paint();let had=!!document.getElementById('infFx');applyCubes(nx,{kind:'infection',city:a});let n=$('flyers').lastElementChild,k=n.getAnimations()[0].effect.getKeyframes()[0].transform,m=/translate\\(([-\\d.]+)px,\\s*([-\\d.]+)px\\)/.exec(k),e=INF_EDGE(a);return {had,flying:$('flyers').children.length,dx:Math.abs(+m[1]-e[0]),dy:Math.abs(+m[2]-e[1])}})()""")
     ok((not r['had']) and r['flying']==1 and r['dx']<2 and r['dy']<2,'infection cube with no card on screen starts at the infection pile, not the middle of the screen')
     ok(await sp.evaluate("JSON.stringify([...document.querySelectorAll('#cubeCounts .cc:not(.tc)')].map(e=>e.querySelector('img')&&e.querySelector('img').alt))===JSON.stringify(['red','blue','black','yellow'])"),'cube counters are ordered red, blue, black, yellow')
     ok(await sp.evaluate("(()=>{let by={};for(let c of MAP.cities)(by[c.color]=by[c.color]||[]).push(c.id);let h=['yellow','black','blue','red','yellow','red','blue','black'].map((col,i)=>by[col][i]);let o=handOrder(h).map(k=>C[k].color);return JSON.stringify(o)===JSON.stringify(['red','red','blue','blue','black','black','yellow','yellow'])})()"),'hand cards are grouped by color in the order red, blue, black, yellow')
-    await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;let s=initial('pw',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}s.phase='actions';s.actions=4;mode='';state=s;recompute();render()})()""");await sp.wait_for_timeout(500)
+    await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('pw',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}s.phase='actions';s.actions=4;mode='';state=s;recompute();render()})()""");await sp.wait_for_timeout(500)
     ok(await sp.evaluate("(()=>{let c=[...document.querySelectorAll('#board circle[data-regpick]')];return c.length>0&&c.every(x=>+x.getAttribute('r')===WATER_HIT)})()"),'purification: only a small spot in the middle of each region is clickable')
     ok(await sp.evaluate("(()=>{mode='purify';render();let n=document.querySelectorAll('#board polygon[data-regpick]').length;$('board').dispatchEvent(new MouseEvent('click',{bubbles:true}));return n>0&&mode===''})()"),'purification: clicking outside the shaded regions cancels')
-    await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;let s=initial('sh',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
+    await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('sh',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       let port=MAP.cities.find(c=>c.port).id;s.players.forEach(q=>q.city=port);s.active=s.players.findIndex(q=>q.role==='sailor');s.phase='actions';s.actions=4;mode='';sel={};state=s;recompute();render();window.__to=[...quickMoves().entries()].find(([k,v])=>v.type==='ship')[0];quickMove(window.__to)})()""")
-    await sp.wait_for_function("[...document.querySelectorAll('#choiceOptions button')].some(b=>/^Take /.test(b.textContent))",timeout=10000)
+    await sp.wait_for_function("document.getElementById('choiceDialog').open&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/^Take /.test(b.textContent))",timeout=10000)
     ok(await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].some(b=>b.textContent==='Go alone')"),'sailor: clicking a port asks whether to take a passenger')
     await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/^Take /.test(b.textContent)).click()");await sp.wait_for_function("state.players.every(q=>q.city===window.__to)",timeout=10000)
     ok(await sp.evaluate("state.players.every(q=>q.city===window.__to)&&state.actions===3"),'sailor: passenger sails along for one action');await sp.close()
@@ -311,7 +314,7 @@ async def main():
         await pg.reload();await pg.wait_for_timeout(300);seeds.add(await pg.evaluate("state.seed"))
     ok(len(seeds)==3,'each page load gets a new random seed '+str(seeds))
     async def newgame(seed=''):
-        await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false")
+        await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()")
         await pg.evaluate("s=>{roleChoice=['sailor','agronomist','railwayman','politician','nurse'];$('seed').value=s;$('newGame').click()}",seed);await pg.wait_for_selector('#choiceDialog[open]');await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(200)
         return await pg.evaluate("[state.seed,state.eventsInGame.join(),state.players.map(p=>p.hand.join('/')).join(';')]")
     a=await newgame();b2=await newgame()
@@ -347,10 +350,10 @@ async def main():
     ok(await pg.evaluate("getComputedStyle(Object.assign(document.body.appendChild(document.createElement('img')),{className:'cube-black'})).filter.includes('cubeBlackFx')"),'black cube highlight filter')
     await pg.evaluate("$('logButton')?.click()");await pg.wait_for_timeout(150)
     ok(await pg.evaluate("document.querySelectorAll('.logList .logL.l0').length>0&&document.querySelectorAll('.logList .logL.l1').length>0"),'log indented by turn')
-    await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false")
+    await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()")
     if await pg.evaluate("state.phase==='setup'"):await pg.click('#begin');await pg.wait_for_timeout(300)
     if await pg.evaluate("$('choiceDialog').open"):await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(300)
-    await pg.evaluate("$('newButton').click()");await pg.wait_for_timeout(100);await pg.click('.choiceGroup[data-for=role0] [data-v="nurse"]');await pg.click('.choiceGroup[data-for=role1] [data-v="politician"]');await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;$('seed').value='nurse-map';$('newGame').click()");await pg.wait_for_timeout(300)
+    await pg.evaluate("$('newButton').click()");await pg.wait_for_timeout(100);await pg.click('.choiceGroup[data-for=role0] [data-v="nurse"]');await pg.click('.choiceGroup[data-for=role1] [data-v="politician"]');await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();$('seed').value='nurse-map';$('newGame').click()");await pg.wait_for_timeout(300)
     if await pg.evaluate("$('choiceDialog').open"):await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(200)
     if await pg.evaluate("state.phase==='setup'"):await pg.click('#begin');await pg.wait_for_timeout(300)
     if await pg.evaluate("$('choiceDialog').open"):await pg.click('#choiceOptions button >> nth=0');await pg.wait_for_timeout(300)
@@ -367,7 +370,7 @@ async def main():
     else: ok(False,'no nurse test city found')
     # v0.9.21 checks
     ok(await pg.evaluate("!document.querySelector('#cubeBlackFx feConvolveMatrix')&&!document.querySelector('#cubeBlackFx feMorphology')"),'black cubes have no white outline')
-    await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;resetFx();state.research=['red','blue'];render()")
+    await pg.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();resetFx();state.research=['red','blue'];render()")
     ok(await pg.evaluate("let m=[...document.querySelectorAll('#board image.researchMark')];m.length===2&&m.every(x=>x.getAttribute('filter')==='url(#researchFx)')&&Math.abs(+m[0].getAttribute('y')-990)<12"),'research markers on the microscope silhouettes, no background')
     await pg.evaluate("state.research=[];render()")
     ok(await pg.evaluate("parseFloat(getComputedStyle(document.querySelector('#cityList .clRow')||document.body).borderLeftWidth)>=9"),'infected list rows have wide color edge')
@@ -425,7 +428,7 @@ async def main():
     else:ok(False,'touch: reachable city found')
     # Government Mobilization: Play Event button stays on screen and plays
     await tp.set_viewport_size({'width':1366,'height':600})
-    await tp.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false")
+    await tp.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()")
     await tp.evaluate("""(()=>{state.phase='actions';let G='government_mobilization',P=state.players[state.active];let arrs=[state.playerDeck,...state.players.map(x=>x.hand),state.playerDiscard].filter(Boolean);let a=arrs.find(x=>x.includes(G));if(a){let i=a.indexOf(G);a[i]=P.hand[0];P.hand[0]=G}render();openEvent(state.active,G)})()""");await tp.wait_for_timeout(800)
     bb=await tp.evaluate("(()=>{let r=document.getElementById('eventConfirm').getBoundingClientRect();return [r.top,r.bottom,innerHeight]})()")
     ok(bb[1]<=bb[2] and bb[0]>0,'Government Mobilization: Play Event button is on screen (short window)')

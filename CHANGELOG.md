@@ -1,4 +1,5 @@
 ## Latest
+- Hospital overrun from an Infection card or Epidemic: you now see the card, the cube arriving and the "Hospital overrun" alert first, and only then get asked where the patients go. The patients then slide out.
 - Sailor (by ship) and Railwayman (by train): when another pawn is in your city, moving now asks "Go alone" or "Take ...", so the passenger option is no longer skipped when you click a city directly. On one device there is no extra "do you agree" question.
 - Purification: only a small spot in the middle of each region is clickable, so it no longer gets in the way of placing railroad tracks.
 - Choosing a region (Purify Water and similar): clicking anywhere on the map outside the shaded regions now cancels, no Cancel button needed.
