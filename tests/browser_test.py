@@ -243,7 +243,7 @@ async def main():
     await pg.wait_for_timeout(1800);ok(await pg.evaluate("!fxCurrent&&$('flyers').children.length===0"),'patient: slide finishes and the queue moves on');await pg.evaluate("resetFx();render()")
     sp=await b.new_page(viewport={'width':1366,'height':768});await sp.goto(F.replace('?layout=sidebar',''));await sp.wait_for_timeout(300);await sp.click('#begin');await sp.wait_for_timeout(300)
     await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();state.phase='actions';state.actions=3;render()")
-    ok(await sp.evaluate("(()=>{let s=document.querySelector('#activeHand #phaseStatus');return !!s&&s.textContent.includes('Taking actions')&&s.textContent.includes('1 of 4 used')&&s.querySelectorAll('.pips i').length===4})()"),'status card: shows what the active player is doing, with progress pips')
+    ok(await sp.evaluate("(()=>{let s=document.querySelector('#activeHand #phaseStatus');return !!s&&s.textContent.includes('Actions')&&s.textContent.includes('1 of 4')&&!s.textContent.includes('used')&&s.querySelectorAll('.pips i').length===4})()"),'status card: shows what the active player is doing, with progress pips')
     await sp.evaluate("queueFx([{kind:'playerDraw',cards:state.players[state.active].hand.slice(0,2),seat:state.active}])");await sp.wait_for_timeout(500)
     ok(await sp.evaluate("(document.querySelector('#phaseStatus')||{textContent:''}).textContent.includes('Drawing cards')"),'status card: says Drawing cards while the draw plays')
     await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()")
@@ -297,7 +297,7 @@ async def main():
     await sp.wait_for_function("document.getElementById('choiceDialog').open&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/^Play One More Day/.test(b.textContent))",timeout=10000)
     ok(await sp.evaluate("fxCurrent==null||fxCurrent.kind!=='handLimit'"),'hand limit alert does not block playing an Event card')
     await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/^Play/.test(b.textContent)).click()");await sp.wait_for_function("state.phase==='actions'",timeout=10000)
-    ok(await sp.evaluate("state.actions===2&&document.getElementById('phaseStatus').textContent.includes('0 of 2 used')"),'One More Day after drawing: status shows 0 of 2 actions used')
+    ok(await sp.evaluate("state.actions===2&&document.getElementById('phaseStatus').textContent.includes('0 of 2')"),'One More Day after drawing: status shows 0 of 2 actions used')
     await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('dk',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       s.phase='actions';s.actions=0;mode='';sel={};state=s;recompute();render()})()""");await sp.wait_for_timeout(300)
     ok(await sp.evaluate("deckCue()==='plDeck'&&document.querySelectorAll('.deckRing').length===1"),'deck glow: the Player deck glows when it is time to draw')

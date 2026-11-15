@@ -604,14 +604,14 @@ let lastStatus=null;
 function statusInfo(){
  if(state.status!=='playing'||state.phase==='setup'||state.phase==='ended')return null;
  let f=fxCurrent,k=f&&f.kind;
- if(k==='playerDraw')return {c:'b',t:'Drawing cards',d:(f.cards||[]).length+' player cards'};
- if(k==='patient')return {c:'p',t:'Patients on the move',d:'Heading to hospitals'};
- if(k==='epidemic')return {c:'e',t:'Epidemic!',d:'Infection rate going up'};
- if(k==='infection'||k==='outbreak'||k==='overrun'||k==='cubeIn'){let n=state.infectionDrawn,tot=state.infectionDrawn+state.infectionRemaining;return {c:'r',t:'Infecting cities',d:n+' of '+tot,n,tot}}
+ if(k==='playerDraw')return {c:'b',t:'Drawing cards',d:(f.cards||[]).length+' cards'};
+ if(k==='patient')return {c:'p',t:'Patients moving',d:'To hospitals'};
+ if(k==='epidemic')return {c:'e',t:'Epidemic!',d:'Rate rises'};
+ if(k==='infection'||k==='outbreak'||k==='overrun'||k==='cubeIn'){let n=state.infectionDrawn,tot=state.infectionDrawn+state.infectionRemaining;return {c:'r',t:'Infecting',d:n+' of '+tot,n,tot}}
  if(holdActive!=null)return lastStatus;
- if(state.phase==='actions'){let tot=Math.max(state.actionsTotal||4,state.actions);return {c:'g',t:'Taking actions',d:(tot-state.actions)+' of '+tot+' used',n:tot-state.actions,tot}}
- if(state.phase==='infection'){let n=state.infectionDrawn,tot=n+state.infectionRemaining;return {c:'r',t:'Infecting cities',d:n+' of '+tot,n,tot}}
- if(state.phase==='epidemic')return {c:'e',t:'Epidemic!',d:'Infection rate going up'};
+ if(state.phase==='actions'){let tot=Math.max(state.actionsTotal||4,state.actions);return {c:'g',t:'Actions',d:(tot-state.actions)+' of '+tot,n:tot-state.actions,tot}}
+ if(state.phase==='infection'){let n=state.infectionDrawn,tot=n+state.infectionRemaining;return {c:'r',t:'Infecting',d:n+' of '+tot,n,tot}}
+ if(state.phase==='epidemic')return {c:'e',t:'Epidemic!',d:'Rate rises'};
  return null}
 function updateStatus(){let b=document.getElementById('phaseStatus');if(!b)return;let s=statusInfo();if(s)lastStatus=s;b.replaceChildren();b.hidden=!s;if(!s){b.className='';return}b.className='phaseStatus '+s.c;el('div',{className:'t',textContent:s.t},b);let d=el('div',{className:'s'},b);if(s.tot){let pp=el('span',{className:'pips'},d);for(let q=0;q<s.tot;q++)el('i',{className:q<s.n?'':'off'},pp)}d.append(s.d)}
 
