@@ -1,4 +1,5 @@
 ## Latest
+- Fixed: the Player deck now reliably lights up as soon as you can draw (it sometimes stayed dark after the last action's animation).
 - Safari: the little click when treating a cube no longer creates a second sound engine that was never shut down. That leftover engine is the likely reason a reloaded page went silent until Safari was restarted.
 - Fixed: clicking the glowing Player or Infection deck now actually draws (the deck pictures were ignoring clicks).
 - The deck you need next glows with a pulsing gold outline: the Player deck when your actions are used up, the Infection deck during the infection step. You can click the deck itself to draw (same as the Continue button).
