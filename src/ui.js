@@ -691,7 +691,10 @@ async function makeCmd(){let p=state.players[state.active],cmd={type:mode};
  if(mode==='pswap'){cmd.card=selectedCards[0];cmd.take=sel.swapTake}
  if(mode==='peek')cmd.order=sel.peek.slice();
  if(mode==='share'||mode==='pgive'){cmd.other=+sel.other;if(mode==='share')cmd.direction=sel.direction;cmd.consent=await askSeat(cmd.other,plabel(cmd.other)+': do you agree to this card transfer?');if(!cmd.consent)return null}
- if(['ship','train'].includes(mode)&&sel.passenger!=null&&sel.passenger!==false&&sel.passenger!==''){cmd.passenger=+sel.passenger;cmd.consent=await askSeat(cmd.passenger,plabel(cmd.passenger)+': do you agree to travel as a passenger?');if(!cmd.consent)return null}
+ // Sailor by ship / Railwayman by train with someone else in the city: ask whether to take them along (unless already picked by clicking their pawn)
+ {let p=state.players[state.active],carrier=mode==='ship'&&p.role==='sailor'||mode==='train'&&p.role==='railwayman',mates=others().filter(i=>state.players[i].city===p.city);
+  if(carrier&&mates.length&&(sel.passenger==null||sel.passenger===false||sel.passenger==='')){let a=await choose((mode==='ship'?'Sailing':'Taking the train')+' to '+C[cmd.to].name+': take a passenger?',['none',...mates.map(String)],['Go alone',...mates.map(i=>'Take '+plabel(i))],false,null);if(a===null)return null;sel.passenger=a==='none'?false:a}}
+ if(['ship','train'].includes(mode)&&sel.passenger!=null&&sel.passenger!==false&&sel.passenger!==''){cmd.passenger=+sel.passenger;cmd.consent=(!Net.active||mine(cmd.passenger))?true:await askSeat(cmd.passenger,plabel(cmd.passenger)+': do you agree to travel as a passenger?');if(!cmd.consent)return null}
  return cmd}
 
 /* ---------- board ---------- */
