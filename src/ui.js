@@ -304,6 +304,8 @@ function positionPawnPanel(){let pp=$('pawnPanel');if(!pp)return;addGrips();
  let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(who,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,pc=PAWN[q.role]||'#555',pw=Math.min(280,w-12);
  pp.title=compact?($('actionHint').textContent||''):'';
  pp.style.cssText=compact?`position:absolute;left:0;top:0;border-color:${pc};--pc:${pc}`:`position:absolute;width:${pw}px;left:0;top:0;border-color:${pc};--pc:${pc}`;
+ if(!hasForm&&over>0){let [ax,ay]=DECK_SLOTS.plDeck,[bx,by,bw2,bh2]=DECK_SLOTS.plDisc,sx=w/BOARD_FIT[2],sy=h/BOARD_FIT[3],L=(ax-BOARD_FIT[0])*sx,R=(bx+bw2-BOARD_FIT[0])*sx,T2=(ay-BOARD_FIT[1])*sy,B=(by+bh2-BOARD_FIT[1])*sy;
+  pp.style.width=Math.max(160,Math.min(300,R-L-16))+'px';let rw=pp.offsetWidth,rh=pp.offsetHeight,x=Math.max(0,Math.min(w-rw,(L+R)/2-rw/2)),y=Math.max(0,Math.min(h-rh,(T2+B)/2-rh/2));pp.style.left=x+'px';pp.style.top=y+'px';pawnLine(0,0,null);return}
  let rw=pp.offsetWidth,rh=pp.offsetHeight,[x,y]=placeNear(rw,rh,fx,fy,w,h,hasForm?avoidShapes:{cities:[],polys:[]});
  let dk=mode+'|'+who+'|'+hasForm+'|'+over;if(dragOff.pk!==dk){dragOff.pk=dk;dragOff.pp=[0,0]}let o=dragOff.pp||[0,0];x=Math.max(0,Math.min(w-rw,x+o[0]));y=Math.max(0,Math.min(h-rh,y+o[1]));pp.style.left=x+'px';pp.style.top=y+'px';pawnLine(fx,fy,x,y,rw,rh,pc)}
 var dragOff={cn:{}};
@@ -319,15 +321,15 @@ function positionRing(){let ring=$('ring'),np=$('nextPhase'),un=$('undo');if(!ri
   if(infOk){ringOpen=false;ring.hidden=false;re.textContent=np.textContent;re.disabled=np.disabled;re.classList.add('primary');for(let b of $('actionButtons').children)b.style.display='none';re.style.display='';let dU=lastIsDiscard()&&!un.hidden;ru.hidden=!dU;ru.disabled=un.disabled;ru.textContent='Undo discard';
    let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,bw=Math.max(190,Math.min(260,np.textContent.length*8.2)),x=Math.max(bw/2+4,Math.min(w-bw/2-4,fx)),y=Math.min(h-(dU?78:30),fy+34),lines=$('ringLines');lines.replaceChildren();lines.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none');
    svg('line',{x1:fx,y1:fy+2,x2:x,y2:y-18,stroke:PAWN[state.players[state.active].role]||'#555','stroke-width':2,'stroke-opacity':.6},lines);
-   re.style.cssText=`position:absolute;left:${x-bw/2}px;top:${y-18}px;width:${bw}px;height:38px;padding:0 10px;font-size:14px;font-weight:600;pointer-events:auto;border-radius:19px;border:2px solid #1d4f33;background:#2f5d46;color:#f6e8cd;box-shadow:0 2px 10px #000a;margin:0`;ruStyle(ru,x,y,120);return}
+   re.style.cssText=`position:absolute;left:${x-bw/2}px;top:${y-18}px;width:${bw}px;height:38px;padding:0 10px;font-size:14px;font-weight:600;pointer-events:auto;border-radius:19px;border:2px solid #1d4f33;background:#2f5d46;color:#f6e8cd;box-shadow:0 2px 10px #000a;margin:0`;re.style.display='none';ruStyle(ru,x,y-44,120);if(ru.hidden){ring.hidden=true;lines.replaceChildren()}return}
   re.classList.remove('primary')}
  let ok=ringAvail();if(!ok)ringOpen=false;
  if(!(ok&&state.actions===0))ringWait=0;
  if(ok&&state.actions===0){ringOpen=false;if(!ringWait)ringWait=Date.now();let rem=500-(Date.now()-ringWait);if(rem>0){ring.hidden=true;clearTimeout(ringWaitT);ringWaitT=setTimeout(positionRing,rem+15);return}ring.hidden=false;re.textContent=np.textContent;re.disabled=np.disabled;ru.hidden=un.hidden;ru.disabled=un.disabled;ru.textContent=lastIsDiscard()?'Undo discard':'Undo';re.classList.add('primary');for(let b of $('actionButtons').children)b.style.display='none';
   let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-BOARD_FIT[1])/BOARD_FIT[3]*h,bw=Math.max(190,Math.min(260,np.textContent.length*8.2)),x=Math.max(bw/2+4,Math.min(w-bw/2-4,fx)),y=Math.min(h-(ru.hidden?30:78),fy+50),lines=$('ringLines');lines.replaceChildren();lines.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none');
   svg('line',{x1:fx,y1:fy+2,x2:x,y2:y-18,stroke:PAWN[state.players[state.active].role]||'#555','stroke-width':2,'stroke-opacity':.6},lines);
-  re.style.cssText=`position:absolute;left:${x-bw/2}px;top:${y-18}px;width:${bw}px;height:38px;padding:0 10px;font-size:14px;font-weight:600;pointer-events:auto;border-radius:19px;border:2px solid #1d4f33;background:#2f5d46;color:#f6e8cd;box-shadow:0 2px 10px #000a;margin:0;display:''`;
-  ruStyle(ru,x,y,lastIsDiscard()?120:90);return}
+  re.style.cssText=`position:absolute;left:${x-bw/2}px;top:${y-18}px;width:${bw}px;height:38px;padding:0 10px;font-size:14px;font-weight:600;pointer-events:auto;border-radius:19px;border:2px solid #1d4f33;background:#2f5d46;color:#f6e8cd;box-shadow:0 2px 10px #000a;margin:0;display:none`;
+  ruStyle(ru,x,y-44,lastIsDiscard()?120:90);if(ru.hidden){ring.hidden=true;lines.replaceChildren()}return}
  re.classList.remove('primary');let show=ok&&ringOpen;ring.hidden=!show;if(!show)return;
  re.textContent=np.textContent;re.disabled=np.disabled;ru.hidden=un.hidden;ru.disabled=un.disabled;ru.textContent=lastIsDiscard()?'Undo discard':'Undo';
  let bf=$('boardFrame'),w=bf.clientWidth,h=bf.clientHeight,[px,py]=pawnPos(state.active,state),fx=(px-BOARD_FIT[0])/BOARD_FIT[2]*w,fy=(py-6-BOARD_FIT[1])/BOARD_FIT[3]*h,items=[...(canAct()?[...$('actionButtons').children]:[]),...(ru.hidden?[]:[ru]),re],n=items.length,pc=PAWN[state.players[state.active].role]||'#555';

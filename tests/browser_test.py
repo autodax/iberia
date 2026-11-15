@@ -313,7 +313,11 @@ async def main():
     try: await sp.wait_for_function("state.actions===0&&!fxCurrent&&!fxQueue.length&&!busy",timeout=10000)
     except Exception: pass
     await sp.wait_for_timeout(900)
-    ok(await sp.evaluate("deckCue()==='plDeck'&&!!document.querySelector('.deckArt[data-slot=plDeck] .deckRing')"),'deck glow: the Player deck lights up right after the last action');await sp.close()
+    ok(await sp.evaluate("deckCue()==='plDeck'&&!!document.querySelector('.deckArt[data-slot=plDeck] .deckRing')"),'deck glow: the Player deck lights up right after the last action')
+    await sp.evaluate("positionRing()");await sp.wait_for_timeout(700);await sp.evaluate("positionRing()")
+    ok(await sp.evaluate("getComputedStyle($('ringEnd')).display==='none'"),'no green draw button by the pawn when drawing is the only thing left')
+    await sp.evaluate("""(()=>{let p=state.players[state.active];while(p.hand.length<8){let k=state.playerDeck.find(x=>C[x]);state.playerDeck.splice(state.playerDeck.indexOf(k),1);p.hand.push(k)}recompute();render()})()""");await sp.wait_for_timeout(300)
+    ok(await sp.evaluate("(()=>{let pp=$('pawnPanel'),r=pp.getBoundingClientRect(),d=document.querySelector('.deckArt[data-slot=plDeck] image').getBoundingClientRect();return !pp.hidden&&r.left<d.right&&r.right>d.left&&r.top<d.bottom&&r.bottom>d.top})()"),'hand limit note sits on top of the Player deck');await sp.close()
     await pg.evaluate("window.soundLog=[];let st=state.status;state.status='won';queueFx([{kind:'end',text:'x'}]);nextFx();state.status='lost';queueFx([{kind:'end',text:'x'}]);nextFx();state.status=st")
     ok(await pg.evaluate("window.soundLog.includes('win')&&window.soundLog.includes('lose')"),'win and lose jingles')
     await pg.evaluate("$('volume').value='30';$('volume').dispatchEvent(new Event('input'))")

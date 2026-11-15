@@ -1,4 +1,6 @@
 ## Latest
+- The green "End actions and draw cards" / "Infect next city" button by the pawn is gone when drawing is the only thing left (the glowing deck does that job). Undo stays by the pawn.
+- The "Too many cards" hand-limit note now sits on top of the Player deck and discard pile.
 - Fixed: the Player deck now reliably lights up as soon as you can draw (it sometimes stayed dark after the last action's animation).
 - Safari: the little click when treating a cube no longer creates a second sound engine that was never shut down. That leftover engine is the likely reason a reloaded page went silent until Safari was restarted.
 - Fixed: clicking the glowing Player or Infection deck now actually draws (the deck pictures were ignoring clicks).
