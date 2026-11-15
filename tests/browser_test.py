@@ -297,6 +297,8 @@ async def main():
     await sp.wait_for_function("document.getElementById('choiceDialog').open&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/^Play One More Day/.test(b.textContent))",timeout=10000)
     ok(await sp.evaluate("fxCurrent==null||fxCurrent.kind!=='handLimit'"),'hand limit alert does not block playing an Event card')
     await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/^Play/.test(b.textContent)).click()");await sp.wait_for_function("state.phase==='actions'",timeout=10000)
+    ok(await sp.evaluate("document.getElementById('phaseStatus').textContent.includes('Discarding')"),'One More Day with a hand still over the limit: status says Discarding')
+    await sp.evaluate("document.querySelector('#activeHand button.disc').click()");await sp.wait_for_function("fullNow().length===0&&!busy",timeout=10000);await sp.wait_for_timeout(300)
     ok(await sp.evaluate("state.actions===2&&document.getElementById('phaseStatus').textContent.includes('0 of 2')"),'One More Day after drawing: status shows 0 of 2 actions used')
     await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('dk',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       s.phase='actions';s.actions=0;mode='';sel={};state=s;recompute();render()})()""");await sp.wait_for_timeout(300)
@@ -318,7 +320,8 @@ async def main():
     await sp.evaluate("positionRing()");await sp.wait_for_timeout(700);await sp.evaluate("positionRing()")
     ok(await sp.evaluate("getComputedStyle($('ringEnd')).display==='none'"),'no green draw button by the pawn when drawing is the only thing left')
     await sp.evaluate("""(()=>{let p=state.players[state.active];while(p.hand.length<8){let k=state.playerDeck.find(x=>C[x]);state.playerDeck.splice(state.playerDeck.indexOf(k),1);p.hand.push(k)}recompute();render()})()""");await sp.wait_for_timeout(300)
-    ok(await sp.evaluate("(()=>{let pp=$('pawnPanel'),r=pp.getBoundingClientRect(),d=document.querySelector('.deckArt[data-slot=plDeck] image').getBoundingClientRect();return !pp.hidden&&r.left<d.right&&r.right>d.left&&r.top<d.bottom&&r.bottom>d.top})()"),'hand limit note sits on top of the Player deck');await sp.close()
+    ok(await sp.evaluate("(()=>{let pp=$('pawnPanel'),r=pp.getBoundingClientRect(),d=document.querySelector('.deckArt[data-slot=plDeck] image').getBoundingClientRect();return !pp.hidden&&r.left<d.right&&r.right>d.left&&r.top<d.bottom&&r.bottom>d.top})()"),'hand limit note sits on top of the Player deck')
+    ok(await sp.evaluate("document.getElementById('phaseStatus').textContent.includes('Discarding')&&document.getElementById('phaseStatus').textContent.includes('0 of 1')"),'status card: Discarding 0 of 1 when over the hand limit');await sp.close()
     await pg.evaluate("window.soundLog=[];let st=state.status;state.status='won';queueFx([{kind:'end',text:'x'}]);nextFx();state.status='lost';queueFx([{kind:'end',text:'x'}]);nextFx();state.status=st")
     ok(await pg.evaluate("window.soundLog.includes('win')&&window.soundLog.includes('lose')"),'win and lose jingles')
     await pg.evaluate("$('volume').value='30';$('volume').dispatchEvent(new Event('input'))")

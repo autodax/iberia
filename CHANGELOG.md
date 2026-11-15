@@ -1,4 +1,5 @@
 ## Latest
+- Status card shows "Discarding" with progress (0 of 2, 1 of 2 …) while a hand is over the limit.
 - Purification: the whole region is clickable again, and the clickable strip along each railroad is wider (36 instead of 28), so clicks near a track still place the track.
 - Status card switches to "Drawing cards" as soon as your actions are used up (and back to "Actions" if you Undo).
 - Status card wording shortened: "Actions · 2 of 4", "Drawing cards · 2 cards", "Infecting · 1 of 3", "Patients moving · To hospitals", "Epidemic! · Rate rises".

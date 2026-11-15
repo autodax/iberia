@@ -600,7 +600,7 @@ if(bmOn){let cc=$('cubeCounts');cc.replaceChildren();for(let k of CORDER){let t=
 function handOrder(hand){let cnt={};for(let k of hand)if(C[k])cnt[C[k].color]=(cnt[C[k].color]||0)+1;let rank=k=>C[k]?[0,CORDER.indexOf(C[k].color),FOUNDED[k]??0,0]:[1,0,0,0];return hand.slice().sort((a,b)=>{let x=rank(a),y=rank(b);for(let i=0;i<4;i++)if(x[i]!==y[i])return x[i]-y[i];return String(a)<String(b)?-1:1})}
 
 // what is happening right now, shown at the top of the active player's box (never repeats the role name)
-let lastStatus=null;
+let lastStatus=null,discardMemo=null;   // discardMemo: how many cards the player had to discard when they went over the hand limit
 function statusInfo(){
  if(state.status!=='playing'||state.phase==='setup'||state.phase==='ended')return null;
  let f=fxCurrent,k=f&&f.kind;
@@ -609,6 +609,11 @@ function statusInfo(){
  if(k==='epidemic')return {c:'e',t:'Epidemic!',d:'Rate rises'};
  if(k==='infection'||k==='outbreak'||k==='overrun'||k==='cubeIn'){let n=state.infectionDrawn,tot=state.infectionDrawn+state.infectionRemaining;return {c:'r',t:'Infecting',d:n+' of '+tot,n,tot}}
  if(holdActive!=null)return lastStatus;
+ {let fh=state.status==='playing'&&!['epidemic','setup','ended'].includes(state.phase)?fullNow():[];
+  if(fh.length){let who=fh.includes(state.active)?state.active:fh[0],q=state.players[who],over=q.hand.length-(drawHide.get(who)?drawHide.get(who).size:0)-handLimit(q);
+   if(!discardMemo||discardMemo.who!==who||over>discardMemo.need)discardMemo={who,need:over};let tot=discardMemo.need,n=tot-over;
+   return {c:'e',t:who===state.active?'Discarding':plabel(who)+' discarding',d:n+' of '+tot,n,tot}}
+  discardMemo=null}
  if(state.phase==='actions'&&state.actions===0&&!holdActive){let tt=state.players[state.active].role==='time_traveler';return tt||state.noRedraw?{c:'r',t:'Infecting',d:'Next'}:{c:'b',t:'Drawing cards',d:'2 cards'}}   // actions used up: next is the draw (Undo brings 'Actions' back)
  if(state.phase==='actions'){let tot=Math.max(state.actionsTotal||4,state.actions);return {c:'g',t:'Actions',d:(tot-state.actions)+' of '+tot,n:tot-state.actions,tot}}
  if(state.phase==='infection'){let n=state.infectionDrawn,tot=n+state.infectionRemaining;return {c:'r',t:'Infecting',d:n+' of '+tot,n,tot}}
