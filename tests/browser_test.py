@@ -301,11 +301,11 @@ async def main():
     await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('dk',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       s.phase='actions';s.actions=0;mode='';sel={};state=s;recompute();render()})()""");await sp.wait_for_timeout(300)
     ok(await sp.evaluate("deckCue()==='plDeck'&&document.querySelectorAll('.deckRing').length===1"),'deck glow: the Player deck glows when it is time to draw')
-    await sp.evaluate("[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).dispatchEvent(new MouseEvent('click',{bubbles:true}))")
+    _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.phase==='infection'",timeout=10000)
     await sp.wait_for_function("deckCue()==='infDeck'",timeout=20000)
     r0=await sp.evaluate("state.infectionRemaining")
-    await sp.evaluate("[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).dispatchEvent(new MouseEvent('click',{bubbles:true}))")
+    _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.infectionRemaining<"+str(r0),timeout=10000)
     ok(True,'deck glow: clicking the glowing decks draws Player cards, then infects a city');await sp.close()
     await pg.evaluate("window.soundLog=[];let st=state.status;state.status='won';queueFx([{kind:'end',text:'x'}]);nextFx();state.status='lost';queueFx([{kind:'end',text:'x'}]);nextFx();state.status=st")

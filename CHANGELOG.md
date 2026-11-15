@@ -1,4 +1,5 @@
 ## Latest
+- Fixed: clicking the glowing Player or Infection deck now actually draws (the deck pictures were ignoring clicks).
 - The deck you need next glows with a pulsing gold outline: the Player deck when your actions are used up, the Infection deck during the infection step. You can click the deck itself to draw (same as the Continue button).
 - Hand limit: the "over the hand limit, discard N cards" alert no longer blocks your hand. Clicking an Event (to play it) or a card (to discard it) closes the alert and carries on.
 - One More Day: the status card now counts the extra actions correctly (for example "0 of 2 used" when played after drawing).

@@ -750,7 +750,7 @@ function deckClick(slot){if(!deckReady())return;let ph=state.phase;
  else if(slot==='plDeck'&&ph==='actions'&&!state.noRedraw&&state.players[state.active].role!=='time_traveler')$('nextPhase').click()}
 function drawDecks(T){let cue=deckCue();
  let put=(slot,href,n,label,dim)=>{let [x,y,w,h]=DECK_SLOTS[slot];if(!href||!n)return;let g=svg('g',{class:'deckArt'+(cue===slot?' deckGlow':'')},T);
-  if(slot==='infDeck'||slot==='plDeck'){g.style.cursor=deckReady()?'pointer':'';g.addEventListener('click',()=>deckClick(slot))}
+  if(slot==='infDeck'||slot==='plDeck'){g.style.cursor=deckReady()?'pointer':'';g.style.pointerEvents='all';g.addEventListener('click',()=>deckClick(slot))}
   if(cue===slot)svg('rect',{x:x-5,y:y-5,width:w+10,height:h+10,rx:14,fill:'none',stroke:'#ffd93a','stroke-width':6,class:'deckRing','pointer-events':'none'},g);svg('title',{},g).textContent=label+': '+n;
   svg('image',{href,x,y,width:w,height:h,preserveAspectRatio:'xMidYMid slice','clip-path':'inset(0 round 10px)',...(dim?{filter:'url(#'+dim+')'}:{})},g);
   let bw=14+9.5*String(n).length;svg('rect',{x:x+w-bw-6,y:y+h-28,width:bw,height:22,rx:11,fill:'#f3e6c8',stroke:'#6b5a3a','stroke-width':1.1},g);let t=svg('text',{x:x+w-6-bw/2,y:y+h-12,'text-anchor':'middle','font-size':15.5,'font-weight':700,'font-family':'system-ui, sans-serif',fill:'#222',stroke:'none','stroke-width':0,style:'stroke:none;fill:#222;font:700 15.5px system-ui,sans-serif'},g);t.textContent=n};
