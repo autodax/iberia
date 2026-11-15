@@ -609,6 +609,7 @@ function statusInfo(){
  if(k==='epidemic')return {c:'e',t:'Epidemic!',d:'Rate rises'};
  if(k==='infection'||k==='outbreak'||k==='overrun'||k==='cubeIn'){let n=state.infectionDrawn,tot=state.infectionDrawn+state.infectionRemaining;return {c:'r',t:'Infecting',d:n+' of '+tot,n,tot}}
  if(holdActive!=null)return lastStatus;
+ if(state.phase==='actions'&&state.actions===0&&!holdActive){let tt=state.players[state.active].role==='time_traveler';return tt||state.noRedraw?{c:'r',t:'Infecting',d:'Next'}:{c:'b',t:'Drawing cards',d:'2 cards'}}   // actions used up: next is the draw (Undo brings 'Actions' back)
  if(state.phase==='actions'){let tot=Math.max(state.actionsTotal||4,state.actions);return {c:'g',t:'Actions',d:(tot-state.actions)+' of '+tot,n:tot-state.actions,tot}}
  if(state.phase==='infection'){let n=state.infectionDrawn,tot=n+state.infectionRemaining;return {c:'r',t:'Infecting',d:n+' of '+tot,n,tot}}
  if(state.phase==='epidemic')return {c:'e',t:'Epidemic!',d:'Rate rises'};

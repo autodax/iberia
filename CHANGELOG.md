@@ -1,4 +1,5 @@
 ## Latest
+- Status card switches to "Drawing cards" as soon as your actions are used up (and back to "Actions" if you Undo).
 - Status card wording shortened: "Actions · 2 of 4", "Drawing cards · 2 cards", "Infecting · 1 of 3", "Patients moving · To hospitals", "Epidemic! · Rate rises".
 - The green "End actions and draw cards" / "Infect next city" button by the pawn is gone when drawing is the only thing left (the glowing deck does that job). Undo stays by the pawn.
 - The "Too many cards" hand-limit note now sits on top of the Player deck and discard pile.

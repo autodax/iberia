@@ -314,6 +314,7 @@ async def main():
     except Exception: pass
     await sp.wait_for_timeout(900)
     ok(await sp.evaluate("deckCue()==='plDeck'&&!!document.querySelector('.deckArt[data-slot=plDeck] .deckRing')"),'deck glow: the Player deck lights up right after the last action')
+    ok(await sp.evaluate("document.getElementById('phaseStatus').textContent.includes('Drawing cards')"),'status card: says Drawing cards once the actions are used up')
     await sp.evaluate("positionRing()");await sp.wait_for_timeout(700);await sp.evaluate("positionRing()")
     ok(await sp.evaluate("getComputedStyle($('ringEnd')).display==='none'"),'no green draw button by the pawn when drawing is the only thing left')
     await sp.evaluate("""(()=>{let p=state.players[state.active];while(p.hand.length<8){let k=state.playerDeck.find(x=>C[x]);state.playerDeck.splice(state.playerDeck.indexOf(k),1);p.hand.push(k)}recompute();render()})()""");await sp.wait_for_timeout(300)
