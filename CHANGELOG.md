@@ -1,4 +1,6 @@
 ## Latest
+- Purification: only a small spot in the middle of each region is clickable, so it no longer gets in the way of placing railroad tracks.
+- Choosing a region (Purify Water and similar): clicking anywhere on the map outside the shaded regions now cancels, no Cancel button needed.
 - Status card background is now the same cream as the cube counters; the active player's box is a few shades darker so the card stands out.
 - Colors now show in the order red, blue, black, yellow: cube counters, research row, the city list, and the cards in each hand (same-color cards stay together).
 - "Pick historical diseases at random" now uses a fair shuffle (the old method slightly favored some diseases).
