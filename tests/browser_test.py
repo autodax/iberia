@@ -289,7 +289,15 @@ async def main():
     await sp.wait_for_function("document.getElementById('choiceDialog').open&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/^Take /.test(b.textContent))",timeout=10000)
     ok(await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].some(b=>b.textContent==='Go alone')"),'sailor: clicking a port asks whether to take a passenger')
     await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/^Take /.test(b.textContent)).click()");await sp.wait_for_function("state.players.every(q=>q.city===window.__to)",timeout=10000)
-    ok(await sp.evaluate("state.players.every(q=>q.city===window.__to)&&state.actions===3"),'sailor: passenger sails along for one action');await sp.close()
+    ok(await sp.evaluate("state.players.every(q=>q.city===window.__to)&&state.actions===3"),'sailor: passenger sails along for one action')
+    await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('om',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
+      let p=s.players[s.active];let ev='one_more_day',at=s.playerDeck.indexOf(ev);if(at>=0){s.playerDeck.splice(at,1);p.hand.push(ev)}while(p.hand.length<9){let k=s.playerDeck.find(x=>C[x]);s.playerDeck.splice(s.playerDeck.indexOf(k),1);p.hand.push(k)}
+      s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;mode='';sel={};state=s;recompute();render();queueFx([{kind:'handLimit',seat:s.active,count:9,limit:7}])})()""");await sp.wait_for_timeout(400)
+    await sp.evaluate("[...document.querySelectorAll('#activeHand button.card.event')][0].click()")
+    await sp.wait_for_function("document.getElementById('choiceDialog').open&&[...document.querySelectorAll('#choiceOptions button')].some(b=>/^Play One More Day/.test(b.textContent))",timeout=10000)
+    ok(await sp.evaluate("fxCurrent==null||fxCurrent.kind!=='handLimit'"),'hand limit alert does not block playing an Event card')
+    await sp.evaluate("[...document.querySelectorAll('#choiceOptions button')].find(b=>/^Play/.test(b.textContent)).click()");await sp.wait_for_function("state.phase==='actions'",timeout=10000)
+    ok(await sp.evaluate("state.actions===2&&document.getElementById('phaseStatus').textContent.includes('0 of 2 used')"),'One More Day after drawing: status shows 0 of 2 actions used');await sp.close()
     await pg.evaluate("window.soundLog=[];let st=state.status;state.status='won';queueFx([{kind:'end',text:'x'}]);nextFx();state.status='lost';queueFx([{kind:'end',text:'x'}]);nextFx();state.status=st")
     ok(await pg.evaluate("window.soundLog.includes('win')&&window.soundLog.includes('lose')"),'win and lose jingles')
     await pg.evaluate("$('volume').value='30';$('volume').dispatchEvent(new Event('input'))")
