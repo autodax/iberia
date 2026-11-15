@@ -1,4 +1,5 @@
 ## Latest
+- The deck you need next glows with a pulsing gold outline: the Player deck when your actions are used up, the Infection deck during the infection step. You can click the deck itself to draw (same as the Continue button).
 - Hand limit: the "over the hand limit, discard N cards" alert no longer blocks your hand. Clicking an Event (to play it) or a card (to discard it) closes the alert and carries on.
 - One More Day: the status card now counts the extra actions correctly (for example "0 of 2 used" when played after drawing).
 - Hospital overrun from an Infection card or Epidemic: you now see the card, the cube arriving and the "Hospital overrun" alert first, and only then get asked where the patients go. The patients then slide out.
