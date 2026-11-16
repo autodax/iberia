@@ -941,7 +941,7 @@ function drawChallengeFields(box,opts,change,heading){box.replaceChildren();el('
  el('div',{className:'chSub',textContent:'Historical diseases (each one you choose behaves differently)'},box);let row=el('div',{className:'chList'},box);
  for(let k of COLORS){let it=el('div',{className:'chItem'},row),li=el('label',{className:'check'},it);el('div',{className:'chDesc',textContent:HIST_TEXT[k].split(' — ').slice(1).join(' — ').replace(/^./,m=>m.toUpperCase())},it);let c=el('input',{type:'checkbox',checked:(opts.hist||[]).includes(k)},li);li.append(DISEASES[k]);c.onchange=()=>{opts.hist=COLORS.filter(x=>x===k?c.checked:(opts.hist||[]).includes(x));change()}}
  let rb=el('button',{type:'button',textContent:'Pick historical diseases at random',className:'chRandom'},box);rb.onclick=()=>{let n=1+Math.floor(Math.random()*4),pool=shuffled(COLORS).slice(0,n);opts.hist=COLORS.filter(k=>pool.includes(k));change();drawChallengeFields(box,opts,change,heading)}}
-function drawRoleFields(){drawLeaveOut();drawChallengeFields($('challengeBox'),chLocal,()=>{});let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++){let w=el('div',{className:'roleSeat'},box);field('Role '+(i+1),'role'+i,Object.entries(ROLES).filter(([k])=>roleList().includes(k)||k===roleChoice[i]),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},w);el('div',{className:'roleText',textContent:ROLE_TEXT[roleChoice[i]]||''},w)}}
+function drawRoleFields(){drawLeaveOut();drawChallengeFields($('challengeBox'),chLocal,()=>{});let n=+$('playerCount').value,box=$('roleFields');box.replaceChildren();for(let i=0;i<n;i++){let w=el('div',{className:'roleSeat roleBox'},box),top=el('div',{className:'roleTop'},w);el('span',{className:'roleWho',textContent:'Player '+(i+1)},top);pawnIcon(roleChoice[i],top,12);el('b',{textContent:roleName(roleChoice[i])},top);let ch=el('button',{type:'button',className:'roleChange',textContent:'Change ▾'},top);ch.onclick=()=>{w.classList.toggle('picking');ch.textContent=w.classList.contains('picking')?'Done ▴':'Change ▾'};field('Role for player '+(i+1),'role'+i,Object.entries(ROLES).filter(([k])=>roleList().includes(k)||k===roleChoice[i]),roleChoice[i],v=>{let j=roleChoice.indexOf(v);if(j>=0&&j!==i)roleChoice[j]=roleChoice[i];roleChoice[i]=v;drawRoleFields()},w);el('div',{className:'roleText',textContent:ROLE_TEXT[roleChoice[i]]||''},w)}}
 function drawLeaveOut(){let box=$('leaveOut');if(!box)return;box.replaceChildren();let lo=leftOutRoles();el('summary',{textContent:'Leave out of random picks'+(lo.length?' ('+lo.length+')':'')},box);let row=el('div',{className:'chRow'},box);for(let k of roleList()){let li=el('label',{className:'check',title:ROLE_TEXT[k]||''},row),c=el('input',{type:'checkbox',checked:lo.includes(k)},li);li.append(ROLES[k]);c.onchange=()=>{let cur=leftOutRoles().filter(x=>x!==k);if(c.checked)cur.push(k);setLeftOut(cur);drawLeaveOut()}}el('div',{className:'chSub',textContent:'You can still pick a left-out role by hand. Ignored if fewer than 5 roles would remain.'},box)}
 $('playerCount').onchange=drawRoleFields;
 for(let id of ['playerCount','difficulty','fxSpeed'])buttonize($(id));
@@ -1007,20 +1007,20 @@ function showOnlineMsg(t,bad){let m=$('onMsg');m.textContent=t||'';m.className='
 function roomLink(){let r=relayUrl(),extra=r&&r!==builtInRelay()?'&relay='+encodeURIComponent(r):'';return location.origin+location.pathname+'?room='+Net.code+extra}
 function drawOnline(){
   let L=Net.lobby,active=Net.active;
-  $('onlineStart').hidden=active;$('onlineRoom').hidden=!active;
+  $('onlineStart').hidden=active;$('onlineRoom').hidden=!active;$('onSeatCount').replaceChildren();
   $('newButton').textContent=active?'Room '+Net.code:'New';
   $('newButton').classList.toggle('live',active&&Net.status==='connected');
-  if(!active){let sv=Net.savedHost();$('onResume').hidden=!sv;if(sv)$('onResumeText').textContent='You were hosting room '+sv.code+(sv.phase==='playing'?' with a game in progress':'')+'. Resume it and your guests can rejoin with the same code.';return}
+  if(!active){let sv=Net.savedHost();$('onResume').hidden=!sv;if(sv)$('onResumeText').textContent='You were hosting room '+sv.code+(sv.phase==='playing'?' with a game in progress':'')+'. Resume it and your guests can rejoin with the same code.';drawWizard();return}
   $('onStatus').textContent=Net.status==='connecting'?'Connecting…':Net.status==='reconnecting'?'Connection lost. Trying to reconnect…':Net.status==='closed'?(Net.error||'Disconnected.'):(Net.isHost?'You are the host. Keep this page open while you play.':'Connected to the host.');
   $('onStatus').className='detail'+(Net.status==='closed'||Net.status==='reconnecting'?' error':'');
   $('onCodeBig').textContent=Net.code;$('onShare').hidden=!Net.isHost;
-  if(!L)return;
+  if(!L){drawWizard();return}
   let playing=L.phase==='playing',box=$('onSeats');box.replaceChildren();
   // settings: host, before the game starts
   let sb=$('onSettings');sb.replaceChildren();sb.hidden=!(Net.isHost&&!playing);
   if(!sb.hidden){
-    let row=el('div',{className:'seatRow'},sb);
-    let l1=el('label',{textContent:'Players'},row),s1=el('select',{},l1);for(let n=2;n<=5;n++)el('option',{value:n,textContent:n,selected:n===L.settings.players},s1);s1.onchange=()=>Net.setSettings({players:+s1.value});
+    let row=el('div',{className:'seatRow'},sb),row1=el('div',{className:'seatRow'},$('onSeatCount'));
+    let l1=el('label',{textContent:'Number of players'},row1),s1=el('select',{},l1);for(let n=2;n<=5;n++)el('option',{value:n,textContent:n,selected:n===L.settings.players},s1);s1.onchange=()=>Net.setSettings({players:+s1.value});
     let l2=el('label',{textContent:'Epidemics'},row),s2=el('select',{},l2);for(let [v,t] of [[4,'4 · Introductory'],[5,'5 · Standard'],[6,'6 · Heroic']])el('option',{value:v,textContent:t,selected:v===L.settings.difficulty},s2);s2.onchange=()=>Net.setSettings({difficulty:+s2.value});
     let cbox=el('div',{className:'challengeBox'},sb),co={influx:!!(L.settings.challenges&&L.settings.challenges.influx),hist:(L.settings.challenges&&L.settings.challenges.hist||[]).slice()};drawChallengeFields(cbox,co,()=>Net.setSettings({challenges:{influx:co.influx,hist:co.hist.slice()}}),'Challenges (optional)');
   }
@@ -1051,6 +1051,7 @@ function drawOnline(){
   $('onStartGame').hidden=!(Net.isHost&&!playing);$('onBack').hidden=!(Net.isHost&&playing);
   $('onWait').hidden=!(!Net.isHost&&!playing);
   $('onUnclaimed').hidden=!(Net.isHost&&!playing&&L.seats.some(o=>o==null));
+  drawWizard();
 }
 Net.onChange(()=>{
   let L=Net.lobby;
@@ -1080,9 +1081,46 @@ Net.onChange(()=>{
   if(seatKey!==onlinePrev.seats){onlinePrev.seats=seatKey;if(Net.active&&phase==='playing'){recompute();render()}}
   drawOnline();
 });
-let gameMode='local';function setMode(m){gameMode=m;for(let [id,k] of [['modeLocal','local'],['modeOnline','online']])$(id).closest('label').classList.toggle('on',k===m);$('modeLocal').checked=m==='local';$('modeOnline').checked=m==='online';$('localNew').hidden=m!=='local';$('onlinePane').hidden=m!=='online'}
-$('modeLocal').onchange=()=>setMode('local');$('modeOnline').onchange=()=>setMode('online');
-$('newButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;loadRelayBox();drawOnline();showOnlineMsg('');drawRoleFields();setMode(Net.active?'online':gameMode);showDialog('onlineDialog')};
+/* ---------- New game: a step-by-step wizard (numbered sections, like the start screen) ---------- */
+let gameMode='local';   // kept for older code paths: 'local' or 'online'
+let wiz={path:null,step:'how',joinedOnce:false};
+const WSTEPS={local:['how','players','roles','diff'],host:['how','players','roles','diff'],join:['how','players','roles'],restore:['how','players']};
+const WPATH={local:'This device only',host:'Host an online game',join:'Join an online game',restore:'Save or restore a game'};
+function setMode(m){gameMode=m;if(m==='online'&&!['host','join'].includes(wiz.path)){wiz.path=Net.active&&!Net.isHost?'join':'host';wiz.step='players'}if(m==='local'&&wiz.path!=='local'){wiz.path='local';wiz.step='players'}drawWizard()}
+function wizGo(step){wiz.step=step;drawWizard();let s=document.querySelector('#wiz .wsec[data-step="'+step+'"]');if(s)s.scrollIntoView({block:'nearest',behavior:'smooth'})}
+// a role name in a summary: click (or hover) to read what the role does
+function roleTag(role,parent){let t=el('button',{type:'button',className:'roleTag'},parent);pawnIcon(role,t,10);t.append(roleName(role));t.title=ROLE_TEXT[role]||'';t.onclick=e=>{e.stopPropagation();let sec=t.closest('.wsec'),pop=sec&&sec.querySelector('.rolePop');if(!pop)return;if(pop.dataset.role===role&&!pop.hidden){pop.hidden=true;return}pop.dataset.role=role;pop.replaceChildren();el('b',{textContent:roleName(role)+'. '},pop);pop.append(ROLE_TEXT[role]||'');pop.hidden=false};return t}
+function wizSummary(step,box){let L=Net.lobby,path=wiz.path;
+ if(step==='how'){box.textContent=WPATH[path]||'';return}
+ if(step==='players'){if(path==='local')box.textContent=$('playerCount').value+' players';else if(path==='restore')box.textContent='';else if(Net.active&&L)box.textContent='Room '+Net.code+' · '+L.people.map(p=>p.name).join(', ');else box.textContent='';return}
+ if(step==='roles'){let roles=path==='local'?roleChoice.slice(0,+$('playerCount').value):(L?(L.phase==='playing'?state.players.map(p=>p.role):L.settings.roles.slice(0,L.settings.players)):[]);box.replaceChildren();roles.forEach((r,i)=>{if(i)box.append(' ');roleTag(r,box)});return}
+ if(step==='diff'){let d=path==='local'?+$('difficulty').value:(L?L.settings.difficulty:5),c=path==='local'?chLocal:(L&&L.settings.challenges)||{},names=[];if(c.influx)names.push('Influx of Patients');for(let k of c.hist||[])names.push({black:'Malaria',yellow:'Yellow fever',red:'Typhus',blue:'Cholera'}[k]||k);box.textContent=({4:'Introductory',5:'Standard',6:'Heroic'}[d]||'')+' · '+d+' epidemics'+(names.length?' · '+names.join(', '):' · no challenges')}}
+function drawWizard(){let W=$('wiz');if(!W)return;
+ if(Net.active){let p=Net.isHost?'host':'join';if(wiz.path!==p){wiz.path=p;wiz.step='players'}if(wiz.step==='how')wiz.step='players';if(p==='join'&&!wiz.joinedOnce){wiz.joinedOnce=true;wiz.step='roles'}}else wiz.joinedOnce=false;
+ let path=wiz.path,steps=path?WSTEPS[path]:['how'],cur=Math.max(0,steps.indexOf(wiz.step)),L=Net.lobby,playing=!!(L&&L.phase==='playing');
+ if(path&&!steps.includes(wiz.step))wiz.step=steps[cur=0];
+ for(let b of W.querySelectorAll('.wpath'))b.classList.toggle('on',b.dataset.path===path);
+ for(let s of W.querySelectorAll('.wsec')){let st=s.dataset.step,i=steps.indexOf(st);if(i<0){s.hidden=true;continue}s.hidden=false;
+  s.classList.toggle('done',i<cur);s.classList.toggle('now',i===cur);s.classList.toggle('later',i>cur);s.querySelector('.wn').textContent=i+1;
+  let t=s.querySelector('.wt');if(st==='how')t.textContent=i<cur?'How to play':'How do you want to play?';if(st==='players')t.textContent={local:'Players',host:'Invite your players',join:'Join the game',restore:'Save or restore'}[path]||'Players';if(st==='roles')t.textContent=path==='join'?'Your seat':path==='host'?'Seats and roles':'Roles';
+  let sum=s.querySelector('.wsum');sum.replaceChildren();if(i<cur)wizSummary(st,sum);
+  let pop=s.querySelector('.rolePop');if(!pop){pop=el('div',{className:'rolePop',hidden:true},s.querySelector('.wh').parentNode);s.querySelector('.wh').after(pop)}if(i>=cur)pop.hidden=true;
+  // the host cannot go back to "how to play" while the room is open (leave the room for that)
+  s.querySelector('.wchg').hidden=!(i<cur)||(st==='how'&&Net.active);
+  s.querySelector('.wb').hidden=i!==cur}
+ for(let e of W.querySelectorAll('.wpart'))e.hidden=!path||!e.dataset.path.split(' ').includes(path);
+ // the final button: local start, or the host's start for everyone
+ let last=steps[steps.length-1]===wiz.step;
+ $('newGame').textContent=steps.length+1+'. Start game';$('newGame').disabled=!(path==='local'&&last);
+ $('onStartGame').textContent=steps.length+1+'. Start game for everyone';$('onStartGame').hidden=!(path==='host'&&Net.active&&!playing);$('onStartGame').disabled=!last;
+ W.querySelector('.inRoomBtns').hidden=!Net.active;
+ syncChips()}
+document.querySelectorAll('#wiz .wpath').forEach(b=>b.onclick=()=>{let p=b.dataset.path;wiz.path=p;wiz.step='players';if(p==='local'||p==='host'||p==='join')gameMode=p==='local'?'local':'online';try{localStorage.setItem('iberiaWizPath',p)}catch(e){}if(p==='local')drawRoleFields();drawWizard()});
+document.querySelectorAll('#wiz .wchg').forEach(b=>b.onclick=()=>wizGo(b.closest('.wsec').dataset.step));
+document.querySelectorAll('#wiz .wnext').forEach(b=>b.onclick=()=>{if(b.dataset.to==='roles'&&wiz.path==='local')drawRoleFields();wizGo(b.dataset.to)});
+$('newButton').onclick=()=>{$('onName').value=localStorage.getItem(NAME_KEY)||$('onName').value;loadRelayBox();showOnlineMsg('');drawRoleFields();
+ if(!Net.active){let last=null;try{last=localStorage.getItem('iberiaWizPath')}catch(e){}if(last==='local'){wiz.path='local';wiz.step='diff'}else{wiz.path=null;wiz.step='how'}}
+ drawOnline();drawWizard();showDialog('onlineDialog')};
 function loadRelayBox(){try{$('onRelayUrl').value=localStorage.getItem('iberia-relay')||''}catch(e){}}
 $('onRelaySave').onclick=()=>{try{let v=$('onRelayUrl').value.trim();if(v&&!/^(https?|wss?):\/\/[^\s]+$/i.test(v)){showOnlineMsg('That does not look like a web address. It should start with https://',true);return}if(v)localStorage.setItem('iberia-relay',v);else localStorage.removeItem('iberia-relay');relayCache=null;showOnlineMsg(v?'Relay address saved. Press "Test my connection" to check it.':'Using the built-in relay setting.')}catch(e){showOnlineMsg('Could not save settings in this browser.',true)}};
 function describeConnectionTest(r){
@@ -1109,7 +1147,7 @@ $('onStartGame').onclick=()=>{let r=Net.start();if(!r.ok)showOnlineMsg(r.error,t
 $('onBack').onclick=async()=>{if(await ask('Take everyone back to the lobby to start a new game? The current game ends.')){let r=Net.backToLobby();if(!r.ok)showOnlineMsg(r.error,true)}};
 $('onLeave').onclick=async()=>{if(!await ask(Net.isHost?'Close this room for good? Everyone is disconnected and the room can NOT be resumed later. The board stays on this page as a one-screen game. (To pause instead, just close this window; you can use Resume hosting later.)':'Leave this room? The board stays on this page as a local game.'))return;Net.leave();$('onlineDialog').close();render();notice('You left the online room.')};
 {let r=/[?&]relay=([^&]+)/.exec(location.search);if(r){try{let v=decodeURIComponent(r[1]).trim();if(/^(https?|wss?):\/\/[^\s]+$/i.test(v))linkRelay=v}catch(e){}}
- let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';drawOnline();setMode('online');showDialog('onlineDialog')}},400)}}
+ let m=/[?&]room=([A-Za-z0-9]+)/.exec(location.search);if(m){$('onCode').value=m[1].toUpperCase();setTimeout(()=>{if(!Net.active){$('onName').value=localStorage.getItem(NAME_KEY)||'';wiz.path='join';wiz.step='players';drawOnline();drawWizard();showDialog('onlineDialog')}},400)}}
 
 recompute();render();loadRepoAssets();notice('Choose starting cities, then Begin game. Menu → New game sets players and roles.');
 

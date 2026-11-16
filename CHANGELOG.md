@@ -1,4 +1,6 @@
 ## Latest
+- The New game window is now a step-by-step wizard, like the start screen: 1 How to play (this device, host online, join online, or save/restore), 2 Players (or Invite your players, with the room code and who has joined), 3 Roles, 4 Difficulty and challenges, 5 Start. Finished steps fold into a one-line summary with a Change link.
+- Roles: each player's role sits in a box with its pawn and full ability; "Change" opens the list of roles. In the folded summary, click a role name to read its ability.
 - The heartbeat now plays each time the Infection deck lights up for the next Infection card, not only for the first.
 - The deck glow, the draw bell and the heartbeat now wait until all other sounds and animations (railroad tokens dropping, Epidemic cubes, cards sliding in, pawns moving) have finished, plus half a second.
 - Railwayman: hovering the optional second track now shows its ghost railroad, like the first one.

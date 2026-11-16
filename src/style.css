@@ -587,3 +587,42 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .deckRing{animation:deckRing 1.4s ease-in-out infinite}
 @keyframes deckRing{0%,100%{opacity:.35}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){.deckRing{animation:none;opacity:.85}}
+
+/* ---------- New game wizard: numbered sections like the start screen ---------- */
+#wiz{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.wsec{border:1px solid #d8c9a3;border-radius:10px;background:#f7eedb;padding:9px 12px}
+.wsec.now{background:#fffaf0;border-color:#e3b23c;box-shadow:0 0 0 2px #e3b23c55}
+.wsec.later{opacity:.5}
+.wh{display:flex;align-items:center;gap:10px}
+.wn{width:26px;height:26px;border-radius:50%;background:#2f4a36;color:#fff;display:grid;place-items:center;font-size:13.5px;flex:none}
+.wsec.done .wn{background:#3f6a4a;font-size:0}.wsec.done .wn::before{content:"✓";font-size:14px}
+.wtt{flex:1;min-width:0;display:flex;flex-direction:column}
+.wt{font-weight:700;font-size:16px;color:#2f2a1e}
+.wsum{font-size:13.5px;color:#6f6448;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.wsum:empty{display:none}
+.wchg{background:none!important;border:0!important;color:#3f6a4a!important;text-decoration:underline;font-size:13px!important;padding:2px 4px!important;width:auto!important;box-shadow:none!important;cursor:pointer;flex:none}
+.wb{margin-top:10px}
+.wb>.wpart>label,.wb .seatRow{margin-top:4px}
+.wpaths{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:560px){.wpaths{grid-template-columns:1fr}}
+.wpath{text-align:left!important;display:block;width:100%;padding:10px 12px!important;font-weight:700;font-size:15px;line-height:1.25;border-radius:9px!important;background:#f7eedb!important;border:1px solid #d8c9a3!important;color:#2f2a1e!important}
+.wpath small{display:block;font-weight:400;font-size:12.5px;color:#6f6448;margin-top:3px}
+.wpath:hover{background:#efe1bd!important}
+.wpath.on{background:#2f4a36!important;border-color:#2f4a36!important;color:#fff!important}.wpath.on small{color:#d9e6dc}
+.wnext{display:block;width:100%!important;margin-top:12px}
+.wstart{margin-top:4px}
+.wstart>button.primary{display:block;width:100%;font-size:16px;padding:11px}
+.wstart>button.primary:disabled{opacity:.45;cursor:default}
+.wHelp{margin-top:12px;font-size:14px}.wHelp>summary{cursor:pointer;color:#6f6448}
+/* role names in a summary: click to read the ability */
+.roleTag{display:inline-flex;align-items:center;gap:4px;background:none!important;border:0!important;border-bottom:1px dotted #6f6448!important;border-radius:0!important;padding:0 1px!important;font:inherit;font-size:13.5px!important;color:#4a4130!important;width:auto!important;box-shadow:none!important;cursor:help}
+.rolePop{background:#2f2a1e;color:#f7eedb;font-size:12.5px;line-height:1.4;border-radius:8px;padding:8px 10px;margin:8px 0 0 36px}
+/* one box per player: pawn, role name, ability; the full role list opens on "Change" */
+.roleBox{background:#fffaf0;border:1px solid #d8c9a3;border-radius:9px;padding:8px 10px;margin:0 0 8px}
+.roleTop{display:flex;align-items:center;gap:6px}
+.roleTop b{font-size:15px}
+.roleWho{font-size:12px;color:#6f6448;min-width:58px}
+.roleChange{margin-left:auto;width:auto!important;font-size:12.5px!important;padding:3px 9px!important}
+.roleBox .field{display:none}.roleBox.picking .field{display:block;margin-top:8px}
+.roleBox .field .label{display:none}
+.roleBox .roleText{font-size:12.5px;line-height:1.4;color:#4a4130;margin-top:4px}

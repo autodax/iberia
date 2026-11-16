@@ -56,13 +56,14 @@ async def main():
       await A.goto(f'http://localhost:{PORT}/index.html?layout=sidebar');await B.goto(f'http://localhost:{PORT}/index.html?layout=sidebar')
       await A.wait_for_timeout(400)
       # --- host a room
-      await A.click('#newButton');await A.click('.modeTabs label:nth-child(2)');await A.fill('#onName','Ana')
+      await A.click('#newButton');await A.click('.wpath[data-path=host]');await A.fill('#onName','Ana')
       await A.click('#onHost');await A.wait_for_selector('#choiceDialog[open]');await A.click('#choiceOptions button:first-child')
       await A.wait_for_function('Net.active&&Net.status==="connected"&&Net.code.length===5',timeout=8000)
       code=await A.evaluate('Net.code');ok(len(code)==5,'host gets a room code '+code)
-      ok(await A.is_visible('#onSeats .onSeat'),'host sees the seat list')
+      ok(await A.is_visible('#onCodeBig'),'host sees the room code in the invite step')
+      await A.click('#onlineRoom .wnext');ok(await A.is_visible('#onSeats .onSeat'),'host sees the seat list in the roles step')
       # --- guest joins with the code
-      await B.click('#newButton');await B.click('.modeTabs label:nth-child(2)');await B.fill('#onName','Ben');await B.fill('#onCode',code.lower());await B.click('#onJoin')
+      await B.click('#newButton');await B.click('.wpath[data-path=join]');await B.fill('#onName','Ben');await B.fill('#onCode',code.lower());await B.click('#onJoin')
       await B.wait_for_function('Net.active&&Net.status==="connected"',timeout=8000)
       ok(await B.evaluate('Net.lobby.people.length')==2,'guest joined and sees 2 people')
       await A.wait_for_function('Net.lobby.people.length===2')
@@ -75,7 +76,7 @@ async def main():
       ok(await A.evaluate('Net.mine(0)&&!Net.mine(1)'),'Ana (host) plays the unclaimed seat 1 and not Ben\'s')
       await A.screenshot(path='/tmp/online_lobby_host.png');await B.screenshot(path='/tmp/online_lobby_guest.png')
       # --- start
-      await A.click('#onStartGame')
+      await A.click('.wsec[data-step=roles] .wnext.wpart[data-path=host]');await A.click('#onStartGame')
       await B.wait_for_function('Net.lobby.phase==="playing"&&state.phase==="setup"',timeout=8000)
       ok(not await A.evaluate("document.getElementById('onlineDialog').open"),'lobby dialog closes on the host at start')
       ok(not await B.evaluate("document.getElementById('onlineDialog').open"),'lobby dialog closes on the guest at start')
@@ -112,7 +113,7 @@ async def main():
       await B.wait_for_function('state.actions===3',timeout=5000)
       ok(await A.evaluate('netSum()')==await B.evaluate('netSum()'),'host move shows on the guest and states match')
       # host ends actions and works through the draw and infection steps until it is Ben's turn
-      for _ in range(60):
+      for _ in range(150):
         if await A.evaluate('state.active')==1 and await A.evaluate('state.phase')=='actions':break
         txt=await A.evaluate('(()=>{let b=document.getElementById("nextPhase");return b.hidden||b.disabled?"":"go"})()')
         if txt=='go':
@@ -146,14 +147,14 @@ async def main():
       ok(await A.evaluate('Net.mine(1)'),'offline, every seat is yours again')
       # --- host a saved game as a new room
       env=await A.evaluate('JSON.stringify(envelope())');sumBefore=await A.evaluate('netSum()')
-      await A.click('#newButton');await A.click('.modeTabs label:nth-child(2)')
+      await A.click('#newButton');await A.evaluate("wiz.path='host';wiz.step='players';drawWizard()")
       await A.set_input_files('#onSaveFile',files=[{'name':'save.json','mimeType':'application/json','buffer':env.encode()}])
       await A.wait_for_selector('#choiceDialog[open]');await A.click('#choiceOptions button:first-child')
       await A.wait_for_function('Net.active&&Net.isHost&&Net.status==="connected"&&Net.lobby.phase==="playing"',timeout=8000)
       ok(await A.evaluate('netSum()')==sumBefore,'hosting a saved game keeps the saved position')
       code2=await A.evaluate('Net.code')
       C=await page('guest2');await C.goto(f'http://localhost:{PORT}/index.html?layout=sidebar')
-      await C.click('#newButton');await C.click('.modeTabs label:nth-child(2)');await C.fill('#onName','Cy');await C.fill('#onCode',code2.lower());await C.click('#onJoin')
+      await C.click('#newButton');await C.click('.wpath[data-path=join]');await C.fill('#onName','Cy');await C.fill('#onCode',code2.lower());await C.click('#onJoin')
       await C.wait_for_function('Net.active&&Net.status==="connected"',timeout=8000)
       await C.wait_for_function('Net.lobby.phase==="playing"&&state.players.length===2',timeout=8000)
       ok(await C.evaluate('netSum()')==sumBefore,'a guest joining the saved game sees the same position')

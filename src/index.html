@@ -40,66 +40,92 @@
 <h3>Help</h3><p><a id="guideLink" href="docs/Guide.pdf" target="_blank" rel="noopener" title="Open the rules summary (PDF) in a new window">Open the Guide (rules summary, PDF)</a></p>
 <p class="notice">Base game plus extra roles, 2–5 seats. Use the New button to start a game on this device or online with others.</p></dialog>
 <dialog id="onlineDialog"><button class="close">Close</button><h2>New game</h2>
-<div class="modeTabs" role="radiogroup" aria-label="Where to play"><label class="check"><input type="radio" name="gameMode" id="modeLocal" checked>This device only</label><label class="check"><input type="radio" name="gameMode" id="modeOnline">Play with others online</label></div>
-<div id="localNew"><p class="detail">Everyone plays from this browser, taking turns.</p><div class="seatRow"><label>Players<select id="playerCount"><option>2</option><option>3</option><option>4</option><option>5</option></select></label><label>Epidemics<select id="difficulty"><option value="4">Introductory (4 epidemic cards)</option><option value="5">Standard (5 epidemic cards)</option><option value="6">Heroic (6 epidemic cards)</option></select></label></div>
-<label>Shuffle seed (optional)<input id="seed" value="" placeholder="Random each game · type a seed to replay one" autocomplete="off"></label><label class="check"><input id="baseRoles" type="checkbox">Use only the rule book's 7 base roles</label><details id="leaveOut" class="leaveOut"></details><div id="roleFields" class="rolesGrid"></div><div id="challengeBox" class="challengeBox"></div><div class="dialogButtons"><button id="randomRoles">Random roles</button><button id="newGame" class="primary" style="width:auto">Start new game</button></div>
+<div id="wiz">
+<section class="wsec" data-step="how"><div class="wh"><b class="wn">1</b><div class="wtt"><span class="wt">How do you want to play?</span><span class="wsum"></span></div><button type="button" class="wchg">Change</button></div>
+<div class="wb"><div class="wpaths">
+<button type="button" class="wpath" data-path="local">This device only<small>Everyone takes turns at this screen.</small></button>
+<button type="button" class="wpath" data-path="host">Host an online game<small>You set it up and invite friends. They join from their own browser. No account needed.</small></button>
+<button type="button" class="wpath" data-path="join">Join an online game<small>Someone sent you a room code or invite link.</small></button>
+<button type="button" class="wpath" data-path="restore">Save or restore a game<small>Download this game as a file, or open a saved one.</small></button>
+</div></div></section>
+
+<section class="wsec" data-step="players"><div class="wh"><b class="wn">2</b><div class="wtt"><span class="wt">Players</span><span class="wsum"></span></div><button type="button" class="wchg">Change</button></div>
+<div class="wb">
+<div class="wpart" data-path="local"><div class="seatRow"><label>Number of players<select id="playerCount"><option>2</option><option>3</option><option>4</option><option>5</option></select></label></div><button type="button" class="primary wnext" data-to="roles">Next: roles</button></div>
+<div class="wpart" data-path="host join">
+<div class="preRoom" id="onlineStart">
+<label>Your name<input id="onName" maxlength="20" autocomplete="nickname" placeholder="Shown to the other players"></label>
+<div class="wpart" data-path="host"><div class="dialogButtons"><button id="onHost" class="primary" style="width:auto">Create the room</button><button id="onHostSaved" title="Pick a game file you saved earlier and host it as a new room">Host a saved game…</button></div><input id="onSaveFile" type="file" accept=".json,application/json" hidden>
+<div id="onResume" hidden><p id="onResumeText"></p><div class="dialogButtons"><button id="onResumeBtn">Resume hosting</button></div></div></div>
+<div class="wpart" data-path="join"><label>Room code<input id="onCode" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Five letters and numbers"></label><div class="dialogButtons"><button id="onJoin" class="primary" style="width:auto">Join</button></div></div>
 </div>
-<div id="onlinePane" hidden><div id="onlineStart">
-<p>One player hosts and shares a room code or link. Everyone else joins from their own browser. No account is needed. Moves are passed along by a small relay server, so it works on any network.</p>
+<div class="inRoom" id="onlineRoom" hidden>
+<p id="onStatus" class="detail"></p>
+<div class="onCodeRow"><div><div class="detail">Room code</div><div id="onCodeBig" class="onCodeBig"></div></div><div id="onShare" class="dialogButtons"><button id="onCopy">Copy invite link</button></div></div>
+<p class="detail wpart" data-path="host">Send the code or link. Your friends open this page, click <b>New</b>, choose <b>Join an online game</b>, and type their name and the code.</p>
+<h3>Who's here</h3><div id="onPeople"></div>
+<button type="button" class="primary wnext wpart" data-path="host" data-to="roles">Everyone's here: next, roles</button>
+<p class="detail wpart" data-path="join">You're in. Pick your seat in the next step while the host sets up the game.</p>
+</div>
+<p id="onMsg" class="detail" role="status"></p>
+<details class="wHelp"><summary>Help and connection problems</summary>
+<p class="detail">Moves are passed along by a small relay server, so online play works on any network.</p>
 <details id="onHow" class="onHelp"><summary>How to host, join and resume</summary>
 <h3>Start a new game (host)</h3>
-<ol><li>Type your name and click <b>Host a new game</b>. You get a room code and an invite link.</li>
-<li>Send the link or code to the others. They open this page, click <b>New</b>, choose <b>Play with others online</b>, type their name and the code, and click <b>Join</b>.</li>
-<li>In the lobby, choose the number of players and Epidemics. Give each seat a role (the role menu) and a person (the person menu). Players can also click <b>Take this seat</b>.</li>
+<ol><li>Type your name and click <b>Create the room</b>. You get a room code and an invite link.</li>
+<li>Send the link or code to the others. They open this page, click <b>New</b>, choose <b>Join an online game</b>, type their name and the code, and click <b>Join</b>.</li>
+<li>Click <b>Next</b> once everyone has joined. In <b>Seats and roles</b>, choose the number of players, give each seat a role and a person (players can also click <b>Take this seat</b>), then pick the Epidemics and any challenges.</li>
 <li>When every seat has a person, click <b>Start game</b>. Roles can only be set here, before the game starts.</li></ol>
 <h3>Join a game</h3>
 <p>Type your name and the room code (or just open the invite link), then click <b>Join</b>. Pick a seat if you have not been given one. If your connection drops, the page reconnects by itself and you keep your seat.</p>
 <h3>Resume a game that was interrupted</h3>
-<ol><li>The host opens this page <b>in the same browser on the same device</b> that was hosting, then clicks <b>New</b> and chooses <b>Play with others online</b>.</li>
-<li>Click <b>Resume hosting</b> (not Host a new game). The same room code comes back and the game continues where it stopped.</li>
+<ol><li>The host opens this page <b>in the same browser on the same device</b> that was hosting, then clicks <b>New</b> and chooses <b>Host an online game</b>.</li>
+<li>Click <b>Resume hosting</b> (not Create the room). The same room code comes back and the game continues where it stopped.</li>
 <li>Everyone else clicks <b>Join</b> with the same code or link. They get their seats back by name.</li></ol>
 <h3>Continue a saved game online (any browser or device)</h3>
 <ol><li>While you play (online or not), open <b>New</b> and click <b>Save Game</b> to download a game file. Keep it somewhere you can find it.</li>
-<li>Later, on any computer, open this page, click <b>New</b>, choose <b>Play with others online</b>, type your name and click <b>Host a saved game…</b>, then choose the file.</li>
+<li>Later, on any computer, open this page, click <b>New</b>, choose <b>Host an online game</b>, type your name and click <b>Host a saved game…</b>, then choose the file.</li>
 <li>You get a <b>new</b> room code and invite link, with the game exactly where it was saved. The saved seats are open: you take the first seat, and each guest joins with the code and clicks <b>Take this seat</b> on the seat they want. Seats nobody takes are played by you.</li>
 <li>Use this if the host's computer or browser changed, or if <b>Resume hosting</b> is not offered.</li></ol>
 <h3>Good to know</h3>
-<ul><li><b>Host a new game</b> always starts a fresh room and a fresh game. Use it only for a new game.</li>
+<ul><li><b>Create the room</b> always starts a fresh room and a fresh game. Use it only for a new game.</li>
 <li>Only the host's browser can resume, and it remembers one room at a time. Hosting a new room replaces the remembered one.</li>
 <li>Never open the same room as host in two windows or devices at once. They push each other out and the game keeps dropping.</li>
-<li>The host's page runs the game, so the host should keep it open and awake (no sleeping laptop or locked iPad).</li></ul></details>
-<label>Your name<input id="onName" maxlength="20" autocomplete="nickname" placeholder="Shown to the other players"></label>
-<div class="dialogButtons"><button id="onHost" class="primary" style="width:auto">Host a new game</button><button id="onHostSaved" title="Pick a game file you saved earlier and host it as a new room">Host a saved game…</button></div><input id="onSaveFile" type="file" accept=".json,application/json" hidden>
-<div id="onResume" hidden><p id="onResumeText"></p><div class="dialogButtons"><button id="onResumeBtn">Resume hosting</button></div></div>
-<h3>Join a game</h3>
-<label>Room code<input id="onCode" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Five letters and numbers"></label>
-<div class="dialogButtons"><button id="onJoin">Join</button></div>
-<h3>Having trouble connecting?</h3>
+<li>The host's page runs the game, so the host should keep it open and awake (no sleeping laptop or locked iPad).</li></ul></details><details class="onHelp"><summary>Leaving versus closing the window</summary>
+<ul><li><b>Closing the window, refreshing, or losing your connection</b> only pauses you. Guests can reconnect to their seat. The host can reopen this page and click <b>New</b> then <b>Resume hosting</b> to bring the same room and game back.</li>
+<li><b>Leave room as the host closes the room for good.</b> Everyone is disconnected and it cannot be resumed. The board stays on your page as a one-screen game.</li>
+<li><b>Leave room as a guest</b> gives up your connection. Join again with the code to come back, and click your seat or ask the host to give it back.</li>
+<li><b>Back to lobby</b> (host) ends the current game for everyone so you can start a new one.</li></ul></details><h3>Having trouble connecting?</h3>
 <div class="dialogButtons"><button id="onTest">Test my connection</button></div>
 <p id="onTestResult" class="detail" role="status"></p>
 <details id="onRelay"><summary>Relay server (advanced)</summary>
 <p class="detail">Online play goes through a small relay server so it works on any network. The address is built into this page. Only change it if you set up your own relay, and everyone in the game must use the same one. Leave it empty to use the built-in setting.</p>
 <label>Relay address<input id="onRelayUrl" autocomplete="off" spellcheck="false" placeholder="https://iberia-relay.yourname.workers.dev"></label>
-<div class="dialogButtons"><button id="onRelaySave">Save relay address</button></div></details>
+<div class="dialogButtons"><button id="onRelaySave">Save relay address</button></div></details></details>
 </div>
-<div id="onlineRoom" hidden>
-<p id="onStatus" class="detail"></p>
-<details class="onHelp"><summary>Leaving versus closing the window</summary>
-<ul><li><b>Closing the window, refreshing, or losing your connection</b> only pauses you. Guests can reconnect to their seat. The host can reopen this page and click <b>New</b> then <b>Resume hosting</b> to bring the same room and game back.</li>
-<li><b>Leave room as the host closes the room for good.</b> Everyone is disconnected and it cannot be resumed. The board stays on your page as a one-screen game.</li>
-<li><b>Leave room as a guest</b> gives up your connection. Join again with the code to come back, and click your seat or ask the host to give it back.</li>
-<li><b>Back to lobby</b> (host) ends the current game for everyone so you can start a new one.</li></ul></details>
-<div class="onCodeRow"><div><div class="detail">Room code</div><div id="onCodeBig" class="onCodeBig"></div></div><div id="onShare" class="dialogButtons"><button id="onCopy">Copy invite link</button></div></div>
-<div id="onSettings"></div>
-<h3>Seats</h3><div id="onSeats"></div>
-<p id="onUnclaimed" class="detail" hidden>Seats nobody takes are played by you, the host.</p>
-<h3>People in this room</h3><div id="onPeople"></div>
-<p id="onWait" class="detail" hidden>Waiting for the host to start the game. Pick a seat above if you want one.</p>
-<div class="dialogButtons"><button id="onStartGame" class="primary" style="width:auto" hidden>Start game</button><button id="onBack" hidden>Back to lobby</button><button id="onLeave">Leave room</button></div>
+<div class="wpart" data-path="restore"><label class="saveName">File name <input id="saveName" type="text" maxlength="60" placeholder="e.g. Iberia game with Sam" autocomplete="off"></label>
+<div class="dialogButtons"><button id="saveButton" title="Download the game as a file">Save Game</button><button id="loadButton" title="Open a saved game file">Restore Game</button><button id="resumeButton" title="The game saves itself in this browser after every move">Restore Last Game</button></div><p class="detail">Save Game downloads a file (usually into your Downloads folder). Restore Last Game reloads the automatic save kept inside this browser on this device, which is updated after every move; clearing the browser's site data erases it.</p><input id="loadFile" type="file" accept=".json" hidden></div>
+</div></section>
+
+<section class="wsec" data-step="roles"><div class="wh"><b class="wn">3</b><div class="wtt"><span class="wt">Roles</span><span class="wsum"></span></div><button type="button" class="wchg">Change</button></div>
+<div class="wb">
+<div class="wpart" data-path="local"><div id="roleFields" class="rolesGrid"></div><div class="dialogButtons"><button id="randomRoles">🎲 Random roles</button></div><label class="check"><input id="baseRoles" type="checkbox">Use only the rule book's 7 base roles</label><details id="leaveOut" class="leaveOut"></details><button type="button" class="primary wnext" data-to="diff">Next: difficulty</button></div>
+<div class="wpart" data-path="host join"><div id="onSeatCount"></div><div id="onSeats"></div><p id="onUnclaimed" class="detail" hidden>Seats nobody takes are played by you, the host.</p><p id="onWait" class="detail" hidden>Waiting for the host to start the game. Pick a seat above if you want one.</p><button type="button" class="primary wnext wpart" data-path="host" data-to="diff">Next: difficulty</button></div>
+</div></section>
+
+<section class="wsec" data-step="diff"><div class="wh"><b class="wn">4</b><div class="wtt"><span class="wt">Difficulty and challenges</span><span class="wsum"></span></div><button type="button" class="wchg">Change</button></div>
+<div class="wb">
+<div class="wpart" data-path="local"><div class="seatRow"><label>Epidemics<select id="difficulty"><option value="4">Introductory (4 epidemic cards)</option><option value="5">Standard (5 epidemic cards)</option><option value="6">Heroic (6 epidemic cards)</option></select></label></div><div id="challengeBox" class="challengeBox"></div>
+<details class="wHelp"><summary>Shuffle seed (advanced)</summary><label>Shuffle seed<input id="seed" value="" placeholder="Random each game · type a seed to replay one" autocomplete="off"></label></details></div>
+<div class="wpart" data-path="host"><div id="onSettings"></div></div>
+</div></section>
+
+<div class="wstart">
+<button id="newGame" class="primary wpart" data-path="local">5. Start game</button>
+<button id="onStartGame" class="primary" hidden>5. Start game for everyone</button>
+<div class="dialogButtons inRoomBtns" hidden><button id="onBack" hidden>Back to lobby</button><button id="onLeave">Leave room</button></div>
 </div>
-<p id="onMsg" class="detail" role="status"></p></div>
-<h3>Save and restore</h3><label class="saveName">File name <input id="saveName" type="text" maxlength="60" placeholder="e.g. Iberia game with Sam" autocomplete="off"></label>
-<div class="dialogButtons"><button id="saveButton" title="Download the game as a file">Save Game</button><button id="loadButton" title="Open a saved game file">Restore Game</button><button id="resumeButton" title="The game saves itself in this browser after every move">Restore Last Game</button></div><p class="detail">Save Game downloads a file (usually into your Downloads folder). Restore Last Game reloads the automatic save kept inside this browser on this device, which is updated after every move; clearing the browser's site data erases it.</p><input id="loadFile" type="file" accept=".json" hidden>
+</div>
 </dialog>
 <dialog id="eventDialog"><button class="close">Close</button><h2 id="eventTitle">Event</h2><div id="eventForm"></div><p id="eventConsent" class="detail" hidden></p><button id="eventConfirm">Play Event</button></dialog>
 <dialog id="choiceDialog"><h2 id="choiceTitle">Choose</h2><div id="choiceCard" hidden></div><div id="choiceOptions"></div><div class="dialogButtons"><button id="choiceCancel">Cancel</button></div></dialog>
