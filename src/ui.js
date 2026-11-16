@@ -474,7 +474,7 @@ function flashActive(){if(!Net.active||mine(state.active))playSound('turn');if(s
 // every pawn hops up and down (space bar)
 function pawnHop(i){if(matchMedia('(prefers-reduced-motion: reduce)').matches||!bmOn||!state.players[i])return;let [x,y]=pawnPos(i,state);for(let im of $('pieces').querySelectorAll('image')){if(im.getAttribute('width')==='30'&&Math.abs(+im.getAttribute('x')-(x-15))<.6&&Math.abs(+im.getAttribute('y')-(y-42))<.6){im.classList.remove('pawnHop');void im.getBoundingClientRect();im.classList.add('pawnHop');im.style.animationDelay=(i*.08)+'s';setTimeout(()=>im.classList.remove('pawnHop'),1500)}}}
 function pawnPing(i){if(matchMedia('(prefers-reduced-motion: reduce)').matches||!bmOn||!state.players[i])return;let [x,y]=pawnPos(i,state),col=PAWN[state.players[i].role]||'#fff',F=$('pings');if(!F){F=svg('g',{id:'pings','pointer-events':'none'});$('pieces').parentNode.insertBefore(F,$('pieces'))}for(let n=0;n<3;n++){let g=svg('g',{class:'pingFade',style:'animation-delay:'+n*.35+'s'},F);for(let [k,a0,a1] of [['#000',9,4],[col,6,1.5]])svg('ellipse',{cx:x,cy:y-14,rx:16,ry:22,fill:'none',stroke:k,class:'pawnPing','pointer-events':'none',style:'animation-delay:'+n*.35+'s;--w0:'+a0+';--w1:'+a1},g);setTimeout(()=>g.remove(),2000+n*350)}}
-function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';let done=fxCurrent;if(done&&done.kind==='playerDraw'&&done.cards&&drawHide.has(done.seat)){let st=drawHide.get(done.seat),slid=false;for(let k of done.cards){if(st.delete(k)){slideIn.set(k,performance.now());slid=true}}if(slid){playSound('draw');landBeat()}if(!st.size)drawHide.delete(done.seat);if(holdActive==null||holdActive!==done.seat)render()}if(done&&done.kind==='research'){fxDoneMicro.add(done.color);flyMicro(done.color)}if(done&&done.after)applyCubes(done.after,done);if(done&&done.blocked&&!done.badged)showBlocked(done.blocked);fxCurrent=fxQueue.shift()||null;if(!fxCurrent&&infPending.length){infPending=[];paint()}
+function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();box.className='';let done=fxCurrent;if(done&&done.kind==='playerDraw'&&done.cards&&drawHide.has(done.seat)){let st=drawHide.get(done.seat),slid=false;for(let k of done.cards){if(st.delete(k)){slideIn.set(k,performance.now());slid=true}}if(slid)playSound('draw');if(!st.size)drawHide.delete(done.seat);if(holdActive==null||holdActive!==done.seat)render()}if(done&&done.kind==='research'){fxDoneMicro.add(done.color);flyMicro(done.color)}if(done&&done.after)applyCubes(done.after,done);if(done&&done.blocked&&!done.badged)showBlocked(done.blocked);fxCurrent=fxQueue.shift()||null;if(!fxCurrent&&infPending.length){infPending=[];paint()}
  while(fxCurrent&&fxCurrent.silent){applyCubes(fxCurrent.after,null);fxCurrent=fxQueue.shift()||null}
  updateStatus();
  if(fxCurrent&&fxCurrent.kind==='playerDraw'&&fxCurrent.start&&!fxCurrent.intro&&state.active===fxCurrent.seat&&+$('fxSpeed').value>=0){fxCurrent.intro=true;fxQueue.unshift(fxCurrent);fxCurrent={kind:'turnIntro'}}
@@ -754,18 +754,21 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&bmOn&&mode&&mode!==
 // Deck pictures on the board: the Infection deck and discard (top), the Player deck and discard (bottom right).
 const DECK_SLOTS={infDeck:[987,27,240,172],infDisc:[1256,24,250,173],plDeck:[1120,813,178,240],plDisc:[1325,813,174,240]};
 // Which deck the current player should use next (it glows), and whether clicking a deck may advance the turn
-function deckReady(){return !['setup','ended'].includes(state.phase)&&state.status==='playing'&&mine(state.active)&&holdActive==null&&!fxCurrent&&!fxQueue.length&&!busy&&!(fullNow().length&&state.phase!=='epidemic')}
+const sliding=()=>{let t=performance.now();for(let v of slideIn.values())if(t-v<950)return true;return false};   // a drawn card still sliding into a hand
+function deckReady(){return !['setup','ended'].includes(state.phase)&&state.status==='playing'&&mine(state.active)&&holdActive==null&&!fxCurrent&&!fxQueue.length&&!busy&&!flyTimer&&!drawHide.size&&!sliding()&&!(fullNow().length&&state.phase!=='epidemic')}
 function deckCue(){if(!deckReady())return null;let tt=state.players[state.active].role==='time_traveler';
  if(state.phase==='infection'||state.phase==='epidemic')return 'infDeck';if(state.phase==='actions'&&state.actions===0)return tt||state.noRedraw?'infDeck':'plDeck';return null}
 function deckClick(slot){if(!deckReady())return;let ph=state.phase;
  if(slot==='infDeck'&&(ph==='infection'||ph==='epidemic'||deckCue()==='infDeck'))$('nextPhase').click();
  else if(slot==='plDeck'&&ph==='actions'&&!state.noRedraw&&state.players[state.active].role!=='time_traveler')$('nextPhase').click()}
 // Keep the glow in step with the game: animations finishing, hands settling and so on do not always repaint the board
-let beatTurn=null,lastLand=-1e9;
-const beatKey=()=>state.seed+'|'+state.turn+'|'+state.active,beatDue=()=>state.status==='playing'&&state.phase==='infection'&&state.infectionDrawn===0&&beatTurn!==beatKey();
-// heartbeat: one second after the drawn cards have finished sliding into the hand (the slide takes 0.9 s)
-function landBeat(){lastLand=performance.now();setTimeout(()=>{if(beatDue()){beatTurn=beatKey();playSound('heartbeat')}},1900)}
-function updateDeckGlow(){let cue=deckCue(),ok=deckReady();if(state.status==='playing'&&state.phase==='infection'&&state.infectionDrawn===0&&!fxCurrent&&!fxQueue.length&&holdActive==null&&!busy&&!drawHide.size&&performance.now()-lastLand>2200){let k=beatKey();if(beatTurn!==k){if(beatTurn!==null)playSound('heartbeat');beatTurn=k}}else if(state.phase!=='infection')beatTurn=beatTurn===null?'':beatTurn;for(let g of document.querySelectorAll('#board .deckArt[data-slot]')){let s=g.dataset.slot,on=cue===s;g.classList.toggle('deckGlow',on);if(s==='infDeck'||s==='plDeck')g.style.cursor=ok?'pointer':'';let r=g.querySelector('.deckRing');
+let beatTurn=null,prevCue=null;
+const beatKey=()=>state.seed+'|'+state.turn+'|'+state.active;
+function updateDeckGlow(){let cue=deckCue(),ok=deckReady();
+ // heartbeat: when the Infection deck starts to glow at the beginning of the infection step (once per turn; not when a page is reopened mid-turn)
+ if(cue==='infDeck'&&prevCue!=='infDeck'&&state.phase==='infection'&&state.infectionDrawn===0&&beatTurn!==beatKey()){if(beatTurn!==null)playSound('heartbeat');beatTurn=beatKey()}
+ if(beatTurn===null&&state.phase!=='infection')beatTurn='';prevCue=cue;
+ for(let g of document.querySelectorAll('#board .deckArt[data-slot]')){let s=g.dataset.slot,on=cue===s;g.classList.toggle('deckGlow',on);if(s==='infDeck'||s==='plDeck')g.style.cursor=ok?'pointer':'';let r=g.querySelector('.deckRing');
  if(on&&!r){let [x,y,w,h]=DECK_SLOTS[s];svg('rect',{x:x-5,y:y-5,width:w+10,height:h+10,rx:14,fill:'none',stroke:'#ffd93a','stroke-width':6,class:'deckRing','pointer-events':'none'},g)}else if(!on&&r)r.remove()}}
 setInterval(updateDeckGlow,400);
 function drawDecks(T){let cue=deckCue();

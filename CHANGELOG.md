@@ -1,4 +1,5 @@
 ## Latest
+- Heartbeat plays the moment the Infection deck starts to glow at the start of the infection step. The deck glow (and so the heartbeat) now waits until drawn cards have finished sliding into the hand and any Epidemic cubes have landed.
 - The heartbeat now plays one second after the drawn cards finish sliding into the hand (or when the infection step starts after an Epidemic).
 - New sound: a recorded heartbeat when the infection step of each turn begins.
 - Pawns step aside when they would cover most of a short railroad (for example Santiago de Compostela – A Coruña), so the track stays easy to click. Only about a dozen cities are affected.
