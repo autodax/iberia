@@ -1,4 +1,6 @@
 ## Latest
+- The deck glow, the draw bell and the heartbeat now wait until all other sounds and animations (railroad tokens dropping, Epidemic cubes, cards sliding in, pawns moving) have finished, plus half a second.
+- Railwayman: hovering the optional second track now shows its ghost railroad, like the first one.
 - New sound: a small clock-tower bell (quick double strike) when the Player deck starts to glow, i.e. when your actions are used up and it is time to draw.
 - Heartbeat plays the moment the Infection deck starts to glow at the start of the infection step. The deck glow (and so the heartbeat) now waits until drawn cards have finished sliding into the hand and any Epidemic cubes have landed.
 - The heartbeat now plays one second after the drawn cards finish sliding into the hand (or when the infection step starts after an Epidemic).

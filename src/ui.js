@@ -145,9 +145,11 @@ let sndMaster=null;
 function masterOut(){if(!sndMaster||sndMaster.ctx!==sndCtx){sndMaster=sndCtx.createDynamicsCompressor();sndMaster.ctx=sndCtx;sndMaster.threshold.value=-8;sndMaster.ratio.value=6;sndMaster.connect(sndCtx.destination)}return sndMaster}
 function preloadSounds(){if(!sndCtx||sndCtx.state!=='running')return;for(let n of Object.keys(SND_VOL))for(let u of soundUrls(n)){decodeUrl(u);break}}
 let sndSeqNext=0;
-function playSound(name,delay=0){if(!sndPrefs.on)return;let url=soundUrl(name);if(!url)return;if(name!=='cube'&&name!=='move'){let t=Math.max(performance.now()+delay,sndSeqNext);sndSeqNext=t+450;delay=Math.max(0,t-performance.now())}let now=performance.now()+delay;if(sndLast[name]&&Math.abs(now-sndLast[name])<45)return;sndLast[name]=now;
+let actUntil=0,sndDur={};   // the board counts as busy until this time (sounds playing, pieces moving)
+function markBusy(ms){actUntil=Math.max(actUntil,performance.now()+ms)}
+function playSound(name,delay=0){if(name!=='chime'&&name!=='heartbeat')markBusy(delay+(sndDur[name]??.7)*1000);if(!sndPrefs.on)return;let url=soundUrl(name);if(!url)return;if(name!=='cube'&&name!=='move'){let t=Math.max(performance.now()+delay,sndSeqNext);sndSeqNext=t+450;delay=Math.max(0,t-performance.now())}let now=performance.now()+delay;if(sndLast[name]&&Math.abs(now-sndLast[name])<45)return;sndLast[name]=now;
  let vol=sndPrefs.vol*(SND_VOL[name]??.9);(window.soundLog=window.soundLog||[]).push(name);unlockSound();
- let viaBuffer=()=>soundBuffer(name).then(b=>{if(!b||!sndCtx||sndCtx.state!=='running'){soundBeep(url,vol,0);return}let s=sndCtx.createBufferSource(),g=sndCtx.createGain();s.buffer=b;s.playbackRate.value=name==='cube'?0.94+Math.random()*.12:1;g.gain.value=vol*SND_BOOST;s.connect(g).connect(masterOut());s.start(sndCtx.currentTime+Math.max(0,delay)/1000)});
+ let viaBuffer=()=>soundBuffer(name).then(b=>{if(!b||!sndCtx||sndCtx.state!=='running'){soundBeep(url,vol,0);return}let s=sndCtx.createBufferSource(),g=sndCtx.createGain();sndDur[name]=b.duration;s.buffer=b;s.playbackRate.value=name==='cube'?0.94+Math.random()*.12:1;g.gain.value=vol*SND_BOOST;s.connect(g).connect(masterOut());s.start(sndCtx.currentTime+Math.max(0,delay)/1000)});
  if(!sndCtx){soundBeep(url,vol,delay);return}
  // Safari suspends the audio engine when idle or after a tab switch: wake it first, and fall back to a plain audio element if it will not wake
  if(sndCtx.state!=='running'){Promise.race([Promise.resolve(sndCtx.resume()).catch(()=>{}),new Promise(r=>setTimeout(r,350))]).then(()=>{if(sndCtx.state==='running')viaBuffer();else soundBeep(url,vol,0)});return}
@@ -755,7 +757,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&bmOn&&mode&&mode!==
 const DECK_SLOTS={infDeck:[987,27,240,172],infDisc:[1256,24,250,173],plDeck:[1120,813,178,240],plDisc:[1325,813,174,240]};
 // Which deck the current player should use next (it glows), and whether clicking a deck may advance the turn
 const sliding=()=>{let t=performance.now();for(let v of slideIn.values())if(t-v<950)return true;return false};   // a drawn card still sliding into a hand
-function deckReady(){return !['setup','ended'].includes(state.phase)&&state.status==='playing'&&mine(state.active)&&holdActive==null&&!fxCurrent&&!fxQueue.length&&!busy&&!flyTimer&&!drawHide.size&&!sliding()&&!(fullNow().length&&state.phase!=='epidemic')}
+const boardBusy=()=>fxCurrent||fxQueue.length||busy||flyTimer||drawHide.size||sliding()||pawnFlying.size||railHide.size||microHide.size||microFlying;
+function deckReady(){if(boardBusy())markBusy(0);return !['setup','ended'].includes(state.phase)&&state.status==='playing'&&mine(state.active)&&holdActive==null&&!boardBusy()&&performance.now()>=actUntil+500&&!(fullNow().length&&state.phase!=='epidemic')}
 function deckCue(){if(!deckReady())return null;let tt=state.players[state.active].role==='time_traveler';
  if(state.phase==='infection'||state.phase==='epidemic')return 'infDeck';if(state.phase==='actions'&&state.actions===0)return tt||state.noRedraw?'infDeck':'plDeck';return null}
 function deckClick(slot){if(!deckReady())return;let ph=state.phase;
@@ -773,7 +776,7 @@ function updateDeckGlow(){let cue=deckCue(),ok=deckReady();
  if(beatTurn===null&&state.phase!=='infection')beatTurn='';prevCue=cue;
  for(let g of document.querySelectorAll('#board .deckArt[data-slot]')){let s=g.dataset.slot,on=cue===s;g.classList.toggle('deckGlow',on);if(s==='infDeck'||s==='plDeck')g.style.cursor=ok?'pointer':'';let r=g.querySelector('.deckRing');
  if(on&&!r){let [x,y,w,h]=DECK_SLOTS[s];svg('rect',{x:x-5,y:y-5,width:w+10,height:h+10,rx:14,fill:'none',stroke:'#ffd93a','stroke-width':6,class:'deckRing','pointer-events':'none'},g)}else if(!on&&r)r.remove()}}
-setInterval(updateDeckGlow,400);
+setInterval(updateDeckGlow,150);
 function drawDecks(T){let cue=deckCue();
  let put=(slot,href,n,label,dim)=>{let [x,y,w,h]=DECK_SLOTS[slot];if(!href||!n)return;let g=svg('g',{class:'deckArt'+(cue===slot?' deckGlow':''),'data-slot':slot},T);
   if(slot==='infDeck'||slot==='plDeck'){g.style.cursor=deckReady()?'pointer':'';g.style.pointerEvents='all';g.addEventListener('click',()=>deckClick(slot))}svg('title',{},g).textContent=label+': '+n;
@@ -815,7 +818,7 @@ if(bmOn&&canAct()&&(!mode||mode==='build')&&!mapPick&&legal.build?.length){let p
  if(bmOn&&canAct()&&!mapPick){let ring2=(i,on)=>{let [qx,qy]=pawnPos(i,state);if(on)svg('ellipse',{cx:qx,cy:qy+2,rx:19,ry:8,fill:'none',stroke:'#ffd54a','stroke-width':3.5},P);let h=svg('circle',{cx:qx,cy:qy-16,r:16,fill:'transparent',style:'cursor:pointer'},P);return h};
   for(let i of passSeats){let h=ring2(i,String(sel.passenger)===String(i));svg('title',{},h).textContent='Click to take '+plabel(i)+' with you';h.onclick=e=>{e.stopPropagation();sel.passenger=String(sel.passenger)===String(i)?false:String(i);render()}}
   for(let i of seatPick){let h=ring2(i,mode==='share'&&+sel.other===i&&seatPick.size>1);svg('title',{},h).textContent=plabel(i);h.onclick=e=>{e.stopPropagation();sel.other=i;if(mode==='pgive'){sel.otherChosen=true;render();autoGo()}else render()}}
-  for(let n of edge2){let d=edgeD(sel.to,n),g=svg('g',{class:'edgeBuild'},T);svg('path',{d,fill:'none',stroke:'#ffd54a','stroke-width':7,'stroke-linecap':'round',class:'edgeGlow',style:'opacity:.55'},g);let hit=svg('path',{d,fill:'none',stroke:'transparent','stroke-width':36,'stroke-linecap':'round',style:'cursor:pointer;pointer-events:stroke'},g);svg('title',{},hit).textContent='Click to add a second token to '+C[n].name;hit.onclick=e=>{e.stopPropagation();sel.to2=n;sel.to2Chosen=true;render();autoGo()}}}
+  for(let n of edge2){let d=edgeD(sel.to,n),g=svg('g',{class:'edgeBuild'},T);svg('path',{d,fill:'none',stroke:'#ffd54a','stroke-width':7,'stroke-linecap':'round',class:'edgeGlow',style:'opacity:.55'},g);ghostRail(g,sel.to,n);let hit=svg('path',{d,fill:'none',stroke:'transparent','stroke-width':36,'stroke-linecap':'round',style:'cursor:pointer;pointer-events:stroke'},g);svg('title',{},hit).textContent='Click to add a second token to '+C[n].name;hit.onclick=e=>{e.stopPropagation();sel.to2=n;sel.to2Chosen=true;render();autoGo()}}}
  if(ringAvail()||(bmOn&&canAct()&&!mapPick)){let [gx,gy]=pawnPos(state.active,state),hit=svg('circle',{cx:gx,cy:gy-16,r:17,fill:'transparent',style:'cursor:pointer'},P);hit.onclick=e=>{e.stopPropagation();toggleRing()};svg('title',{},hit).textContent='Click your pawn to show or hide your actions'}armAll()}
 
 /* ---------- render ---------- */

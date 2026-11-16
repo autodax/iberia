@@ -302,12 +302,13 @@ async def main():
     ok(await sp.evaluate("state.actions===2&&document.getElementById('phaseStatus').textContent.includes('0 of 2')"),'One More Day after drawing: status shows 0 of 2 actions used')
     await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('dk',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       s.phase='actions';s.actions=0;mode='';sel={};state=s;recompute();render()})()""");await sp.wait_for_timeout(300)
+    await sp.wait_for_timeout(900)
     ok(await sp.evaluate("deckCue()==='plDeck'&&document.querySelectorAll('.deckRing').length===1"),'deck glow: the Player deck glows when it is time to draw')
     await sp.evaluate("sndPrefs.on=true;window.soundLog=[]")
     _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.phase==='infection'",timeout=10000)
     await sp.wait_for_function("deckCue()==='infDeck'",timeout=20000)
-    await sp.wait_for_timeout(2600);ok(await sp.evaluate("(window.soundLog||[]).includes('heartbeat')"),'heartbeat sound when the infection step begins');await sp.evaluate("sndPrefs.on=false")
+    await sp.wait_for_timeout(3400);ok(await sp.evaluate("(window.soundLog||[]).includes('heartbeat')"),'heartbeat sound when the infection step begins');await sp.evaluate("sndPrefs.on=false")
     r0=await sp.evaluate("state.infectionRemaining")
     _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.infectionRemaining<"+str(r0),timeout=10000)
@@ -316,10 +317,13 @@ async def main():
       s.phase='actions';s.actions=1;mode='';sel={};state=s;recompute();render();perform({type:'carriage',to:ADJ[s.players[s.active].city][0]})})()""")
     try: await sp.wait_for_function("state.actions===0&&!fxCurrent&&!fxQueue.length&&!busy",timeout=10000)
     except Exception: pass
-    await sp.wait_for_timeout(900)
+    await sp.wait_for_timeout(1800)
     ok(await sp.evaluate("deckCue()==='plDeck'&&!!document.querySelector('.deckArt[data-slot=plDeck] .deckRing')"),'deck glow: the Player deck lights up right after the last action')
     ok(await sp.evaluate("(window.soundLog||[]).includes('chime')"),'small bell when the Player deck starts to glow')
     ok(await sp.evaluate("document.getElementById('phaseStatus').textContent.includes('Drawing cards')"),'status card: says Drawing cards once the actions are used up')
+    ok(await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('rw',4,['railwayman','sailor']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
+      let me=s.players.findIndex(q=>q.role==='railwayman');s.active=me;s.phase='actions';s.actions=4;mode='';sel={};state=s;recompute();render();let b0=legal.build.map(c=>c.to).find(b=>ADJ[b].some(n=>n!==s.players[me].city&&possible({type:'build',to:b,to2:n})));mode='build';sel.to=b0;sel.to2='';sel.to2Chosen=false;render();
+      let gs=[...document.querySelectorAll('#board .edgeBuild')];return gs.length>0&&gs.every(g=>g.querySelector('.ghostRail'))})()"""),'railwayman: the optional second track has a hover ghost too')
     await sp.evaluate("positionRing()");await sp.wait_for_timeout(700);await sp.evaluate("positionRing()")
     ok(await sp.evaluate("getComputedStyle($('ringEnd')).display==='none'"),'no green draw button by the pawn when drawing is the only thing left')
     await sp.evaluate("""(()=>{let p=state.players[state.active];while(p.hand.length<8){let k=state.playerDeck.find(x=>C[x]);state.playerDeck.splice(state.playerDeck.indexOf(k),1);p.hand.push(k)}recompute();render()})()""");await sp.wait_for_timeout(300)
