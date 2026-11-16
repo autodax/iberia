@@ -212,7 +212,7 @@ async def main():
     ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].some(i=>i.getAttribute('href').startsWith('blob:'))"),'local asset replaces token')
     ok(await pg.evaluate("document.getElementById('assetStatus').textContent.startsWith('2 files')"),'asset status')
     # sounds
-    ok(await pg.evaluate("Object.keys(EMBED).filter(k=>k.startsWith('sounds/')).length===14"),"14 built-in sounds")
+    ok(await pg.evaluate("Object.keys(EMBED).filter(k=>k.startsWith('sounds/')).length===15"),"15 built-in sounds")
     ok(await pg.evaluate("!sndPrefs.on"),'sound starts muted')
     await pg.evaluate("window.soundLog=[]");await pg.click('#logButton');await pg.wait_for_timeout(50)
     ok(await pg.evaluate("window.soundLog.length===0"),'no sound while muted')
@@ -303,9 +303,11 @@ async def main():
     await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('dk',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       s.phase='actions';s.actions=0;mode='';sel={};state=s;recompute();render()})()""");await sp.wait_for_timeout(300)
     ok(await sp.evaluate("deckCue()==='plDeck'&&document.querySelectorAll('.deckRing').length===1"),'deck glow: the Player deck glows when it is time to draw')
+    await sp.evaluate("sndPrefs.on=true;window.soundLog=[]")
     _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.phase==='infection'",timeout=10000)
     await sp.wait_for_function("deckCue()==='infDeck'",timeout=20000)
+    await sp.wait_for_timeout(600);ok(await sp.evaluate("(window.soundLog||[]).includes('heartbeat')"),'heartbeat sound when the infection step begins');await sp.evaluate("sndPrefs.on=false")
     r0=await sp.evaluate("state.infectionRemaining")
     _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.infectionRemaining<"+str(r0),timeout=10000)

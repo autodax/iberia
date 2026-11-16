@@ -1,4 +1,5 @@
 ## Latest
+- New sound: a recorded heartbeat when the infection step of each turn begins.
 - Pawns step aside when they would cover most of a short railroad (for example Santiago de Compostela – A Coruña), so the track stays easy to click. Only about a dozen cities are affected.
 - While choosing a card for an action (e.g. Purify Water), Event cards now tuck away with the other cards that can't be used, so only the usable cards show.
 - Status card shows "Discarding" with progress (0 of 2, 1 of 2 …) while a hand is over the limit.

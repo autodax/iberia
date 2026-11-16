@@ -120,7 +120,7 @@ async function loadAssets(files){for(let u of Object.values(ASSETS))URL.revokeOb
  let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC);$('assetStatus').textContent=n?n+' files loaded from your folder'+(b?' (including board image).':'.'):'No local files loaded. '+REPO_STATUS;render()}
 const BOARD_SRC=document.getElementById('boardImage').getAttribute('href');
 /* ---------- sounds (assets/sounds/*.mp3; a local folder or the repo can replace them) ---------- */
-const SND_VOL={blocked:.9,move:.95,draw:.55,cube:.95,outbreak:1,epidemic:1,win:.95,lose:.95,turn:.9,water:.95,hospital:.95,choo:1,research:.95,marker:1},SND_BOOST=2,SND_KEY='iberia-sound';
+const SND_VOL={blocked:.9,move:.95,draw:.55,cube:.95,outbreak:1,epidemic:1,win:.95,lose:.95,turn:.9,water:.95,hospital:.95,choo:1,research:.95,marker:1,heartbeat:1},SND_BOOST=2,SND_KEY='iberia-sound';
 let sndCtx=null,sndBuf={},sndLast={},sndPrefs={on:false,vol:.7};try{Object.assign(sndPrefs,JSON.parse(localStorage.getItem(SND_KEY)||'{}'))}catch(e){}
 const SND_REV='8';
 function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'tokens/'+name]){k=norm(k);for(let src of [ASSETS,REPO,typeof EMBED!=='undefined'?EMBED:{}]){let u=src[k];if(u&&src===REPO&&/^https?:|^assets\//.test(u))u+='?r='+SND_REV;if(u&&!out.includes(u))out.push(u)}}return out}
@@ -761,7 +761,8 @@ function deckClick(slot){if(!deckReady())return;let ph=state.phase;
  if(slot==='infDeck'&&(ph==='infection'||ph==='epidemic'||deckCue()==='infDeck'))$('nextPhase').click();
  else if(slot==='plDeck'&&ph==='actions'&&!state.noRedraw&&state.players[state.active].role!=='time_traveler')$('nextPhase').click()}
 // Keep the glow in step with the game: animations finishing, hands settling and so on do not always repaint the board
-function updateDeckGlow(){let cue=deckCue(),ok=deckReady();for(let g of document.querySelectorAll('#board .deckArt[data-slot]')){let s=g.dataset.slot,on=cue===s;g.classList.toggle('deckGlow',on);if(s==='infDeck'||s==='plDeck')g.style.cursor=ok?'pointer':'';let r=g.querySelector('.deckRing');
+let beatTurn=null;
+function updateDeckGlow(){let cue=deckCue(),ok=deckReady();if(state.status==='playing'&&state.phase==='infection'&&state.infectionDrawn===0&&!fxCurrent&&!fxQueue.length&&holdActive==null){let k=state.seed+'|'+state.turn+'|'+state.active;if(beatTurn!==k){if(beatTurn!==null)playSound('heartbeat');beatTurn=k}}else if(state.phase!=='infection')beatTurn=beatTurn===null?'':beatTurn;for(let g of document.querySelectorAll('#board .deckArt[data-slot]')){let s=g.dataset.slot,on=cue===s;g.classList.toggle('deckGlow',on);if(s==='infDeck'||s==='plDeck')g.style.cursor=ok?'pointer':'';let r=g.querySelector('.deckRing');
  if(on&&!r){let [x,y,w,h]=DECK_SLOTS[s];svg('rect',{x:x-5,y:y-5,width:w+10,height:h+10,rx:14,fill:'none',stroke:'#ffd93a','stroke-width':6,class:'deckRing','pointer-events':'none'},g)}else if(!on&&r)r.remove()}}
 setInterval(updateDeckGlow,400);
 function drawDecks(T){let cue=deckCue();
