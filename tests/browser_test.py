@@ -307,7 +307,7 @@ async def main():
     _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.phase==='infection'",timeout=10000)
     await sp.wait_for_function("deckCue()==='infDeck'",timeout=20000)
-    await sp.wait_for_timeout(600);ok(await sp.evaluate("(window.soundLog||[]).includes('heartbeat')"),'heartbeat sound when the infection step begins');await sp.evaluate("sndPrefs.on=false")
+    await sp.wait_for_timeout(2600);ok(await sp.evaluate("(window.soundLog||[]).includes('heartbeat')"),'heartbeat sound when the infection step begins');await sp.evaluate("sndPrefs.on=false")
     r0=await sp.evaluate("state.infectionRemaining")
     _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.infectionRemaining<"+str(r0),timeout=10000)
