@@ -312,6 +312,8 @@ async def main():
     r0=await sp.evaluate("state.infectionRemaining")
     _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.infectionRemaining<"+str(r0),timeout=10000)
+    await sp.evaluate("sndPrefs.on=true;window.soundLog=[]");await sp.wait_for_function("deckCue()==='infDeck'||state.phase!=='infection'",timeout=20000);await sp.wait_for_timeout(300)
+    ok(await sp.evaluate("state.phase!=='infection'||(window.soundLog||[]).includes('heartbeat')"),'heartbeat again for the next Infection card');await sp.evaluate("sndPrefs.on=false")
     ok(True,'deck glow: clicking the glowing decks draws Player cards, then infects a city')
     await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();sndPrefs.on=true;window.soundLog=[];let s=initial('dk2',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       s.phase='actions';s.actions=1;mode='';sel={};state=s;recompute();render();perform({type:'carriage',to:ADJ[s.players[s.active].city][0]})})()""")

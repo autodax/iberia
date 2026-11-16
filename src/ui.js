@@ -768,8 +768,8 @@ function deckClick(slot){if(!deckReady())return;let ph=state.phase;
 let beatTurn=null,chimeTurn=null,prevCue=null;
 const beatKey=()=>state.seed+'|'+state.turn+'|'+state.active;
 function updateDeckGlow(){let cue=deckCue(),ok=deckReady();
- // heartbeat: when the Infection deck starts to glow at the beginning of the infection step (once per turn; not when a page is reopened mid-turn)
- if(cue==='infDeck'&&prevCue!=='infDeck'&&state.phase==='infection'&&state.infectionDrawn===0&&beatTurn!==beatKey()){if(beatTurn!==null)playSound('heartbeat');beatTurn=beatKey()}
+ // heartbeat: each time the Infection deck starts to glow for the next Infection card (once per card; not when a page is reopened mid-turn)
+ if(cue==='infDeck'&&prevCue!=='infDeck'&&state.phase==='infection'){let k=beatKey()+'|'+state.infectionDrawn;if(beatTurn!==k){if(beatTurn!==null)playSound('heartbeat');beatTurn=k}}
  // small bell: when the Player deck starts to glow (actions used up), once per turn
  if(cue==='plDeck'&&prevCue!=='plDeck'&&chimeTurn!==beatKey()){if(chimeTurn!==null)playSound('chime');chimeTurn=beatKey()}
  if(chimeTurn===null&&cue!=='plDeck')chimeTurn='';
