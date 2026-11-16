@@ -40,7 +40,11 @@ function cubeOrigin(cid,view){let c=C[cid],W=cubeWidth(cid,view),H=cubeHeight(ci
 function hospitalOrigin(cid,n,extra){let c=C[cid],x=c.x,y=c.y,W=30*n,H=30;let cands=[[x-35,y-8],[x+5,y-8],[x-W/2,y+12],[x-14-W,y-15],[x+14,y-15],[x-35,y-48],[x+5,y-48],[x-W/2,y+30]];cands=cands.map(([a,b2])=>{let dx=a+W/2-x,dy=b2+H/2-y,d=Math.hypot(dx,dy)||1;return [Math.round(a+dx/d*7),Math.round(b2+dy/d*7)]});   // a little further from the city circle
  let b=pick(cands,W,H,extra,cid);return [b.x,b.y]}
 function pawnSpot(cid,n){let L=layoutBase(),key='p:'+cid+':'+n;if(L.cache[key])return L.cache[key];let c=C[cid],W=20*(n-1)+30,best=null;
- for(let dy of [0,12,22])for(let dx of [0,10,-10,18,-18]){let r=[c.x+dx-W/2,c.y-4+dy-42,c.x+dx+W/2,c.y-4+dy+3],s=hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==cid))*3+Math.abs(dx)*8+dy*5;if(!best||s<best.s)best={dx,dy,s,r}}return L.cache[key]=best}
+ let mine=MAP.connections.filter(e=>(e.a===cid||e.b===cid)&&C[e.a]&&C[e.b]).map(e=>{let o=e.a===cid?e.b:e.a,len=Math.hypot(C[o].x-c.x,C[o].y-c.y),n=Math.max(4,Math.ceil(len/4)),pts=[];for(let i=0;i<=n;i++){let p=edgePt(cid,o,i/n);if(Math.hypot(p[0]-c.x,p[1]-c.y)>16&&Math.hypot(p[0]-C[o].x,p[1]-C[o].y)>16)pts.push(p)}return {pts,step:len/n}});
+ // a pawn standing on a short railroad leaves too little of it to click: only then move the pawn aside
+ let onRail=r=>{let pen=0;for(let m of mine){let free=m.pts.filter(([px,py])=>!(px>r[0]-6&&px<r[2]+6&&py>r[1]-4&&py<r[3]+4)).length*m.step;if(free<45)pen+=45-free}return pen};
+ let tryAt=dxs=>{for(let dy of [0,12,22])for(let dx of dxs){let r=[c.x+dx-W/2,c.y-4+dy-42,c.x+dx+W/2,c.y-4+dy+3],rp=onRail(r),s=hit(r,L.labels)*6+hit(r,L.dots.filter(d=>d[4]!==cid))*3+rp*12+Math.abs(dx)*8+dy*5;if(!best||s<best.s)best={dx,dy,s,r,rp}}};
+ tryAt([0,10,-10,18,-18]);if(best.rp>0)tryAt([26,-26]);return L.cache[key]=best}
 function pawnsAt(cid){return state.players.filter(q=>q.city===cid&&!q.city2).length}
 const WATER_HIT=30;   // radius of the clickable spot in the middle of a region for a quick purification token
 // Clicking the map anywhere outside the shaded regions cancels a region choice (instead of needing the Cancel button)
