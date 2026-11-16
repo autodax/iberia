@@ -1,4 +1,5 @@
 ## Latest
+- While choosing a card for an action (e.g. Purify Water), Event cards now tuck away with the other cards that can't be used, so only the usable cards show.
 - Status card shows "Discarding" with progress (0 of 2, 1 of 2 …) while a hand is over the limit.
 - Purification: the whole region is clickable again, and the clickable strip along each railroad is wider (36 instead of 28), so clicks near a track still place the track.
 - Status card switches to "Drawing cards" as soon as your actions are used up (and back to "Actions" if you Undo).
