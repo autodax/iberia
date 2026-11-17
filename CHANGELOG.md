@@ -1,4 +1,5 @@
 ## Latest
+- Cubes keep a fixed spot at each city: every colour has room for three cubes and they fill those slots in order, so treating or adding a cube never moves the others. The cubes only shift when a pawn arrives at or leaves the city.
 - Black cubes on the map have a small white glow so they stand out against dark parts of the map.
 - Tapping or clicking the compass rose on the board now plays the pawn reveal animation, same as the space bar (for the iPad).
 - Time Traveler: the hover preview of an infection card is larger (about the same visual weight as a city card preview).
