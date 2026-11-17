@@ -135,7 +135,7 @@ async def main():
     # new 4-player game with nurse etc via engine (UI menu path tested separately)
     await pg.evaluate("roleChoice=['sailor','agronomist','railwayman','politician','nurse']");await pg.click('#newButton');await pg.click('.wpath[data-path=local]');await pg.click('.choiceGroup[data-for=playerCount] [data-v="4"]');await pg.click('.wsec[data-step=players] .wnext');await pg.wait_for_timeout(100)
     n=await pg.evaluate("document.querySelectorAll('#roleFields select').length");ok(n==4,'4 role selectors')
-    await pg.click('.roleBox:nth-child(3) .roleChange');await pg.click('.choiceGroup[data-for=role2] [data-v="nurse"]');await pg.click('.roleBox:nth-child(4) .roleChange');await pg.click('.choiceGroup[data-for=role3] [data-v="scientist"]')
+    await pg.click('.choiceGroup[data-for=role2] [data-v="nurse"]');await pg.click('.choiceGroup[data-for=role3] [data-v="scientist"]')
     ok(await pg.evaluate("[...document.querySelectorAll('.roleBox .roleText')].length===4"),'each role box shows the ability')
     await pg.click('.wsec[data-step=roles] .wpart[data-path=local] .wnext')
     ok(await pg.evaluate("[...document.querySelectorAll('.wsec[data-step=roles] .roleTag')].length===4"),'role names in the summary')
