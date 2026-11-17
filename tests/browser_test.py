@@ -1,6 +1,6 @@
 import asyncio,sys,json
 from playwright.async_api import async_playwright
-F=''+__import__('pathlib').Path(__file__).resolve().parents[1].joinpath('index.html').as_uri()+'?layout=sidebar'
+F=''+__import__('pathlib').Path(__file__).resolve().parents[1].joinpath('index.html').as_uri()+'?layout=sidebar&scale=0'
 res=[];errs=[]
 def ok(c,m):res.append((bool(c),m))
 async def main():
@@ -47,7 +47,7 @@ async def main():
     ok(await pg.evaluate(f"{shown}==={real}&&cubeView===null&&$('flyers').children.length===0&&!document.getElementById('infFx')"),'cube lands, the card overlay is gone and the board matches the game state')
     await pg.close()
     # drawn city cards appear over the piles for 2 s, then fly into the hand
-    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate("document.querySelector('#begin').click()");await pg.wait_for_timeout(300)
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar&scale=0','?scale=0'));await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(200);await pg.evaluate("document.querySelector('#begin').click()");await pg.wait_for_timeout(300)
     await pg.evaluate("resetFx();(()=>{let s=CP(state);s.phase='actions';s.actions=0;state=s;recompute();render()})()")
     h0=await pg.evaluate("state.players[state.active].hand.length");await pg.evaluate("void perform({type:'draw'})");await pg.wait_for_timeout(1900)
     ok(await pg.evaluate("document.querySelectorAll('#drawFx>div').length===2&&!document.querySelector('#fx .fxBox')"),'two drawn cards show over the player piles, no center pop-up')
@@ -56,7 +56,7 @@ async def main():
     ok(await pg.evaluate("document.querySelectorAll('.hand.active .handCards button').length===state.players[state.active].hand.length"),'drawn cards are in the hand after they fly over')
     await pg.close()
     # epidemic: infection card flies to the discard pile with an Epidemic badge, then cubes follow
-    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar&scale=0','?scale=0'));await pg.evaluate("state=initial(state.seed,4,['sailor','agronomist']);render()");await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
     await pg.evaluate("resetFx();$('fxSpeed').value='0.5';(()=>{let id=MAP.cities[5].id,a=CP(state.cubes);a[id][C[id].color]=(a[id][C[id].color]||0)+3;queueFx([{kind:'epidemic',city:id,rate:3,rateIndex:2,after:a}])})()")
     await pg.wait_for_function("document.getElementById('infBadge')",timeout=5000)
     ok(await pg.evaluate("/Epidemic!/.test(document.getElementById('infBadge').textContent)&&/rate: 3/.test(document.getElementById('infBadge').textContent)&&!document.querySelector('#fx .fxBox')"),'epidemic shown as a badge on the discarded infection card')
@@ -64,7 +64,7 @@ async def main():
     ok(await pg.evaluate("document.getElementById('flyers').children.length>0"),'epidemic cubes fly out of the card')
     await pg.close()
     # an infection that overflows a city: the cube flies in from the card first, then the outbreak starts
-    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
+    pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar&scale=0','?scale=0'));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
     await pg.evaluate("resetFx();$('fxSpeed').value='0.5';document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();(()=>{let s=CP(state);s.players.forEach((q,i)=>{q.role=['politician','agronomist','railwayman','scientist'][i%4]});s.prevention=null;s.players.forEach(q=>{if(!q.city)q.city=MAP.cities[3].id});s.phase='infection';s.infectionRemaining=2;s.infectionDrawn=0;s.actions=0;let id=s.infectionDeck[0],col=C[id].color,d=3-s.cubes[id][col];s.cubes[id][col]=3;s.supply[col]-=d;state=s;recompute();render()})()")
     await pg.evaluate("window.seq=[];(function w(){let k=fxCurrent&&fxCurrent.kind,b=!!document.querySelector('#fx .alert.outbreak');let l=window.seq[window.seq.length-1];if(!l||l[0]!==k||l[1]!==b)window.seq.push([k,b]);setTimeout(w,40)})()");await pg.evaluate("(busy=false,void perform({type:'infect'}))")
     try: await pg.wait_for_function("window.seq.some(x=>x[0]==='outbreak'&&x[1])",timeout=9000)
@@ -80,7 +80,7 @@ async def main():
  for(let i=0;i<P.hand.length&&P.hand.filter(isCol).length<n;i++){if(!isCol(P.hand[i])&&C[P.hand[i]]){let j=deck.findIndex(k=>isCol(k)&&k!==d.id);let t=P.hand[i];P.hand[i]=deck[j];deck[j]=t}}
  window.__d=d.id;state=s;recompute();render();return [P.hand.filter(isCol).length,d.name,col]}"""
     for n in (1,2):
-      pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(1500)
+      pg=await b.new_page(viewport={'width':1366,'height':768});pg.on('pageerror',lambda e:errs.append(str(e)));await pg.goto(F.replace('?layout=sidebar&scale=0','?scale=0'));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(1500)
       await pg.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve()");await pg.evaluate("("+SHIP_SETUP+")("+str(n)+")");await pg.wait_for_timeout(200)
       await pg.evaluate("busy=false;void quickMove(window.__d)");await pg.wait_for_timeout(700)
       if n==1:
@@ -94,7 +94,7 @@ async def main():
         ok(await pg.evaluate("!document.getElementById('choiceDialog').open&&mode==='ship'&&/Choose which/.test(document.getElementById('actionHint').textContent)"),'several matching cards: player is told to choose one')
       await pg.close()
     # low cube counts pulse red
-    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F.replace('?layout=sidebar',''));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
+    pg=await b.new_page(viewport={'width':1366,'height':768});await pg.goto(F.replace('?layout=sidebar&scale=0','?scale=0'));await pg.wait_for_timeout(300);await pg.click('#begin');await pg.wait_for_timeout(300)
     await pg.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();(()=>{let s=CP(state);s.supply[COLORS[0]]-=s.supply[COLORS[0]]-9;state=s;recompute();render()})()");await pg.wait_for_timeout(300)
     ok(await pg.evaluate("(()=>{let bs=[...document.querySelectorAll('#cubeCounts .cc:not(.tc) b')];return bs.filter(x=>x.classList.contains('low')).length===bs.filter(x=>+x.textContent<10).length&&bs.some(x=>x.classList.contains('low'))&&getComputedStyle(bs.find(x=>x.classList.contains('low'))).animationName==='cubeLow'})()"),'cube counts below 10 pulse red')
     await pg.close()
@@ -245,7 +245,7 @@ async def main():
     r=await pg.evaluate("""(()=>{resetFx();let a=MAP.cities[0].id,b=MAP.cities[1].id,pre=JSON.parse(JSON.stringify(state.cubes));pre[a].red=2;pre[b].red=0;let nx=JSON.parse(JSON.stringify(pre));nx[a].red=1;nx[b].red=1;cubeView=pre;paint();queueFx([{kind:'patient',color:'red',from:a,to:b,hospital:b,pre,after:nx}]);return 1})()""");await pg.wait_for_timeout(300)
     ok(await pg.evaluate("!document.querySelector('#fx .alert')&&$('fx').className!=='on'"),'patient: no alert box is shown')
     await pg.wait_for_timeout(1800);ok(await pg.evaluate("!fxCurrent&&$('flyers').children.length===0"),'patient: slide finishes and the queue moves on');await pg.evaluate("resetFx();render()")
-    sp=await b.new_page(viewport={'width':1366,'height':768});await sp.goto(F.replace('?layout=sidebar',''));await sp.wait_for_timeout(300);await sp.click('#begin');await sp.wait_for_timeout(300)
+    sp=await b.new_page(viewport={'width':1366,'height':768});await sp.goto(F.replace('?layout=sidebar&scale=0','?scale=0'));await sp.wait_for_timeout(300);await sp.click('#begin');await sp.wait_for_timeout(300)
     await sp.evaluate("resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();state.phase='actions';state.actions=3;render()")
     ok(await sp.evaluate("(()=>{let s=document.querySelector('#activeHand #phaseStatus');return !!s&&s.textContent.includes('Actions')&&s.textContent.includes('1 of 4')&&!s.textContent.includes('used')&&s.querySelectorAll('.pips i').length===4})()"),'status card: shows what the active player is doing, with progress pips')
     await sp.evaluate("queueFx([{kind:'playerDraw',cards:state.players[state.active].hand.slice(0,2),seat:state.active}])");await sp.wait_for_timeout(500)
@@ -460,7 +460,7 @@ async def main():
     ok(await pg.evaluate("state.challenges.influx&&state.challenges.hist.join()==='red'&&state.waterSupply===6"),'a new game starts with the chosen challenges')
     await pg.evaluate("chLocal.influx=false;chLocal.hist=[];wiz.path='local';wiz.step='diff';drawWizard();$('newGame').click()");await pg.wait_for_timeout(400)
     # touch screens: first tap on a reachable city arms it, second tap moves there
-    tp=await b.new_page(viewport={'width':1440,'height':900});await tp.goto(F.replace('?layout=sidebar',''));await tp.evaluate("window.__touch=true;state=initial(7,4,['politician','agronomist']);render()");await tp.wait_for_timeout(400);await tp.click('#begin');await tp.wait_for_timeout(4500);await tp.evaluate('resetFx()');await tp.wait_for_timeout(300)
+    tp=await b.new_page(viewport={'width':1440,'height':900});await tp.goto(F.replace('?layout=sidebar&scale=0','?scale=0'));await tp.evaluate("window.__touch=true;state=initial(7,4,['politician','agronomist']);render()");await tp.wait_for_timeout(400);await tp.click('#begin');await tp.wait_for_timeout(4500);await tp.evaluate('resetFx()');await tp.wait_for_timeout(300)
     pos=lambda:tp.evaluate("(()=>{let d=document.querySelector('circle.reachDot');if(!d)return null;let r=d.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()")
     q=await pos()
     if q:

@@ -263,8 +263,8 @@ function chooseNow(title,options,labels,noCancel,card,quiet){dismissHandAlert();
 async function ask(q){return (await choose(q,['yes','no'],['Yes — agreed','No']))==='yes'}
 
 /* ---------- layout ---------- */
-// Scaled interface (?scale=1 turns it on, ?scale=0 off; remembered): the MacBook Air 15" window is the reference. The board fills its space as before; the side panel and every pop-up keep their Mac proportions and grow or shrink as a whole.
-const UISCALE=(()=>{let q=null;try{q=new URLSearchParams(location.search).get('scale')}catch(e){}try{if(q==='1')localStorage.setItem('iberiaScale','1');if(q==='0')localStorage.removeItem('iberiaScale');return localStorage.getItem('iberiaScale')==='1'}catch(e){return q==='1'}})();
+// Scaled interface (on by default; ?scale=0 turns it off): the MacBook Air 15" window is the reference. The board fills its space as before; the side panel and every pop-up keep their Mac proportions and grow or shrink as a whole.
+const UISCALE=(()=>{let q=null;try{q=new URLSearchParams(location.search).get('scale')}catch(e){}try{if(q==='1')localStorage.removeItem('iberiaScale');if(q==='0')localStorage.setItem('iberiaScale','0');return q==='0'?false:q==='1'?true:localStorage.getItem('iberiaScale')!=='0'}catch(e){return q!=='0'}})();   // on by default; ?scale=0 turns it off (remembered), ?scale=1 turns it back on
 if(UISCALE)document.documentElement.classList.add('uiScale');
 const REF_W=1710,REF_H=1040,REF_PANEL=210,REF_PANEL_MAX=270;let uiK=1;   // uiK: pop-up scale (1 when scaling is off)
 function fitScaled(W,H,pad,gap){pad=2;gap=3;let A=BOARD_FIT[2]/BOARD_FIT[3],u=Math.max(.3,Math.min(H/REF_H,W/REF_W)),minP=REF_PANEL*u;

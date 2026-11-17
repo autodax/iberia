@@ -53,7 +53,7 @@ async def main():
       async def page(name):
         pg=await ctx.new_page();pg.on('pageerror',lambda e:errs.append(name+': '+str(e)));pg.on('console',lambda m:m.type=='error' and errs.append(name+': '+m.text));return pg
       A=await page('host');B=await page('guest')
-      await A.goto(f'http://localhost:{PORT}/index.html?layout=sidebar');await B.goto(f'http://localhost:{PORT}/index.html?layout=sidebar')
+      await A.goto(f'http://localhost:{PORT}/index.html?layout=sidebar&scale=0');await B.goto(f'http://localhost:{PORT}/index.html?layout=sidebar&scale=0')
       await A.wait_for_timeout(400)
       # --- host a room
       await A.click('#newButton');await A.click('.wpath[data-path=host]');await A.fill('#onName','Ana')
@@ -161,7 +161,7 @@ async def main():
       await A.wait_for_function('Net.active&&Net.isHost&&Net.status==="connected"&&Net.lobby.phase==="playing"',timeout=8000)
       ok(await A.evaluate('netSum()')==sumBefore,'hosting a saved game keeps the saved position')
       code2=await A.evaluate('Net.code')
-      C=await page('guest2');await C.goto(f'http://localhost:{PORT}/index.html?layout=sidebar')
+      C=await page('guest2');await C.goto(f'http://localhost:{PORT}/index.html?layout=sidebar&scale=0')
       await C.click('#newButton');await C.click('.wpath[data-path=join]');await C.fill('#onName','Cy');await C.fill('#onCode',code2.lower());await C.click('#onJoin')
       await C.wait_for_function('Net.active&&Net.status==="connected"',timeout=8000)
       await C.wait_for_function('Net.lobby.phase==="playing"&&state.players.length===2',timeout=8000)

@@ -1,4 +1,5 @@
 ## Latest
+- The scaled interface is now the default for everyone, with no address suffix needed. Add ?scale=0 to the address to switch back to the old fixed-size layout (remembered by that browser; ?scale=1 turns scaling back on).
 - Fixed: a card sliding into the hand was cut off (only its top half showed). It is now whole over the board and tucks under the cards below as it settles into the stack.
 - Fixed: drawn cards slid in and then jumped into place; they now land exactly in their spot.
 - Drawn cards now slide into the hand over the board instead of appearing from under it (the sliding card is drawn above everything, then settles into the hand).
