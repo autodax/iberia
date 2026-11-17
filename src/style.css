@@ -656,5 +656,6 @@ html.uiScale #choiceDialog.sideChoice{max-height:calc((100vh - 16px) / var(--ui)
 html.uiScale #eventDialog.sideDialog{max-height:calc(60vh / var(--ui))}
 html.uiScale #pawnPanel,html.uiScale #tokTip{scale:var(--ui);transform-origin:0 0}
 html.uiScale #fx>*,html.uiScale #turnPop,html.uiScale #remoteNote{scale:var(--ui)}
-html.uiScale #cardPreview{scale:var(--ui);transform-origin:100% 50%;right:calc(var(--stripW,214px) + 40px)}
+html.uiScale #cardPreview{scale:var(--ui);transform-origin:100% 0;right:calc(var(--stripW,214px) + 40px)}
 html.uiScale #app.bm{padding:2px;border-radius:0}html.uiScale #app.bm main{gap:3px;justify-content:center}
+html.uiScale #ring button{scale:var(--ui)}html.uiScale #app.bm #rightStrip{position:relative;z-index:8}
