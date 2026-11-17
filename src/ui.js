@@ -522,6 +522,9 @@ function nextFx(){clearTimeout(fxTimer);let box=$('fx');box.replaceChildren();bo
  if(!sticky){let bar=el('div',{className:'fxBar',title:'Closes automatically; click to continue now'},sk);el('i',{style:'animation-duration:'+ms+'ms'},bar);fxTimer=setTimeout(nextFx,ms)}
  box.className='on';box.onclick=()=>nextFx();if(btn)setTimeout(()=>btn.focus({preventScroll:true}),0)}
 // Space bar: show where every pawn is (this screen only)
+// Tapping the compass rose on the board does the same as the space bar (for the iPad): the pawns pulse so you can find them.
+const COMPASS=[1031,865,55];
+document.addEventListener('click',e=>{if(!bmOn||fxCurrent||document.querySelector('dialog[open]')||!e.target.closest||!e.target.closest('#board'))return;let m=$('board').getScreenCTM();if(!m)return;let x=(e.clientX-m.e)/m.a,y=(e.clientY-m.f)/m.d;if(Math.hypot(x-COMPASS[0],y-COMPASS[1])<COMPASS[2]){state.players.forEach((_,i)=>pawnPing(i))}});
 document.addEventListener('keydown',e=>{if(e.key!==' '||e.repeat||fxCurrent||!bmOn||document.querySelector('dialog[open]')||/INPUT|SELECT|TEXTAREA|BUTTON|A/.test(document.activeElement?.tagName||''))return;e.preventDefault();state.players.forEach((_,i)=>pawnPing(i))});
 document.addEventListener('keydown',e=>{if(fxCurrent&&(e.key==='Enter'||e.key===' '||e.key==='Escape')&&!document.querySelector('dialog[open]')){e.preventDefault();nextFx()}});
 
