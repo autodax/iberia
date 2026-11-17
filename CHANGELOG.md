@@ -1,4 +1,5 @@
 ## Latest
+- Time Traveler: the hover preview of an infection card is larger (about the same visual weight as a city card preview).
 - New game, step 3 (local games): every player's role list starts open, so there's no need to press Change first.
 - The scaled interface is now the default for everyone, with no address suffix needed. Add ?scale=0 to the address to switch back to the old fixed-size layout (remembered by that browser; ?scale=1 turns scaling back on).
 - Fixed: a card sliding into the hand was cut off (only its top half showed). It is now whole over the board and tucks under the cards below as it settles into the stack.
