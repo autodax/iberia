@@ -95,8 +95,8 @@ dialog label{margin:8px 0}dialog p{font-size:13px;line-height:1.5}
 .alert img.tok{width:46px;height:46px;vertical-align:middle;margin-right:6px}
 .alert.win{border-color:var(--accent)}.alert.win h3{color:var(--accent)}
 @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
-@media(max-height:760px){.action{padding:5px 4px}aside{padding:8px;gap:5px}#actionForm{gap:9px}button{padding:5px 8px}}
-@media(max-width:1100px){header strong{font-size:13px}.handTitle{font-size:12.5px}.card{font-size:12.5px}}
+@media(max-height:760px){:where(html:not(.uiScale)) .action{padding:5px 4px}:where(html:not(.uiScale)) aside{padding:8px;gap:5px}:where(html:not(.uiScale)) #actionForm{gap:9px}:where(html:not(.uiScale)) button{padding:5px 8px}}
+@media(max-width:1100px){:where(html:not(.uiScale)) header strong{font-size:13px}:where(html:not(.uiScale)) .handTitle{font-size:12.5px}:where(html:not(.uiScale)) .card{font-size:12.5px}}
 
 #setupPanel,#actionArea,#nextPhase,#message,#resources{flex:none}
 #cityList{flex:1 1 0;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--tanBorder);padding-top:6px}
@@ -516,7 +516,7 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #choiceDialog.sideChoice{position:fixed;margin:0;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.4);box-sizing:border-box;max-height:calc(100vh - 16px);overflow:auto}#choiceDialog.sideChoice #choiceCard .card,#choiceDialog.sideChoice #choiceCard>*{max-width:100%}
 
 .saveName{display:flex;align-items:center;gap:8px;font-size:15px;margin:0 0 8px}.saveName input{flex:1;font-size:15px;padding:5px 8px;border:1px solid #9a8a62;border-radius:6px;background:#fffaf0}
-@media(max-width:1399px){#app.bm .handTitle{white-space:normal;line-height:15px;font-size:13px;align-items:flex-start}}
+@media(max-width:1399px){:where(html:not(.uiScale)) #app.bm .handTitle{white-space:normal;line-height:15px;font-size:13px;align-items:flex-start}}
 #app.bm .pileTray button.card.thumb,#app.bm .peekOne button.card.thumb{width:56px;max-width:56px;flex:none;aspect-ratio:2/3;height:auto}
 #app.bm .pileTray{max-height:40vh;overflow:auto}
 .alert.cure{max-width:none;box-sizing:border-box}
@@ -643,12 +643,17 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #onSeatCount .choiceGroup,#onSettings .choiceGroup{margin-top:4px}
 
 /* Smaller screens (an iPad): tighter dialogs so the New game wizard and Settings fit. */
-@media (max-width:1250px),(max-height:850px){
- dialog{padding:11px 13px;width:min(600px,94vw)}dialog h2{font-size:16px;margin-bottom:8px}
- #menu,#logDialog,#onlineDialog{font-size:13.5px}#menu p,#logDialog p,#onlineDialog p{font-size:13px;line-height:1.4;margin:6px 0}#menu h3,#logDialog h3,#onlineDialog h3{font-size:14px;margin:10px 0 4px}
- #menu button,#logDialog button,#onlineDialog button,#menu input,#onlineDialog input,#menu select,#menu label,#onlineDialog label{font-size:13px}#logContent{font-size:13px}
- dialog button{padding:4px 8px}dialog .choiceGroup .chip{font-size:12px;padding:2px 7px}
- .wsec{padding:6px 10px}.wh{gap:8px}.wn{width:22px;height:22px;font-size:12px}.wt{font-size:14px}.wsum{font-size:12.5px}.wb{margin-top:7px}
- .wpaths{gap:6px}.wpath{padding:7px 10px!important;font-size:13.5px}.wpath small{font-size:11.5px;margin-top:2px}
- .wnext{margin-top:8px}.wstart>button.primary{font-size:14px;padding:8px}
+@media (max-width:1250px),(max-height:850px){:where(html:not(.uiScale)) dialog{padding:11px 13px;width:min(600px,94vw)}:where(html:not(.uiScale)) dialog h2{font-size:16px;margin-bottom:8px}:where(html:not(.uiScale)) #menu,:where(html:not(.uiScale)) #logDialog,:where(html:not(.uiScale)) #onlineDialog{font-size:13.5px}:where(html:not(.uiScale)) #menu p,:where(html:not(.uiScale)) #logDialog p,:where(html:not(.uiScale)) #onlineDialog p{font-size:13px;line-height:1.4;margin:6px 0}:where(html:not(.uiScale)) #menu h3,:where(html:not(.uiScale)) #logDialog h3,:where(html:not(.uiScale)) #onlineDialog h3{font-size:14px;margin:10px 0 4px}:where(html:not(.uiScale)) #menu button,:where(html:not(.uiScale)) #logDialog button,:where(html:not(.uiScale)) #onlineDialog button,:where(html:not(.uiScale)) #menu input,:where(html:not(.uiScale)) #onlineDialog input,:where(html:not(.uiScale)) #menu select,:where(html:not(.uiScale)) #menu label,:where(html:not(.uiScale)) #onlineDialog label{font-size:13px}:where(html:not(.uiScale)) #logContent{font-size:13px}:where(html:not(.uiScale)) dialog button{padding:4px 8px}:where(html:not(.uiScale)) dialog .choiceGroup .chip{font-size:12px;padding:2px 7px}:where(html:not(.uiScale)) .wsec{padding:6px 10px}:where(html:not(.uiScale)) .wh{gap:8px}:where(html:not(.uiScale)) .wn{width:22px;height:22px;font-size:12px}:where(html:not(.uiScale)) .wt{font-size:14px}:where(html:not(.uiScale)) .wsum{font-size:12.5px}:where(html:not(.uiScale)) .wb{margin-top:7px}:where(html:not(.uiScale)) .wpaths{gap:6px}:where(html:not(.uiScale)) .wpath{padding:7px 10px!important;font-size:13.5px}:where(html:not(.uiScale)) .wpath small{font-size:11.5px;margin-top:2px}:where(html:not(.uiScale)) .wnext{margin-top:8px}:where(html:not(.uiScale)) .wstart>button.primary{font-size:14px;padding:8px}
 }
+
+/* Scaled interface (html.uiScale): the side panel and pop-ups are laid out at Mac size and scaled as a whole. */
+html.uiScale #app.bm #rightStrip{width:var(--pw);height:var(--ph);max-height:none;scale:var(--ps);transform-origin:0 0}
+html.uiScale dialog{scale:var(--ui)}
+html.uiScale dialog:modal{max-height:calc(88dvh / var(--ui))}
+html.uiScale dialog:not(:modal){transform-origin:0 0}
+html.uiScale #choiceDialog.mapPick:not(.pawnAlert){transform-origin:100% 0}
+html.uiScale #choiceDialog.sideChoice{max-height:calc((100vh - 16px) / var(--ui))}
+html.uiScale #eventDialog.sideDialog{max-height:calc(60vh / var(--ui))}
+html.uiScale #pawnPanel,html.uiScale #tokTip{scale:var(--ui);transform-origin:0 0}
+html.uiScale #fx>*,html.uiScale #turnPop,html.uiScale #remoteNote{scale:var(--ui)}
+html.uiScale #cardPreview{scale:var(--ui);transform-origin:100% 50%;right:calc(var(--stripW,214px) + 40px)}
