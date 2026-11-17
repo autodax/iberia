@@ -1,6 +1,7 @@
 /* Approved v05 aesthetic: muted green surroundings, parchment panels, tan buttons, cream cards with colored edge accents. */
 :root{--green:#516b60;--greenDark:#3f574d;--greenDeep:#2f453c;--parch:#ecdcb9;--parchLight:#f6e8cd;--tan:#e6cf9f;--tanHover:#dcc08a;--tanBorder:#b39463;--ink:#2e4339;--inkSoft:#5c6f62;--title:#f1dcae;--accent:#4c6b5c;--big:#3d5a4b;--bigHover:#34503f;--warn:#9c3b25;--cyan:#d9a400}
 *{box-sizing:border-box}[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%} /* iPad Safari otherwise enlarges text in the narrow side panel and dialogs */
 html,body{height:100%;margin:0;overflow:hidden;background:#aaa474;color:var(--ink);font:14px system-ui,-apple-system,Segoe UI,sans-serif}
 body{display:grid;place-items:center}
 button,select,input{font:inherit}
@@ -640,3 +641,14 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 #onSeats .onBy{margin-top:8px;border-top:1px dashed #d8c9a3;padding-top:6px}
 .onByLabel{font-size:12px;color:#6f6448;width:100%}
 #onSeatCount .choiceGroup,#onSettings .choiceGroup{margin-top:4px}
+
+/* Smaller screens (an iPad): tighter dialogs so the New game wizard and Settings fit. */
+@media (max-width:1250px),(max-height:850px){
+ dialog{padding:11px 13px;width:min(600px,94vw)}dialog h2{font-size:16px;margin-bottom:8px}
+ #menu,#logDialog,#onlineDialog{font-size:13.5px}#menu p,#logDialog p,#onlineDialog p{font-size:13px;line-height:1.4;margin:6px 0}#menu h3,#logDialog h3,#onlineDialog h3{font-size:14px;margin:10px 0 4px}
+ #menu button,#logDialog button,#onlineDialog button,#menu input,#onlineDialog input,#menu select,#menu label,#onlineDialog label{font-size:13px}#logContent{font-size:13px}
+ dialog button{padding:4px 8px}dialog .choiceGroup .chip{font-size:12px;padding:2px 7px}
+ .wsec{padding:6px 10px}.wh{gap:8px}.wn{width:22px;height:22px;font-size:12px}.wt{font-size:14px}.wsum{font-size:12.5px}.wb{margin-top:7px}
+ .wpaths{gap:6px}.wpath{padding:7px 10px!important;font-size:13.5px}.wpath small{font-size:11.5px;margin-top:2px}
+ .wnext{margin-top:8px}.wstart>button.primary{font-size:14px;padding:8px}
+}

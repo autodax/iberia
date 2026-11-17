@@ -1,4 +1,5 @@
 ## Latest
+- iPad: Safari no longer enlarges the text in the side panel and dialogs; the New game and Settings windows are more compact on smaller screens.
 - Online: a Nurse or Civil Engineer seat no longer gets its starting question while everyone is still in the waiting room (it closed the New game window).
 - New game wizard: once you open a player's role list it stays open while you try roles (the ability updates as you click), until you press Next. The Next buttons just say Next, and the host's invite button says "Everyone's here".
 - Online "Seats and roles" now uses the same boxes as local play: pawn and role, the list of roles, the ability below, and who plays the seat. Number of players and Epidemics are buttons.
