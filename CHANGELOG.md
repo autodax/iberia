@@ -1,4 +1,5 @@
 ## Latest
+- Fixed: a card sliding into the hand was cut off (only its top half showed). It is now whole over the board and tucks under the cards below as it settles into the stack.
 - Fixed: drawn cards slid in and then jumped into place; they now land exactly in their spot.
 - Drawn cards now slide into the hand over the board instead of appearing from under it (the sliding card is drawn above everything, then settles into the hand).
 - Scaled interface: the buttons beside the pawn (Undo, End actions, the action ring) scale too; card previews sit centred vertically; the side panel is drawn above the board so cards slide into the hand over it.

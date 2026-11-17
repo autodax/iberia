@@ -858,14 +858,18 @@ function render(){setTimeout(warmNext,0);{let nf=state.status==='playing'&&!['ep
 // Drawn cards slide into the hand from the board side. The hand and the side panel clip their contents, so the sliding card is drawn as a copy in a layer above everything; the real card stays hidden until the copy arrives.
 const slideGhosts=new Map();
 {const r0=render;render=function(){let v=r0.apply(this,arguments);try{syncSlideGhosts()}catch(e){}return v}}
-function syncSlideGhosts(){let now=performance.now(),Lr=$('slideFx'),seen=new Set();
+function syncSlideGhosts(){let now=performance.now(),seen=new Set();
+ // each copy sits in its own full-screen layer; the layer cuts out the part of the stack covered by the cards below it, so the card tucks under them as it arrives (as before), but is whole while it is over the board
+ let place=(k,b,w)=>{let r=b.getBoundingClientRect(),g=w.firstChild,cs=getComputedStyle(b),hole='';
+  let below=[];for(let x=b.nextElementSibling;x;x=x.nextElementSibling)if(x.classList.contains('card')&&x.style.visibility!=='hidden'){let q=x.getBoundingClientRect();if(Math.abs(q.left-r.left)<r.width/2&&q.top>r.top+4)below.push(q)}
+  if(below.length){let top=Math.min(...below.map(q=>q.top)),bot=Math.max(r.bottom,...below.map(q=>q.bottom));hole=` M${r.left-12} ${top} H${r.right+12} V${bot+12} H${r.left-12} Z`}
+  w.style.clipPath=hole?`path(evenodd,"M0 0 H${innerWidth} V${innerHeight} H0 Z${hole}")`:'';
+  g.style.cssText+=`;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;background-image:${b.style.backgroundImage||cs.backgroundImage};background-size:${cs.backgroundSize};background-position:${cs.backgroundPosition};background-color:${cs.backgroundColor};border-radius:${cs.borderRadius};box-shadow:${cs.boxShadow}`;b.style.visibility='hidden'};
  for(let b of [...document.querySelectorAll('#app.bm .handCards .card.slideIn')]){let k=b.dataset.k,t=now-(slideIn.get(k)||0);b.classList.remove('slideIn');b.style.animationDelay='';if(!(t<900))continue;seen.add(k);
-  if(!Lr){Lr=el('div',{id:'slideFx'},document.body);Lr.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:41'}
-  let r=b.getBoundingClientRect(),nx=b.nextElementSibling,nr=nx?nx.getBoundingClientRect():null,vis=nr&&Math.abs(nr.left-r.left)<r.width/2&&nr.top>r.top+4&&nr.top<r.bottom?nr.top-r.top:r.height,cs=getComputedStyle(b),g=slideGhosts.get(k);
-  if(!g){g=el('div',{className:'slideGhost'},Lr);slideGhosts.set(k,g);g.style.setProperty('--sx',(-260*r.width/(b.offsetWidth||r.width))+'px');g.style.animationDelay=-t+'ms';setTimeout(()=>{g.remove();slideGhosts.delete(k);for(let x of document.querySelectorAll('.handCards .card[data-k="'+k+'"]'))x.style.visibility=''},Math.max(0,900-t))}
-  let inner=g.firstChild||el('div',{},g);inner.style.cssText=`position:absolute;inset:0 0 auto 0;height:${r.height}px;background-image:${b.style.backgroundImage||cs.backgroundImage};background-size:${cs.backgroundSize};background-position:${cs.backgroundPosition};background-color:${cs.backgroundColor};border-radius:${cs.borderRadius};box-shadow:${cs.boxShadow}`;
-  g.style.left=r.left+'px';g.style.top=r.top+'px';g.style.width=r.width+'px';g.style.height=vis+'px';b.style.visibility='hidden'}
- for(let [k,g] of slideGhosts)if(!seen.has(k)){let b=[...document.querySelectorAll('#app.bm .handCards .card')].find(x=>x.dataset.k===k);if(!b){g.remove();slideGhosts.delete(k)}else{let r=b.getBoundingClientRect();g.style.left=r.left+'px';g.style.top=r.top+'px';b.style.visibility='hidden'}}}
+  let w=slideGhosts.get(k);
+  if(!w){let r=b.getBoundingClientRect();w=el('div',{className:'slideLayer'},document.body);let g=el('div',{className:'slideGhost'},w);slideGhosts.set(k,w);g.style.setProperty('--sx',(-260*r.width/(b.offsetWidth||r.width))+'px');g.style.animationDelay=-t+'ms';setTimeout(()=>{w.remove();slideGhosts.delete(k);for(let x of document.querySelectorAll('.handCards .card'))if(x.dataset.k===k)x.style.visibility=''},Math.max(0,900-t))}
+  place(k,b,w)}
+ for(let [k,w] of slideGhosts)if(!seen.has(k)){let b=[...document.querySelectorAll('#app.bm .handCards .card')].find(x=>x.dataset.k===k);if(!b){w.remove();slideGhosts.delete(k)}else place(k,b,w)}}
 function eventForm(card,box,seat,onChange){let m={},n=state.players.length,activeLabel=null,refresh=()=>{box.replaceChildren();build();onChange&&onChange();requestAnimationFrame(()=>fitEventDialog())};m._auto={};
  // Board view: choose cities / railway lines on the map; the dialog sits in the side strip and says what to click
  function mapField(label,o){let row=el('div',{className:'field mapFld'},box);el('div',{className:'label',textContent:label},row);el('p',{className:'detail',textContent:o.text},row);
