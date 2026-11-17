@@ -1,12 +1,16 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Iberia board game</title><style>/*CSS*/</style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<filter id="cubeBlackFx" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+<filter id="cubeBlackFx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
 <feComponentTransfer in="SourceGraphic" result="lift"><feFuncR type="linear" slope="1.4" intercept="0.08"/><feFuncG type="linear" slope="1.4" intercept="0.08"/><feFuncB type="linear" slope="1.4" intercept="0.11"/></feComponentTransfer>
 <feColorMatrix in="lift" type="luminanceToAlpha" result="lum"/>
 <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="bump"/>
 <feSpecularLighting in="bump" surfaceScale="3" specularConstant="0.5" specularExponent="22" lighting-color="#ffffff" result="spec"><fePointLight x="-40" y="-60" z="120"/></feSpecularLighting>
 <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn"/>
-<feMerge><feMergeNode in="lift"/><feMergeNode in="specIn"/></feMerge>
+<feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="gb0"/><feComponentTransfer in="gb0" result="gb"><feFuncA type="linear" slope="2.6"/></feComponentTransfer>
+<feFlood flood-color="#f6e7c1" result="cream"/>
+<feComposite in="cream" in2="gb" operator="in" result="glow1"/>
+<feMerge result="glow"><feMergeNode in="glow1"/><feMergeNode in="glow1"/></feMerge>
+<feMerge><feMergeNode in="glow"/><feMergeNode in="lift"/><feMergeNode in="specIn"/></feMerge>
 </filter>
 <filter id="cubeWoodFx" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
 <feColorMatrix in="SourceGraphic" type="saturate" values=".72" result="sat"/>

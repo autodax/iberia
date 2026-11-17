@@ -1,4 +1,5 @@
 ## Latest
+- Black cubes: the glow is now cream (the light map colour) and built into the cube's own filter, so it shows in Safari and in every city. San Sebastián's cubes sit just below its name, clear of the infection-rate numbers.
 - Cubes keep a fixed spot at each city: every colour has room for three cubes and they fill those slots in order, so treating or adding a cube never moves the others. The cubes only shift when a pawn arrives at or leaves the city.
 - Black cubes on the map have a small white glow so they stand out against dark parts of the map.
 - Tapping or clicking the compass rose on the board now plays the pawn reveal animation, same as the space bar (for the iPad).
