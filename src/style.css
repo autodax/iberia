@@ -626,3 +626,17 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .roleBox .field{display:none}.roleBox.picking .field{display:block;margin-top:8px}
 .roleBox .field .label{display:none}
 .roleBox .roleText{font-size:12.5px;line-height:1.4;color:#4a4130;margin-top:4px}
+
+/* Civil Engineer choosing a connection: the candidate tracks glow and pulse */
+.ceEdge .edgeGlow{opacity:1;animation:cePulse 1.3s ease-in-out infinite}
+.ceEdge:hover .edgeGlow{animation:none;opacity:1;stroke-width:12}
+@keyframes cePulse{0%,100%{opacity:.35;stroke-width:7}50%{opacity:1;stroke-width:12}}
+@media (prefers-reduced-motion:reduce){.ceEdge .edgeGlow{animation:none;opacity:.85}}
+
+/* online seats use the same boxes as the local role picks */
+#onSeats.rolesGrid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+#onSeats .onSeat.roleBox{display:block;border-bottom:1px solid #d8c9a3;padding:8px 10px}
+#onSeats .seatRoles{margin-top:8px}
+#onSeats .onBy{margin-top:8px;border-top:1px dashed #d8c9a3;padding-top:6px}
+.onByLabel{font-size:12px;color:#6f6448;width:100%}
+#onSeatCount .choiceGroup,#onSettings .choiceGroup{margin-top:4px}

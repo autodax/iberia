@@ -51,7 +51,7 @@
 
 <section class="wsec" data-step="players"><div class="wh"><b class="wn">2</b><div class="wtt"><span class="wt">Players</span><span class="wsum"></span></div><button type="button" class="wchg">Change</button></div>
 <div class="wb">
-<div class="wpart" data-path="local"><div class="seatRow"><label>Number of players<select id="playerCount"><option>2</option><option>3</option><option>4</option><option>5</option></select></label></div><button type="button" class="primary wnext" data-to="roles">Next: roles</button></div>
+<div class="wpart" data-path="local"><div class="seatRow"><label>Number of players<select id="playerCount"><option>2</option><option>3</option><option>4</option><option>5</option></select></label></div><button type="button" class="primary wnext" data-to="roles">Next</button></div>
 <div class="wpart" data-path="host join">
 <div class="preRoom" id="onlineStart">
 <label>Your name<input id="onName" maxlength="20" autocomplete="nickname" placeholder="Shown to the other players"></label>
@@ -64,7 +64,7 @@
 <div class="onCodeRow"><div><div class="detail">Room code</div><div id="onCodeBig" class="onCodeBig"></div></div><div id="onShare" class="dialogButtons"><button id="onCopy">Copy invite link</button></div></div>
 <p class="detail wpart" data-path="host">Send the code or link. Your friends open this page, click <b>New</b>, choose <b>Join an online game</b>, and type their name and the code.</p>
 <h3>Who's here</h3><div id="onPeople"></div>
-<button type="button" class="primary wnext wpart" data-path="host" data-to="roles">Everyone's here: next, roles</button>
+<button type="button" class="primary wnext wpart" data-path="host" data-to="roles">Everyone's here</button>
 <p class="detail wpart" data-path="join">You're in. Pick your seat in the next step while the host sets up the game.</p>
 </div>
 <p id="onMsg" class="detail" role="status"></p>
@@ -109,8 +109,8 @@
 
 <section class="wsec" data-step="roles"><div class="wh"><b class="wn">3</b><div class="wtt"><span class="wt">Roles</span><span class="wsum"></span></div><button type="button" class="wchg">Change</button></div>
 <div class="wb">
-<div class="wpart" data-path="local"><div id="roleFields" class="rolesGrid"></div><div class="dialogButtons"><button id="randomRoles">🎲 Random roles</button></div><label class="check"><input id="baseRoles" type="checkbox">Use only the rule book's 7 base roles</label><details id="leaveOut" class="leaveOut"></details><button type="button" class="primary wnext" data-to="diff">Next: difficulty</button></div>
-<div class="wpart" data-path="host join"><div id="onSeatCount"></div><div id="onSeats"></div><p id="onUnclaimed" class="detail" hidden>Seats nobody takes are played by you, the host.</p><p id="onWait" class="detail" hidden>Waiting for the host to start the game. Pick a seat above if you want one.</p><button type="button" class="primary wnext wpart" data-path="host" data-to="diff">Next: difficulty</button></div>
+<div class="wpart" data-path="local"><div id="roleFields" class="rolesGrid"></div><div class="dialogButtons"><button id="randomRoles">🎲 Random roles</button></div><label class="check"><input id="baseRoles" type="checkbox">Use only the rule book's 7 base roles</label><details id="leaveOut" class="leaveOut"></details><button type="button" class="primary wnext" data-to="diff">Next</button></div>
+<div class="wpart" data-path="host join"><div id="onSeatCount"></div><div id="onSeats"></div><p id="onUnclaimed" class="detail" hidden>Seats nobody takes are played by you, the host.</p><p id="onWait" class="detail" hidden>Waiting for the host to start the game. Pick a seat above if you want one.</p><button type="button" class="primary wnext wpart" data-path="host" data-to="diff">Next</button></div>
 </div></section>
 
 <section class="wsec" data-step="diff"><div class="wh"><b class="wn">4</b><div class="wtt"><span class="wt">Difficulty and challenges</span><span class="wsum"></span></div><button type="button" class="wchg">Change</button></div>

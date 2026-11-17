@@ -1,4 +1,8 @@
 ## Latest
+- Online: a Nurse or Civil Engineer seat no longer gets its starting question while everyone is still in the waiting room (it closed the New game window).
+- New game wizard: once you open a player's role list it stays open while you try roles (the ability updates as you click), until you press Next. The Next buttons just say Next, and the host's invite button says "Everyone's here".
+- Online "Seats and roles" now uses the same boxes as local play: pawn and role, the list of roles, the ability below, and who plays the seat. Number of players and Epidemics are buttons.
+- Civil Engineer: when choosing which connection to stand on, the possible tracks glow and pulse on the map (instead of highlighting the other city).
 - The New game window is now a step-by-step wizard, like the start screen: 1 How to play (this device, host online, join online, or save/restore), 2 Players (or Invite your players, with the room code and who has joined), 3 Roles, 4 Difficulty and challenges, 5 Start. Finished steps fold into a one-line summary with a Change link.
 - Roles: each player's role sits in a box with its pawn and full ability; "Change" opens the list of roles. In the folded summary, click a role name to read its ability.
 - The heartbeat now plays each time the Infection deck lights up for the next Infection card, not only for the first.

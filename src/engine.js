@@ -102,7 +102,7 @@ function regionLabel(r){return r+' — '+R[r].adjacent_cities.map(k=>C[k].name).
 function relocate(s,seat,to,ctx,withCity,allowed){let q=s.players[seat],from=q.city;
  if(q.role==='palliative_nurse'&&from&&from!==to){let ok=COLORS.filter(k=>s.cubes[from][k]>0&&s.cubes[to][k]<3);if(ok.length){let k=choice(ctx,['none',...ok],'Palliative Care Nurse: bring a disease cube along to '+C[to].name+'?',['No cube',...ok.map(c=>'Bring a '+c+' cube')]);if(k!=='none'){s.cubes[from][k]--;s.cubes[to][k]++;s.log.push('Palliative Care Nurse carries a '+k+' cube to '+C[to].name)}}}
  q.city=to;
- if(q.role==='civil_engineer'){let o=allowed||ADJ[to];requireRule(!withCity||o.includes(withCity),'Not a valid connection');q.city2=withCity||choice(ctx,o,'Civil Engineer: stand on the connection between '+C[to].name+' and which city?',o.map(n=>C[to].name+' – '+C[n].name));s.log.push('Civil Engineer stands between '+C[to].name+' and '+C[q.city2].name)}
+ if(q.role==='civil_engineer'){let o=allowed||ADJ[to];requireRule(!withCity||o.includes(withCity),'Not a valid connection');q.city2=withCity||choice(ctx,o,'Civil Engineer: stand on the connection between '+C[to].name+' and which city?',o.map(n=>C[to].name+' – '+C[n].name),{edgeFrom:to});s.log.push('Civil Engineer stands between '+C[to].name+' and '+C[q.city2].name)}
  if(q.role==='nurse'){let opts=C[to].region_ids.slice();s.prevention=choice(ctx,opts,'Nurse: choose the region for the prevention token next to '+C[to].name,opts.map(regionLabel));s.log.push('Prevention token → '+s.prevention)}}
 // Record a prevented cube on the alert that caused it (shown in the popup, then animated on the board).
 function placeHospital(s,color,city){s.hospitals[color]=city;

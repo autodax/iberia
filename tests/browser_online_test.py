@@ -109,7 +109,11 @@ async def main():
       r=await B.evaluate('perform({type:"draw"})');ok(r==False,'a forced command from the guest is refused')
       ok(await A.evaluate('state.actions')==4,'refused command changed nothing')
       # host acts: first legal carriage move, through the real perform()
-      await A.evaluate('(async()=>{await perform({...legal.carriage[0]})})()')
+      await A.evaluate('void perform({...legal.carriage[0]})')   # not awaited: a role may ask a question (a passenger, a token) first
+      for _ in range(20):
+        if await B.evaluate('state.actions===3'):break
+        if await A.evaluate("document.getElementById('choiceDialog').open"):await A.locator('#choiceOptions button').first.click()
+        await A.wait_for_timeout(200)
       await B.wait_for_function('state.actions===3',timeout=5000)
       ok(await A.evaluate('netSum()')==await B.evaluate('netSum()'),'host move shows on the guest and states match')
       # host ends actions and works through the draw and infection steps until it is Ben's turn
@@ -132,7 +136,11 @@ async def main():
       ok(await A.evaluate('Object.values(legal).every(v=>v.length===0)'),'host has no actions on the guest\'s turn')
       ok(await A.evaluate('perform({type:"draw"})')==False,'host cannot act for Ben\'s seat while he is connected')
       await B.screenshot(path='/tmp/online_play_guest.png')
-      await B.evaluate('(async()=>{await perform({...legal.carriage[0]})})()')
+      await B.evaluate('void perform({...legal.carriage[0]})')   # not awaited: a role may ask a question (a passenger, a token) first
+      for _ in range(20):
+        if await A.evaluate('state.actions===3&&state.active===1'):break
+        if await B.evaluate("document.getElementById('choiceDialog').open"):await B.locator('#choiceOptions button').first.click()
+        await B.wait_for_timeout(200)
       await A.wait_for_function('state.actions===3&&state.active===1',timeout=5000)
       ok(await A.evaluate('netSum()')==await B.evaluate('netSum()'),'guest move shows on the host and states match')
       ok(await B.evaluate('document.body.innerText.includes("(you)")'),'guest sees which hand is his')
@@ -164,7 +172,7 @@ async def main():
       await C.evaluate('window.__q=[];let oq=queueFx;queueFx=function(l){__q.push(JSON.stringify(l).slice(0,120));return oq(l)}')
       await A.evaluate('''(()=>{let id=MAP.cities.map(c=>c.id).find(k=>Object.keys(R).filter(r=>R[r].adjacent_cities.includes(k)).length>=2);let rs=Object.keys(R).filter(r=>R[r].adjacent_cities.includes(id));
         state.prevention=null;for(let r in state.water)state.water[r]=0;state.water[rs[0]]=1;state.water[rs[1]]=1;state.waterSupply=Math.max(0,state.waterSupply-2);
-        state.infectionDeck=state.infectionDeck.filter(k=>k!==id);state.infectionDeck.unshift(id);state.phase='infection';state.infectionRemaining=1;state.actions=0;state.active=0;render();void perform({type:'infect'})})()''')
+        state.infectionDeck=state.infectionDeck.filter(k=>k!==id);state.infectionDeck.unshift(id);state.phase='infection';state.infectionRemaining=1;state.actions=0;state.active=0;resetFx();if(document.getElementById('choiceDialog').open)document.getElementById('choiceDialog').close();busy=false;chooseQueue=Promise.resolve();render();void perform({type:'infect'})})()''')
       await A.wait_for_selector('#choiceDialog[open]',timeout=8000)
       await C.wait_for_function('__q.some(s=>s.includes("preview"))',timeout=6000)
       ok(True,'the other player sees the drawn infection card before the token is chosen')
