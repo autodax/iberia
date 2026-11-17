@@ -1,4 +1,5 @@
 ## Latest
+- Fixed: drawn cards slid in and then jumped into place; they now land exactly in their spot.
 - Drawn cards now slide into the hand over the board instead of appearing from under it (the sliding card is drawn above everything, then settles into the hand).
 - Scaled interface: the buttons beside the pawn (Undo, End actions, the action ring) scale too; card previews sit centred vertically; the side panel is drawn above the board so cards slide into the hand over it.
 - Scaled interface: thinner margins around the board and side panel; the side panel no longer gets too wide on wide windows (the board and panel are centred instead); setup questions (Nurse token, Civil Engineer track) open just left of the side panel, level with the city you clicked.

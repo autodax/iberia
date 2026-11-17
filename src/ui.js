@@ -859,13 +859,13 @@ function render(){setTimeout(warmNext,0);{let nf=state.status==='playing'&&!['ep
 const slideGhosts=new Map();
 {const r0=render;render=function(){let v=r0.apply(this,arguments);try{syncSlideGhosts()}catch(e){}return v}}
 function syncSlideGhosts(){let now=performance.now(),Lr=$('slideFx'),seen=new Set();
- for(let b of document.querySelectorAll('#app.bm .handCards .card.slideIn')){let k=b.dataset.k,t=now-(slideIn.get(k)||0);if(!(t<900))continue;seen.add(k);
+ for(let b of [...document.querySelectorAll('#app.bm .handCards .card.slideIn')]){let k=b.dataset.k,t=now-(slideIn.get(k)||0);b.classList.remove('slideIn');b.style.animationDelay='';if(!(t<900))continue;seen.add(k);
   if(!Lr){Lr=el('div',{id:'slideFx'},document.body);Lr.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:41'}
   let r=b.getBoundingClientRect(),nx=b.nextElementSibling,nr=nx?nx.getBoundingClientRect():null,vis=nr&&Math.abs(nr.left-r.left)<r.width/2&&nr.top>r.top+4&&nr.top<r.bottom?nr.top-r.top:r.height,cs=getComputedStyle(b),g=slideGhosts.get(k);
   if(!g){g=el('div',{className:'slideGhost'},Lr);slideGhosts.set(k,g);g.style.setProperty('--sx',(-260*r.width/(b.offsetWidth||r.width))+'px');g.style.animationDelay=-t+'ms';setTimeout(()=>{g.remove();slideGhosts.delete(k);for(let x of document.querySelectorAll('.handCards .card[data-k="'+k+'"]'))x.style.visibility=''},Math.max(0,900-t))}
   let inner=g.firstChild||el('div',{},g);inner.style.cssText=`position:absolute;inset:0 0 auto 0;height:${r.height}px;background-image:${b.style.backgroundImage||cs.backgroundImage};background-size:${cs.backgroundSize};background-position:${cs.backgroundPosition};background-color:${cs.backgroundColor};border-radius:${cs.borderRadius};box-shadow:${cs.boxShadow}`;
   g.style.left=r.left+'px';g.style.top=r.top+'px';g.style.width=r.width+'px';g.style.height=vis+'px';b.style.visibility='hidden'}
- for(let [k,g] of slideGhosts)if(!seen.has(k)){g.remove();slideGhosts.delete(k)}}
+ for(let [k,g] of slideGhosts)if(!seen.has(k)){let b=[...document.querySelectorAll('#app.bm .handCards .card')].find(x=>x.dataset.k===k);if(!b){g.remove();slideGhosts.delete(k)}else{let r=b.getBoundingClientRect();g.style.left=r.left+'px';g.style.top=r.top+'px';b.style.visibility='hidden'}}}
 function eventForm(card,box,seat,onChange){let m={},n=state.players.length,activeLabel=null,refresh=()=>{box.replaceChildren();build();onChange&&onChange();requestAnimationFrame(()=>fitEventDialog())};m._auto={};
  // Board view: choose cities / railway lines on the map; the dialog sits in the side strip and says what to click
  function mapField(label,o){let row=el('div',{className:'field mapFld'},box);el('div',{className:'label',textContent:label},row);el('p',{className:'detail',textContent:o.text},row);
