@@ -660,3 +660,4 @@ html.uiScale #cardPreview{scale:var(--ui);transform-origin:100% 0;right:calc(var
 html.uiScale #app.bm{padding:2px;border-radius:0}html.uiScale #app.bm main{gap:3px;justify-content:center}
 html.uiScale #ring button{scale:var(--ui)}html.uiScale #app.bm #rightStrip{position:relative;z-index:8}
 .slideLayer{position:fixed;inset:0;pointer-events:none;z-index:41}.slideGhost{position:fixed;animation:ghostSlide .9s cubic-bezier(.2,.8,.25,1) both}@keyframes ghostSlide{0%{transform:translateX(var(--sx));opacity:0}100%{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){.slideGhost{animation:none}}
+#board .cube-black{filter:url(#cubeBlackFx) drop-shadow(0 0 2.5px #fff) drop-shadow(0 0 1px #fff)}
