@@ -659,3 +659,4 @@ html.uiScale #fx>*,html.uiScale #turnPop,html.uiScale #remoteNote{scale:var(--ui
 html.uiScale #cardPreview{scale:var(--ui);transform-origin:100% 0;right:calc(var(--stripW,214px) + 40px)}
 html.uiScale #app.bm{padding:2px;border-radius:0}html.uiScale #app.bm main{gap:3px;justify-content:center}
 html.uiScale #ring button{scale:var(--ui)}html.uiScale #app.bm #rightStrip{position:relative;z-index:8}
+.slideGhost{position:fixed;overflow:hidden;animation:ghostSlide .9s cubic-bezier(.2,.8,.25,1) both}@keyframes ghostSlide{0%{transform:translateX(var(--sx));opacity:0}100%{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){.slideGhost{animation:none}}
