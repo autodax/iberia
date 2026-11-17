@@ -1,4 +1,5 @@
 ## Latest
+- Scaled interface: thinner margins around the board and side panel; the side panel no longer gets too wide on wide windows (the board and panel are centred instead); setup questions (Nurse token, Civil Engineer track) open just left of the side panel, level with the city you clicked.
 - Trial: scaled interface. Add ?scale=1 to the address to turn it on (?scale=0 turns it off; the choice is remembered). The side panel, dialogs, alerts and card previews keep their MacBook proportions and shrink or grow as a whole, so smaller screens such as an iPad look like a smaller Mac.
 - iPad: Safari no longer enlarges the text in the side panel and dialogs; the New game and Settings windows are more compact on smaller screens.
 - Online: a Nurse or Civil Engineer seat no longer gets its starting question while everyone is still in the waiting room (it closed the New game window).
