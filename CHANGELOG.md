@@ -1,4 +1,6 @@
 ## Latest
+- Black cubes are true black again (removed the lightening); a lone cube now sits closer to its city (the first cube slot counts most when choosing the spot).
+
 - Removed the pulsing red glow around groups of three cubes (a new way to highlight them may come later).
 
 - The cream glow around black cubes is 50% more transparent.
