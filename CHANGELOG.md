@@ -1,4 +1,6 @@
 ## Latest
+- Cubes keep a little clear space around city names (Cádiz's cubes no longer crowd its name).
+
 - Cubes sit closer to their own city: the layout now penalises any cube that is nearer a neighbouring city than its own, still keeping clear of pawns, tracks and names. The spot also no longer depends on how many cubes are there right now.
 - Black cubes: the glow is now cream (the light map colour) and built into the cube's own filter, so it shows in Safari and in every city. San Sebastián's cubes sit just below its name, clear of the infection-rate numbers.
 - Cubes keep a fixed spot at each city: every colour has room for three cubes and they fill those slots in order, so treating or adding a cube never moves the others. The cubes only shift when a pawn arrives at or leaves the city.
