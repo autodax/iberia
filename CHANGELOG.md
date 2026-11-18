@@ -1,4 +1,6 @@
 ## Latest
+- The cream glow around black cubes is 50% more transparent.
+
 - Cubes keep a little clear space around city names (Cádiz's cubes no longer crowd its name).
 
 - Cubes sit closer to their own city: the layout now penalises any cube that is nearer a neighbouring city than its own, still keeping clear of pawns, tracks and names. The spot also no longer depends on how many cubes are there right now.

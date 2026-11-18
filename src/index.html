@@ -7,7 +7,7 @@
 <feSpecularLighting in="bump" surfaceScale="3" specularConstant="0.5" specularExponent="22" lighting-color="#ffffff" result="spec"><fePointLight x="-40" y="-60" z="120"/></feSpecularLighting>
 <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn"/>
 <feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="gb0"/><feComponentTransfer in="gb0" result="gb"><feFuncA type="linear" slope="2.6"/></feComponentTransfer>
-<feFlood flood-color="#f6e7c1" result="cream"/>
+<feFlood flood-color="#f6e7c1" flood-opacity="0.5" result="cream"/>
 <feComposite in="cream" in2="gb" operator="in" result="glow1"/>
 <feMerge result="glow"><feMergeNode in="glow1"/><feMergeNode in="glow1"/></feMerge>
 <feMerge><feMergeNode in="glow"/><feMergeNode in="lift"/><feMergeNode in="specIn"/></feMerge>
