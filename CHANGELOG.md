@@ -1,4 +1,6 @@
 ## Latest
+- Removed the pulsing red glow around groups of three cubes (a new way to highlight them may come later).
+
 - The cream glow around black cubes is 50% more transparent.
 
 - Cubes keep a little clear space around city names (Cádiz's cubes no longer crowd its name).
