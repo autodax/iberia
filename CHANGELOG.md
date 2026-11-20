@@ -1,4 +1,6 @@
 ## Latest
+- The glow around black and yellow cubes fades out more gradually (wider gradient).
+
 - Yellow cubes on the board get a faint dark glow (same strength as the cream glow on black cubes).
 
 - Groups of three same-colour cubes turn slowly in the plane of the map (about 12 seconds a turn); they ease back to rest while the active pawn is in that city, and keep turning for other pawns.
