@@ -12,6 +12,12 @@
 <feMerge result="glow"><feMergeNode in="glow1"/><feMergeNode in="glow1"/></feMerge>
 <feMerge><feMergeNode in="glow"/><feMergeNode in="lift"/><feMergeNode in="specIn"/></feMerge>
 </filter>
+<filter id="cubeYellowFx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="gb0"/><feComponentTransfer in="gb0" result="gb"><feFuncA type="linear" slope="2.6"/></feComponentTransfer>
+<feFlood flood-color="#150f04" flood-opacity="0.5" result="dark"/>
+<feComposite in="dark" in2="gb" operator="in" result="glow1"/>
+<feMerge><feMergeNode in="glow1"/><feMergeNode in="glow1"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
 <filter id="cubeWoodFx" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
 <feColorMatrix in="SourceGraphic" type="saturate" values=".72" result="sat"/>
 <feComponentTransfer in="sat" result="mute"><feFuncR type="linear" slope=".7"/><feFuncG type="linear" slope=".7"/><feFuncB type="linear" slope=".7"/></feComponentTransfer>
