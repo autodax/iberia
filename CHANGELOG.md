@@ -1,4 +1,6 @@
 ## Latest
+- The glow around black and yellow cubes is about half as strong again (it looked too prominent after being widened).
+
 - The glow around black and yellow cubes fades out more gradually (wider gradient).
 
 - Yellow cubes on the board get a faint dark glow (same strength as the cream glow on black cubes).
