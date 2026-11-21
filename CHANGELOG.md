@@ -1,4 +1,6 @@
 ## Latest
+- The new train horn also plays when a newly built railroad lands on the map (it replaces the old choo-choo there).
+
 - When an epidemic puts 3 cubes on a city protected by purification tokens, the question 'which token protects it?' is asked once per cube and now says 'cube 1 of 3', 'cube 2 of 3' and so on, so it no longer looks like a loop.
 
 - Travelling by train plays a new two-toot train horn (assets/sounds/train.mp3); the old choo-choo is still used when a railroad is built.
