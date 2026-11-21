@@ -216,7 +216,7 @@ async def main():
     ok(await pg.evaluate("[...document.querySelectorAll('#pieces image')].some(i=>i.getAttribute('href').startsWith('blob:'))"),'local asset replaces token')
     ok(await pg.evaluate("document.getElementById('assetStatus').textContent.startsWith('2 files')"),'asset status')
     # sounds
-    ok(await pg.evaluate("Object.keys(EMBED).filter(k=>k.startsWith('sounds/')).length===16"),"16 built-in sounds")
+    ok(await pg.evaluate("Object.keys(EMBED).filter(k=>k.startsWith('sounds/')).length===17"),"17 built-in sounds")
     ok(await pg.evaluate("!sndPrefs.on"),'sound starts muted')
     await pg.evaluate("window.soundLog=[]");await pg.click('#logButton');await pg.wait_for_timeout(50)
     ok(await pg.evaluate("window.soundLog.length===0"),'no sound while muted')

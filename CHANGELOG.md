@@ -1,4 +1,6 @@
 ## Latest
+- Travelling by train plays a new two-toot train horn (assets/sounds/train.mp3); the old choo-choo is still used when a railroad is built.
+
 - The glow around black and yellow cubes is about half as strong again (it looked too prominent after being widened).
 
 - The glow around black and yellow cubes fades out more gradually (wider gradient).
