@@ -1,5 +1,5 @@
 ## Latest
-- The new train horn also plays when a newly built railroad lands on the map (it replaces the old choo-choo there).
+- Newly built railroads fly in from the Railroad tokens counter and land with a low clank (assets/sounds/clank.mp3). The train horn plays only when a player rides the train to a new city.
 
 - When an epidemic puts 3 cubes on a city protected by purification tokens, the question 'which token protects it?' is asked once per cube and now says 'cube 1 of 3', 'cube 2 of 3' and so on, so it no longer looks like a loop.
 

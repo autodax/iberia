@@ -128,7 +128,7 @@ async function loadAssets(files){for(let u of Object.values(ASSETS))URL.revokeOb
  let b=asset('board/iberia');$('boardImage').setAttribute('href',b||BOARD_SRC);$('assetStatus').textContent=n?n+' files loaded from your folder'+(b?' (including board image).':'.'):'No local files loaded. '+REPO_STATUS;render()}
 const BOARD_SRC=document.getElementById('boardImage').getAttribute('href');
 /* ---------- sounds (assets/sounds/*.mp3; a local folder or the repo can replace them) ---------- */
-const SND_VOL={blocked:.9,move:.95,draw:.55,cube:.95,outbreak:1,epidemic:1,win:.95,lose:.95,turn:.9,water:.95,hospital:.95,choo:1,train:1,research:.95,marker:1,heartbeat:1,chime:.85},SND_BOOST=2,SND_KEY='iberia-sound';
+const SND_VOL={blocked:.9,move:.95,draw:.55,cube:.95,outbreak:1,epidemic:1,win:.95,lose:.95,turn:.9,water:.95,hospital:.95,choo:1,train:1,clank:1,research:.95,marker:1,heartbeat:1,chime:.85},SND_BOOST=2,SND_KEY='iberia-sound';
 let sndCtx=null,sndBuf={},sndLast={},sndPrefs={on:false,vol:.7};try{Object.assign(sndPrefs,JSON.parse(localStorage.getItem(SND_KEY)||'{}'))}catch(e){}
 const SND_REV='8';
 function soundUrls(name){let out=[];for(let k of ['sounds/'+name,'audio/'+name,'tokens/'+name]){k=norm(k);for(let src of [ASSETS,REPO,typeof EMBED!=='undefined'?EMBED:{}]){let u=src[k];if(u&&src===REPO&&/^https?:|^assets\//.test(u))u+='?r='+SND_REV;if(u&&!out.includes(u))out.push(u)}}return out}
@@ -417,18 +417,26 @@ function markerAlert(kind,val){if(+$('fxSpeed').value<0)return;let [x,y]=kind===
 // Pawn and railroad animations wait until the popups on screen are gone.
 function animAfterFx(fn){if(fxCurrent||fxQueue.length)afterFx.push(fn);else fn()}
 function railGeom(k){let [a,b]=k.split('|');return railSpot(a,b)}
-function stopRailFlights(){railTimers.forEach(clearTimeout);railTimers=[];railHide.clear()}
-// New railroads fly in from the middle of the board like cubes do, then land with a choo-choo.
+function stopRailFlights(){railTimers.forEach(clearTimeout);railTimers=[];railHide.clear();let L=$('railFly');if(L)L.replaceChildren()}
+// New railroads fly in from the Railroad tokens counter (middle of the board if the counter is not showing), then land with a low clank.
 function startRailFlights(keys){if(!keys.length)return;let speed=+$('fxSpeed').value;
- if(speed<0||matchMedia('(prefers-reduced-motion: reduce)').matches){keys.forEach(k=>railHide.delete(k));paint();playSound('train');return}
+ if(speed<0||matchMedia('(prefers-reduced-motion: reduce)').matches){keys.forEach(k=>railHide.delete(k));paint();playSound('clank');return}
  let g=$('flyers'),img=tokenImg('railroad'),dur=1100;
- keys.forEach((k,i)=>{railHide.add(k)});paint();
+keys.forEach((k,i)=>{railHide.add(k)});paint();
+ let ci=img&&document.querySelector('#cubeCounts .tc.rail img'),cr=ci&&ci.getBoundingClientRect(),bc=$('board').getScreenCTM();
+ if(cr&&cr.width>4&&bc){   // fly from the counter: a layer over the whole page, because the counter is outside the board
+  let L=$('railFly');if(!L){L=el('div',{id:'railFly'},document.body)}
+  keys.forEach((k,i)=>{let [tx,ty,ang]=railGeom(k),sx=tx*bc.a+bc.e,sy=ty*bc.d+bc.f,x0=cr.left+cr.width/2,y0=cr.top+cr.height/2,W=44*bc.a,H=25*bc.a,s0=Math.max(.3,cr.width/W),cx=(x0+sx)/2,cy=Math.min(y0,sy)-90,frames=[],N=28;
+   for(let q=0;q<=N;q++){let fr=q/N,e=fr*fr*(3-2*fr),a=(1-e)*(1-e),b=2*(1-e)*e,c=e*e;frames.push({transform:`translate(${a*x0+b*cx+c*sx}px,${a*y0+b*cy+c*sy}px) rotate(${ang*e}deg) scale(${s0+(1-s0)*e})`,opacity:Math.min(1,fr*10),offset:fr})}
+   let node=el('img',{src:img,style:`position:fixed;left:${-W/2}px;top:${-H/2}px;width:${W}px;height:${H}px;pointer-events:none;z-index:60`},L),delay=i*700;
+   node.animate(frames,{duration:dur,delay,easing:'linear',fill:'both'});
+   railTimers.push(setTimeout(()=>{playSound('clank');railHide.delete(k);node.remove();paint()},delay+dur))});return}
  keys.forEach((k,i)=>{let [tx,ty,ang]=railGeom(k),[ox,oy]=[760,520],cx=(ox+tx)/2,cy=Math.min(oy,ty)-150,P=[],cum=[0];
   for(let n=0;n<=60;n++){let u=n/60,a=(1-u)*(1-u),b=2*(1-u)*u,c=u*u;P.push([a*ox+b*cx+c*tx,a*oy+b*cy+c*ty]);if(n)cum.push(cum[n-1]+Math.hypot(P[n][0]-P[n-1][0],P[n][1]-P[n-1][1]))}
   let frames=[],N=28;for(let q=0;q<=N;q++){let fr=q/N,d=fr*cum[60],m=1;while(m<60&&cum[m]<d)m++;let w=cum[m]>cum[m-1]?(d-cum[m-1])/(cum[m]-cum[m-1]):0,x=P[m-1][0]+(P[m][0]-P[m-1][0])*w,y=P[m-1][1]+(P[m][1]-P[m-1][1])*w;frames.push({transform:`translate(${x}px,${y}px) rotate(${ang*fr}deg) scale(${3+(1-3)*fr})`,opacity:Math.min(1,fr*12),offset:fr})}
   let node=img?svg('image',{href:img,x:-22,y:-12.5,width:44,height:25},g):svg('rect',{x:-22,y:-6,width:44,height:12,fill:'#5a3a1a'},g),delay=i*700;
   node.animate(frames,{duration:dur,delay,easing:'linear',fill:'both'});
-  railTimers.push(setTimeout(()=>{playSound('train');railHide.delete(k);node.remove();paint()},delay+dur))})}
+  railTimers.push(setTimeout(()=>{playSound('clank');railHide.delete(k);node.remove();paint()},delay+dur))})}
 function startPawnFlights(list){if(!list.length)return;let L=document.getElementById('pawnFly');if(!L){L=document.createElementNS(NS,'g');L.id='pawnFly';L.style.pointerEvents='none';$('flyers').parentNode.appendChild(L)}
  for(let m of list){let how=m.how||(EDGES.has(edgeKey(m.fc,m.tc))?'carriage':state.rails.length&&railPath(m.fc,m.tc)?'train':C[m.fc].port&&C[m.tc].port?'ship':'carriage');let pts=[m.from];
   if(how==='train'){let path=railPath(m.fc,m.tc);if(path)for(let k of path.slice(1,-1))pts.push([C[k].x,C[k].y-4])}
