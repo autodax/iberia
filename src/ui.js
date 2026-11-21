@@ -582,7 +582,7 @@ function drawCardsFlight(f,speed){drawFxClear();f.flown=true;let m=$('board').ge
  let fb=hr?[hr.left+hr.width/2,hr.top+Math.min(Math.max(hr.height-40,20),hr.height*.8),w,h]:[innerWidth-100,innerHeight/2,w,h];
  let hold=2000*Math.max(1,speed>0?speed:1),pop=260,fly=950,slideMs=700,stag=130,n=f.cards.length,flyers=[];
  f.cards.forEach((k,i)=>{let c=i===0?dc:tc,off=i<2?0:(i-1)*28,cx=c[0]+off,cy=c[1]-40,d=el('div',{},L),src=cardArt(k,false),ep=String(k).startsWith('epidemic');
-  d.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h/2}px;width:${w}px;height:${h}px;border-radius:${10*sc}px;overflow:hidden;box-shadow:0 8px 22px #000a,0 0 0 4px #ffd54a,0 0 26px 6px #ffd54acc;background:#e9dcb8 ${src?`url(${src}) center/cover`:''};transform-origin:50% 50%`;
+  d.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h/2}px;width:${w}px;height:${h}px;border-radius:${10*sc}px;overflow:hidden;box-shadow:0 8px 22px #000a;background:#e9dcb8 ${src?`url(${src}) center/cover`:''};transform-origin:50% 50%`;
   if(!src)el('div',{textContent:cardName(k),style:'padding:10px;font:700 14px system-ui;color:#3a2a10;text-align:center'},d);
   let rot=i%2?4:-4;d.animate([{transform:'translateY(36px) scale(.7)',opacity:0},{transform:`rotate(${rot}deg) scale(1.12)`,opacity:1}],{duration:pop,easing:'ease-out',fill:'both'});
   let sl=slots[k]||fb;   // one continuous path: arc to the point where the old slide-in begins, then glide into the slot
@@ -590,7 +590,7 @@ function drawCardsFlight(f,speed){drawFxClear();f.flown=true;let m=$('board').ge
  playSound('draw');
  // reveal over the piles, then fade out while the hand opens a strip-sized gap per card; the real cards then use the original slide-in
  drawFxTimers.push(setTimeout(()=>{openHandGaps(f);flyers.forEach(([d])=>d.animate([{opacity:1},{opacity:0}],{duration:450,fill:'both',easing:'ease-in'}));
-  if(hd)drawFxTimers.push(setTimeout(()=>hd.animate([{boxShadow:'0 0 0 0 #ffd54a00'},{boxShadow:'0 0 0 3px #ffd54a,0 0 22px 4px #ffd54a99'},{boxShadow:'0 0 0 0 #ffd54a00'}],{duration:1100}),300))},pop+hold));
+  },pop+hold));
  let total=pop+hold+520;drawFxTimers.push(setTimeout(()=>L.remove(),total+40));fxTimer=setTimeout(nextFx,total)}
 const INF_EDGE=cityId=>{let [x,y,w,h]=DECK_SLOTS.infDisc,cx=x+w/2,cy=y+h/2,tx=C[cityId].x,ty=C[cityId].y,dx=tx-cx,dy=ty-cy,t=Math.min((w/2+3)/Math.max(Math.abs(dx),1e-6),(h/2+3)/Math.max(Math.abs(dy),1e-6));return [cx+dx*t,cy+dy*t]};
 let infBadgeTimer=null,infPending=[];
@@ -608,7 +608,6 @@ function infBadge(f){let g=document.getElementById('infFx');if(!g||!(f.blocked||
  bg.animate([{opacity:0,transform:'scale(.8)'},{opacity:1,transform:'scale(1)'}],{duration:240,easing:'ease-out',fill:'both'});if(!epi)playSound('blocked')}
 function infFxEnd(fade){let g=document.getElementById('infFx');if(!g)return;if(!fade){g.remove();return}g.animate([{opacity:1},{opacity:0}],{duration:380,fill:'forwards'}).onfinish=()=>g.remove()}
 function infCardFlight(f){let old=document.getElementById('infFx');if(old)old.remove();let g=svg('g',{id:'infFx','pointer-events':'none'},$('board'));let [dx,dy,dw,dh]=DECK_SLOTS.infDeck,[tx,ty,tw,th]=DECK_SLOTS.infDisc,sx=dx+dw/2,sy=dy+dh/2,ex=tx+tw/2,ey=ty+th/2,c=svg('g',{},g);
- svg('rect',{x:-tw/2-6,y:-th/2-6,width:tw+12,height:th+12,rx:16,fill:'none',stroke:'#ffd54a','stroke-width':5,opacity:.9},c);
  svg('image',{href:cardArt(f.city,true),x:-tw/2,y:-th/2,width:tw,height:th,preserveAspectRatio:'xMidYMid slice','clip-path':'inset(0 round 10px)'},c);
  svg('rect',{x:-tw/2,y:-th/2,width:tw,height:th,rx:10,fill:'none',stroke:'#3a2a10','stroke-width':2},c);
  c.style.transform=`translate(${ex}px,${ey}px)`;
@@ -826,6 +825,7 @@ function updateDeckGlow(){let cue=deckCue(),ok=deckReady();
  for(let g of document.querySelectorAll('#board .deckArt[data-slot]')){let s=g.dataset.slot,on=cue===s;g.classList.toggle('deckGlow',on);if(s==='infDeck'||s==='plDeck')g.style.cursor=ok?'pointer':'';let r=g.querySelector('.deckRing');
  if(r)r.remove()}}
 setInterval(updateDeckGlow,150);
+document.addEventListener('animationiteration',e=>{if(e.animationName!=='deckJiggle')return;let g=e.target.closest&&e.target.closest('[data-slot]');if(!g||!g.classList.contains('deckGlow')||!deckReady())return;playSound(g.dataset.slot==='infDeck'?'heartbeat':'chime')});   // the sound repeats each time the waiting deck jiggles again
 function drawDecks(T){let cue=deckCue();
  let put=(slot,href,n,label,dim)=>{let [x,y,w,h]=DECK_SLOTS[slot];if(!href||!n)return;let g=svg('g',{class:'deckArt'+(cue===slot?' deckGlow':''),'data-slot':slot},T);
   if(slot==='infDeck'||slot==='plDeck'){g.style.cursor=deckReady()?'pointer':'';g.style.pointerEvents='all';g.addEventListener('click',()=>deckClick(slot))}svg('title',{},g).textContent=label+': '+n;

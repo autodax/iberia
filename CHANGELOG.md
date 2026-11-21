@@ -1,4 +1,7 @@
 ## Latest
+- The heartbeat (Infection deck) and chime (Player deck) now repeat every time the waiting deck jiggles again, until a card is picked.
+- Removed the yellow glow and outline from drawn player cards and the drawn infection card.
+
 - New cubes fly in from their cube counters (not from behind the infection card), and a counter only drops when its cube takes off.
 - Removed the blurry glow from selected or pickable city cards in a hand and from the drawn infection card (the plain outlines stay).
 
