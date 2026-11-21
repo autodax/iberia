@@ -1,4 +1,6 @@
 ## Latest
+- The deck to click (Player deck or Infection deck) now jiggles in place, tilting 15 degrees each way once a second, instead of glowing.
+
 - The train horn also plays when a player moves one city along a built railroad (the game counted these short hops as carriage moves, so they stayed silent).
 
 - Newly built railroads fly in from the Railroad tokens counter and land with a low clank (assets/sounds/clank.mp3). The train horn plays only when a player rides the train to a new city.

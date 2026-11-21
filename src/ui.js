@@ -820,7 +820,7 @@ function updateDeckGlow(){let cue=deckCue(),ok=deckReady();
  if(chimeTurn===null&&cue!=='plDeck')chimeTurn='';
  if(beatTurn===null&&state.phase!=='infection')beatTurn='';prevCue=cue;
  for(let g of document.querySelectorAll('#board .deckArt[data-slot]')){let s=g.dataset.slot,on=cue===s;g.classList.toggle('deckGlow',on);if(s==='infDeck'||s==='plDeck')g.style.cursor=ok?'pointer':'';let r=g.querySelector('.deckRing');
- if(on&&!r){let [x,y,w,h]=DECK_SLOTS[s];svg('rect',{x:x-5,y:y-5,width:w+10,height:h+10,rx:14,fill:'none',stroke:'#ffd93a','stroke-width':6,class:'deckRing','pointer-events':'none'},g)}else if(!on&&r)r.remove()}}
+ if(r)r.remove()}}
 setInterval(updateDeckGlow,150);
 function drawDecks(T){let cue=deckCue();
  let put=(slot,href,n,label,dim)=>{let [x,y,w,h]=DECK_SLOTS[slot];if(!href||!n)return;let g=svg('g',{class:'deckArt'+(cue===slot?' deckGlow':''),'data-slot':slot},T);

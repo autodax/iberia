@@ -307,14 +307,14 @@ async def main():
     await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('dk',4,['sailor','agronomist']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
       s.phase='actions';s.actions=0;mode='';sel={};state=s;recompute();render()})()""");await sp.wait_for_timeout(300)
     await sp.wait_for_timeout(900)
-    ok(await sp.evaluate("deckCue()==='plDeck'&&document.querySelectorAll('.deckRing').length===1"),'deck glow: the Player deck glows when it is time to draw')
+    ok(await sp.evaluate("deckCue()==='plDeck'&&document.querySelectorAll('.deckGlow').length===1"),'deck cue: the Player deck jiggles when it is time to draw')
     await sp.evaluate("sndPrefs.on=true;window.soundLog=[]")
-    _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
+    _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.classList.contains('deckGlow')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.phase==='infection'",timeout=10000)
     await sp.wait_for_function("deckCue()==='infDeck'",timeout=20000)
     await sp.wait_for_timeout(3400);ok(await sp.evaluate("(window.soundLog||[]).includes('heartbeat')"),'heartbeat sound when the infection step begins');await sp.evaluate("sndPrefs.on=false")
     r0=await sp.evaluate("state.infectionRemaining")
-    _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.querySelector('.deckRing')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
+    _r=await sp.evaluate("(()=>{let r=[...document.querySelectorAll('.deckArt')].find(g=>g.classList.contains('deckGlow')).querySelector('image').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await sp.mouse.click(_r[0],_r[1])
     await sp.wait_for_function("state.infectionRemaining<"+str(r0),timeout=10000)
     await sp.evaluate("sndPrefs.on=true;window.soundLog=[]");await sp.wait_for_function("deckCue()==='infDeck'||state.phase!=='infection'",timeout=20000);await sp.wait_for_timeout(300)
     ok(await sp.evaluate("state.phase!=='infection'||(window.soundLog||[]).includes('heartbeat')"),'heartbeat again for the next Infection card');await sp.evaluate("sndPrefs.on=false")
@@ -324,7 +324,7 @@ async def main():
     try: await sp.wait_for_function("state.actions===0&&!fxCurrent&&!fxQueue.length&&!busy",timeout=10000)
     except Exception: pass
     await sp.wait_for_timeout(1800)
-    ok(await sp.evaluate("deckCue()==='plDeck'&&!!document.querySelector('.deckArt[data-slot=plDeck] .deckRing')"),'deck glow: the Player deck lights up right after the last action')
+    ok(await sp.evaluate("deckCue()==='plDeck'&&!!document.querySelector('.deckArt.deckGlow[data-slot=plDeck]')"),'deck cue: the Player deck jiggles right after the last action')
     ok(await sp.evaluate("(window.soundLog||[]).includes('chime')"),'small bell when the Player deck starts to glow')
     ok(await sp.evaluate("document.getElementById('phaseStatus').textContent.includes('Drawing cards')"),'status card: says Drawing cards once the actions are used up')
     ok(await sp.evaluate("""(()=>{resetFx();document.querySelectorAll('dialog[open]').forEach(d=>d.close());busy=false;chooseQueue=Promise.resolve();let s=initial('rw',4,['railwayman','sailor']),ch=[],cities=s.players.map(p=>p.hand.find(k=>C[k])||'c22');for(;;){try{s=transact(s,{type:'start',cities,first:0,choices:ch});break}catch(e){if(!e.needChoice)throw e;ch.push(e.needChoice.options[0])}}
