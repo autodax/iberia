@@ -1,4 +1,7 @@
 ## Latest
+- New cubes fly in from their cube counters (not from behind the infection card), and a counter only drops when its cube takes off.
+- Removed the blurry glow from selected or pickable city cards in a hand and from the drawn infection card (the plain outlines stay).
+
 - Black and yellow cubes only get their glow once they have landed, not while flying in.
 
 - The deck to click (Player deck or Infection deck) now jiggles in place instead of glowing: it tilts 7.5 degrees each way once (2 seconds), then waits 8 seconds before repeating.
