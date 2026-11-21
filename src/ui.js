@@ -614,7 +614,7 @@ function infCardFlight(f){let old=document.getElementById('infFx');if(old)old.re
  c.style.transform=`translate(${ex}px,${ey}px)`;
  c.animate([{transform:`translate(${sx}px,${sy}px) rotate(-6deg) scale(1)`},{transform:`translate(${(sx+ex)/2-20}px,${Math.min(sy,ey)+40}px) rotate(-3deg) scale(1.18)`,offset:.5},{transform:`translate(${ex}px,${ey}px) rotate(0deg) scale(1)`}],{duration:750,easing:'ease-in-out'});setTimeout(()=>infLanded(f.city),740);playSound('draw')}
 function phantomCube(fromId,toId,k,origin){let g=$('flyers'),a=C[fromId],b=C[toId];if(!a||!b)return;let img=asset('tokens/cube-'+k),node;
- if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:k==='black'?'':'cube-'+k,'pointer-events':'none'},g);else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5,'pointer-events':'none'},g);
+ if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:k==='black'||k==='yellow'?'':'cube-'+k,'pointer-events':'none'},g);else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5,'pointer-events':'none'},g);
  let ox=origin?origin[0]:a.x,oy=origin?origin[1]:a.y,tx=b.x,ty=b.y,cx=(ox+tx)/2,cy=Math.min(oy,ty)-Math.min(170,40+Math.hypot(tx-ox,ty-oy)*.3),P=[],cum=[0];
  for(let n=0;n<=60;n++){let u=n/60,q=(1-u)*(1-u),w=2*(1-u)*u,e=u*u;P.push([q*ox+w*cx+e*tx,q*oy+w*cy+e*ty]);if(n)cum.push(cum[n-1]+Math.hypot(P[n][0]-P[n-1][0],P[n][1]-P[n-1][1]))}
  let frames=[],N=28;for(let q=0;q<=N;q++){let fr=q/N,d=fr*cum[60],m=1;while(m<60&&cum[m]<d)m++;let w=cum[m]>cum[m-1]?(d-cum[m-1])/(cum[m]-cum[m-1]):0,x=P[m-1][0]+(P[m][0]-P[m-1][0])*w,y=P[m-1][1]+(P[m][1]-P[m-1][1])*w;frames.push({transform:`translate(${x}px,${y}px) scale(${1.4-.4*fr})`,opacity:q===N?0:Math.min(1,fr*12),offset:fr})}
@@ -630,7 +630,7 @@ function applyCubes(next,f){flushFly();let from=cubeView||state.cubes;let adds=[
  // keep the arriving cubes hidden until they land
  let hold=JSON.parse(JSON.stringify(from));for(let [cid,k] of adds)hold[cid][k]=hold[cid][k]||0;if(pat)hold[pc][f.color]=Math.min(hold[pc][f.color]||0,next[pc][f.color]||0);cubeView=hold;paint();
  adds.forEach(([cid,k,j],i)=>{let [tx,ty]=cubeSpot(cid,k,j,next),img=asset('tokens/cube-'+k),node;
-  if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:k==='black'?'':'cube-'+k},g)   // black cubes fly unfiltered so they stay black; the shading filter returns once they land;else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},g);
+  if(img)node=svg('image',{href:img,x:-9.5,y:-9.5,width:19,height:19,class:k==='black'||k==='yellow'?'':'cube-'+k},g)   // black cubes fly unfiltered so they stay black; the shading filter returns once they land;else node=svg('rect',{x:-8.5,y:-8.5,width:17,height:17,rx:2,fill:DISEASE[k],stroke:'#f6e8cd','stroke-width':1.5},g);
   let [ox,oy]=pat?srcFor(i):src0;
   // one smooth arc at constant speed: a quadratic curve sampled by arc length, linear easing, size easing down to 1
   let cx=(ox+tx)/2,cy=pat?(oy+ty)/2:Math.min(oy,ty)-170,P=[],cum=[0];for(let n=0;n<=60;n++){let u=n/60,a=(1-u)*(1-u),b=2*(1-u)*u,c=u*u;P.push([a*ox+b*cx+c*tx,a*oy+b*cy+c*ty]);if(n)cum.push(cum[n-1]+Math.hypot(P[n][0]-P[n-1][0],P[n][1]-P[n-1][1]))}
