@@ -574,7 +574,7 @@ function openHandGaps(f){let hs=drawHide.get(f.seat);if(!hs||!hs.size)return;let
  drawGap.set(f.seat,new Set(held));render();
  for(let b of q()){let o=rects.get(b.dataset.k);if(!o)continue;let n=b.getBoundingClientRect(),dx=o.left-n.left,dy=o.top-n.top;if(Math.abs(dx)<.5&&Math.abs(dy)<.5)continue;b.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:480,easing:'cubic-bezier(.3,.1,.2,1)'})}}
 function drawCardsFlight(f,speed){drawFxClear();f.flown=true;let m=$('board').getScreenCTM(),sc=m.a,P=(x,y)=>[m.a*x+m.e,m.d*y+m.f];
- let [dx,dy,dw,dh]=DECK_SLOTS.plDeck,[tx,ty,tw,th]=DECK_SLOTS.plDisc,dc=P(dx+dw/2,dy+dh/2),tc=P(tx+tw/2,ty+th/2),w=dw*sc,h=dh*sc;
+ let [dx,dy,dw,dh]=DECK_SLOTS.plDeck,[tx,ty,tw,th]=DECK_SLOTS.plDisc,dc=P(dx+dw/2,dy+dh/2),tc=P(tx+tw/2,ty+th/2),h=dh*sc,w=h*804/1150;
  let hd=document.querySelector('.hand[data-seat="'+f.seat+'"]'),hr=hd?hd.getBoundingClientRect():null;
  // where each new card will be slotted: briefly show it in the hand, measure, hide it again (same tick, nothing is painted)
  let slots={},hs=drawHide.get(f.seat);if(hs){let held=f.cards.filter(k=>hs.has(k));if(held.length){held.forEach(k=>hs.delete(k));render();let hd2=document.querySelector('.hand[data-seat="'+f.seat+'"]');for(let k of held){let bt=hd2&&hd2.querySelector('button[data-k="'+k+'"]');if(bt){let r=bt.getBoundingClientRect();let nx=bt.nextElementSibling,nr=nx?nx.getBoundingClientRect():null,vis=nr&&Math.abs(nr.left-r.left)<r.width/2&&nr.top>r.top+4&&nr.top<r.bottom?nr.top-r.top:r.height;slots[k]=[r.left+r.width/2,r.top+r.height/2,r.width,r.height,vis]}}held.forEach(k=>hs.add(k));render();hd=document.querySelector('.hand[data-seat="'+f.seat+'"]')||hd;hr=hd?hd.getBoundingClientRect():hr}}
@@ -582,7 +582,7 @@ function drawCardsFlight(f,speed){drawFxClear();f.flown=true;let m=$('board').ge
  let fb=hr?[hr.left+hr.width/2,hr.top+Math.min(Math.max(hr.height-40,20),hr.height*.8),w,h]:[innerWidth-100,innerHeight/2,w,h];
  let hold=2000*Math.max(1,speed>0?speed:1),pop=260,fly=950,slideMs=700,stag=130,n=f.cards.length,flyers=[];
  f.cards.forEach((k,i)=>{let c=i===0?dc:tc,off=i<2?0:(i-1)*28,cx=c[0]+off,cy=c[1]-40,d=el('div',{},L),src=cardArt(k,false),ep=String(k).startsWith('epidemic');
-  d.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h/2}px;width:${w}px;height:${h}px;border-radius:${10*sc}px;overflow:hidden;box-shadow:0 8px 22px #000a;background:#e9dcb8 ${src?`url(${src}) center/cover`:''};transform-origin:50% 50%`;
+  d.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h/2}px;width:${w}px;height:${h}px;border-radius:${10*sc}px;overflow:hidden;box-shadow:0 8px 22px #000a;background:#e9dcb8 ${src?`url(${src}) center/107% auto no-repeat`:''};transform-origin:50% 50%`;
   if(!src)el('div',{textContent:cardName(k),style:'padding:10px;font:700 14px system-ui;color:#3a2a10;text-align:center'},d);
   let rot=i%2?4:-4;d.animate([{transform:'translateY(36px) scale(.7)',opacity:0},{transform:`rotate(${rot}deg) scale(1.12)`,opacity:1}],{duration:pop,easing:'ease-out',fill:'both'});
   let sl=slots[k]||fb;   // one continuous path: arc to the point where the old slide-in begins, then glide into the slot
@@ -608,7 +608,7 @@ function infBadge(f){let g=document.getElementById('infFx');if(!g||!(f.blocked||
  bg.animate([{opacity:0,transform:'scale(.8)'},{opacity:1,transform:'scale(1)'}],{duration:240,easing:'ease-out',fill:'both'});if(!epi)playSound('blocked')}
 function infFxEnd(fade){let g=document.getElementById('infFx');if(!g)return;if(!fade){g.remove();return}g.animate([{opacity:1},{opacity:0}],{duration:380,fill:'forwards'}).onfinish=()=>g.remove()}
 function infCardFlight(f){let old=document.getElementById('infFx');if(old)old.remove();let g=svg('g',{id:'infFx','pointer-events':'none'},$('board'));let [dx,dy,dw,dh]=DECK_SLOTS.infDeck,[tx,ty,tw,th]=DECK_SLOTS.infDisc,sx=dx+dw/2,sy=dy+dh/2,ex=tx+tw/2,ey=ty+th/2,c=svg('g',{},g);
- svg('image',{href:cardArt(f.city,true),x:-tw/2,y:-th/2,width:tw,height:th,preserveAspectRatio:'xMidYMid slice','clip-path':'inset(0 round 10px)'},c);
+ let zi=svg('svg',{x:-tw/2,y:-th/2,width:tw,height:th,viewBox:`${tw*.035} ${th*.035} ${tw*.93} ${th*.93}`,preserveAspectRatio:'xMidYMid slice','clip-path':'inset(0 round 10px)'},c);svg('image',{href:cardArt(f.city,true),x:0,y:0,width:tw,height:th,preserveAspectRatio:'xMidYMid slice'},zi);
  svg('rect',{x:-tw/2,y:-th/2,width:tw,height:th,rx:10,fill:'none',stroke:'#3a2a10','stroke-width':2},c);
  c.style.transform=`translate(${ex}px,${ey}px)`;
  c.animate([{transform:`translate(${sx}px,${sy}px) rotate(-6deg) scale(1)`},{transform:`translate(${(sx+ex)/2-20}px,${Math.min(sy,ey)+40}px) rotate(-3deg) scale(1.18)`,offset:.5},{transform:`translate(${ex}px,${ey}px) rotate(0deg) scale(1)`}],{duration:750,easing:'ease-in-out'});setTimeout(()=>infLanded(f.city),740);playSound('draw')}

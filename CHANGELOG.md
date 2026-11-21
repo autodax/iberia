@@ -1,4 +1,6 @@
 ## Latest
+
+- City and event cards: removed the pale frame from the art (cards now match the picture's shape and are zoomed 7%), in the hand, other players' fans, trays, the drawn cards over the deck and the infection card as it slides to its pile.
 - The heartbeat (Infection deck) and chime (Player deck) now repeat every time the waiting deck jiggles again, until a card is picked.
 - Removed the yellow glow and outline from drawn player cards and the drawn infection card.
 
