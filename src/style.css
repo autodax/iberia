@@ -583,8 +583,8 @@ button,.btn,#ring button,#choiceTitle,#choiceOptions button,.fxCaption{text-wrap
 .phaseStatus .pips{display:inline-flex;gap:3px;margin-right:7px}.phaseStatus .pips i{width:15px;height:7px;border-radius:4px;background:var(--c)}.phaseStatus .pips i.off{background:#0002}
 
 /* the deck the current player should draw from next */
-.deckGlow{transform-box:fill-box;transform-origin:50% 50%;animation:deckJiggle 1s ease-in-out infinite}   /* the deck to click tilts back and forth in place */
-@keyframes deckJiggle{0%,100%{transform:rotate(0deg)}25%{transform:rotate(15deg)}75%{transform:rotate(-15deg)}}
+.deckGlow{transform-box:fill-box;transform-origin:50% 50%;animation:deckJiggle 10s ease-in-out infinite}   /* the deck to click tilts once (2 seconds), rests for 8 seconds, and repeats */
+@keyframes deckJiggle{0%{transform:rotate(0deg)}5%{transform:rotate(7.5deg)}15%{transform:rotate(-7.5deg)}20%,100%{transform:rotate(0deg)}}
 @media (prefers-reduced-motion:reduce){.deckGlow{animation:none;filter:drop-shadow(0 0 10px rgba(255,214,60,.9))}}
 .deckRing{animation:deckRing 1.4s ease-in-out infinite}
 @keyframes deckRing{0%,100%{opacity:.35}50%{opacity:1}}

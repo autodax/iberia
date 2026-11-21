@@ -1,5 +1,5 @@
 ## Latest
-- The deck to click (Player deck or Infection deck) now jiggles in place, tilting 15 degrees each way once a second, instead of glowing.
+- The deck to click (Player deck or Infection deck) now jiggles in place instead of glowing: it tilts 7.5 degrees each way once (2 seconds), then waits 8 seconds before repeating.
 
 - The train horn also plays when a player moves one city along a built railroad (the game counted these short hops as carriage moves, so they stayed silent).
 
