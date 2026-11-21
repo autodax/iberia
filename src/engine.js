@@ -127,7 +127,7 @@ function placeCube(s,id,color,ctx,erupted,pend,from,second){
  if(erupted.has(id))return null;
  if(protectedByNurse(s,id)){s.log.push('Prevention token protects '+C[id].name);noteBlocked(s,{city:id,by:'nurse',region:s.prevention});return 'blocked'}
  let water=C[id].region_ids.filter(r=>s.water[r]>0);
- if(water.length){let r=choice(ctx,water,'Choose which purification token protects '+C[id].name,water.map(x=>regionLabel(x)+' (×'+s.water[x]+')'),{block:id});s.water[r]--;s.waterSupply++;s.log.push('Purification in '+regionLabel(r)+' protects '+C[id].name);noteBlocked(s,{city:id,by:'water',region:r,left:s.water[r]});return 'blocked'}
+ if(water.length){let r=choice(ctx,water,'Choose which purification token protects '+C[id].name+(ctx.cubeOf>1?' (cube '+ctx.cubeNo+' of '+ctx.cubeOf+')':''),water.map(x=>regionLabel(x)+' (×'+s.water[x]+')'),{block:id});s.water[r]--;s.waterSupply++;s.log.push('Purification in '+regionLabel(r)+' protects '+C[id].name);noteBlocked(s,{city:id,by:'water',region:r,left:s.water[r]});return 'blocked'}
  if(s.cubes[id][color]===3){if(!pend.some(p=>p[0]===id))pend.push(influx(s)&&hospitalCity(s,id)?[id,from,'overrun',color]:[id,from,null,color]);return 'full'}
  if(s.supply[color]===0){lose(s,'no '+color+' cubes left');return null}
  s.cubes[id][color]++;s.supply[color]--;
@@ -152,7 +152,7 @@ function outbreak(s,id,color,ctx,erupted,pend,from){erupted.add(id);s.outbreaks+
   for(let m of two){if(s.status!=='playing')return;if(COLORS.every(k=>s.cubes[m][k]===0)){s.log.push('Cholera reaches '+C[m].name);placeCube(s,m,'blue',ctx,erupted,pend,id)}}}}
 function resolveInfection(s,id,amount,ctx){let color=C[id].color,erupted=new Set(),pend=[];s.log.push('Infect '+C[id].name+' ×'+amount);
  let double=amount===1&&color==='black'&&hist(s,'black')&&s.cubes[id].black===0;
- for(let j=0;j<amount&&s.status==='playing';j++){let r=placeCube(s,id,color,ctx,erupted,pend,null);if(r==='placed'&&double&&s.status==='playing'){s.log.push('Malaria: a second black cube in '+C[id].name);r=placeCube(s,id,color,ctx,erupted,pend,null,true)}if(r==='full')break}
+ for(let j=0;j<amount&&s.status==='playing';j++){ctx.cubeNo=j+1;ctx.cubeOf=amount;let r=placeCube(s,id,color,ctx,erupted,pend,null);if(r==='placed'&&double&&s.status==='playing'){s.log.push('Malaria: a second black cube in '+C[id].name);r=placeCube(s,id,color,ctx,erupted,pend,null,true)}if(r==='full')break}ctx.cubeOf=0
  while(pend.length&&s.status==='playing'){let [n,f,kind,col]=pend.shift();if(erupted.has(n))continue;if(kind==='overrun')overrun(s,n,col,ctx,erupted,pend,f);else outbreak(s,n,col||color,ctx,erupted,pend,f)}
  for(let f of erupted.fx||[]){f.chainTotal=erupted.fx.length;f.chain=erupted.fx.map(x=>x.city)}}
 // Influx of Patients: each hospital draws the nearest patient of its color one step closer (rails count as one step).
