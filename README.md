@@ -1,5 +1,5 @@
 # Iberia browser prototype
-Play the current version at https://autodax.github.io/iberia/. Every version stays playable at https://autodax.github.io/iberia/versions/ in any modern browser. Everything is inside that one file.
+Play the current version at https://autodax.github.io/iberia/. It runs in any modern browser. Everything is inside that one file.
 
 - 2-5 players, 12 roles (7 standard plus 5 expansion roles), all 15 Events (random selection per the setup table).
 - Outbreak and epidemic alerts; drawn player and infection cards are shown briefly (`Menu > Alerts and card reveals > Reveal speed`: Until clicked / Slow / Normal / Fast / Off), alongside sound, volume, and card size controls. Click a reveal to skip it.

@@ -1,4 +1,5 @@
 ## Latest
+- Repo cleanup: removed unused older board pictures and the old-versions page (versions/) from the repo; docs updated.
 - Removed the "New game" heading at the top of the Game pop-up window.
 - Renamed the **New** button on the board bar to **Game** (along with the in-game instructions that refer to it); during an online game it still shows the room code.
 - The map is now the board with the ship drawings (board_ship.jpeg); the previous board is kept as assets/board_no_ship.jpeg.

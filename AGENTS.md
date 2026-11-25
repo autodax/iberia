@@ -6,7 +6,7 @@ This file (`AGENTS.md`) holds all the project rules and context; `CLAUDE.md` jus
 
 A browser version of **Pandemic Iberia** (the Pandemic board game set in Spain and Portugal), built by Steve (GitHub `autodax`) as a single self-contained HTML page.
 
-- Repo: `github.com/autodax/iberia`. Live game: https://autodax.github.io/iberia/ (GitHub Pages serves the repo root; allow about 10 minutes for caching). Every old version stays playable under `/versions/`.
+- Repo: `github.com/autodax/iberia`. Live game: https://autodax.github.io/iberia/ (GitHub Pages serves the repo root; allow about 10 minutes for caching).
 - 2 to 5 players, 12 roles (7 rulebook roles plus 5 from an expansion), all 15 Events, local play on one screen, and **online play** between remote players.
 - Main targets: Safari on an M4 MacBook Air, and iPad. Steve plays online with a remote person. Keep Safari behaviour in mind for every visual change (it differs from Chromium in SVG/CSS transforms, audio and caching).
 - Current version: `UI_VERSION` in `src/ui.js` (0.10.9 at time of writing). The build time is stamped on the map in the lower left ("built Nov 25 22:12 UTC"). Steve identifies builds by that stamp.
@@ -39,19 +39,19 @@ A browser version of **Pandemic Iberia** (the Pandemic board game set in Spain a
 - `src/map.js`, `docs/iberia-map.json`: cities, regions, connections, ports, railroad-allowed routes. `src/ice.json`: relay URL and connection settings.
 - `src/index.html`, `src/style.css`: page template and styles. `build.py` fills in `/*CSS*/`, `/*BOARD*/`, `/*JS*/`, `/*PEERJS*/`, `__BUILD__`.
 - `relay/`: Cloudflare Worker relay (free plan). `tools/home-relay/`: run-it-yourself backup relay. Setup steps are in `README.md`.
-- `assets/`: pictures and sounds, found by file name (see README, "Card picture names"). Board: `board.jpeg` is the build input and is a copy of `board_ship.jpeg` (ship drawings on the sea). `board_no_ship.jpeg` is the previous version without ships. Other `board_*` files are older or experimental and unused. `railroad.png` (placed on the map) and `railroad-transparent.png` (supply and flying tokens) are deliberately different, keep both.
+- `assets/`: pictures and sounds, found by file name (see README, "Card picture names"). Board: `board.jpeg` is the build input and is a copy of `board_ship.jpeg` (ship drawings on the sea). `board_no_ship.jpeg` is the previous version without ships. Older experimental boards were removed from the repo. `railroad.png` (placed on the map) and `railroad-transparent.png` (supply and flying tokens) are deliberately different, keep both.
 - `tests/`: see below. `docs/`: rulebook PDFs and notes (`RULINGS.md`, `FOUNDING_DATES.md`, `SOUNDS.md`).
-- Housekeeping candidates (not used by the game): `incoming/` (phone photos of cards), `backup/`, stray `k_s*.png` files and a file named `$S` in the repo root, `versions/` keeps old builds on purpose.
+- Not in the repo (excluded by `.gitignore`): `versions/` (build output, so old versions are no longer kept or served), `incoming/`, `backup/`, `node_modules/`, `dist/`. The generated `index.html` is committed because GitHub Pages serves it.
 
 ## Build and release
 
-1. Edit sources in `src/` (never edit `index.html` or `versions/*.html` by hand, they are generated).
-2. `python3 build.py` regenerates `index.html`, `versions/iberia-v<UI_VERSION>.html` and `versions/index.html`, and stamps the build time. Needs Python with Pillow.
+1. Edit sources in `src/` (never edit `index.html` by hand, it is generated).
+2. `python3 build.py` regenerates `index.html` (also writes a local `versions/` copy that is not committed) and stamps the build time. Needs Python with Pillow.
 3. Test (below). 4. Add a CHANGELOG bullet under "## Latest". 5. Commit and push to `main`; GitHub Pages deploys automatically.
 - Other people or sessions also push, so `git pull --rebase` first (stash local changes if needed). If generated files conflict, rerun `python3 build.py` and `git add -A`.
 - A GitHub Action (`.github/workflows/rebuild.yml`) rebuilds the game when files in `assets/` change and commits "Rebuild game from assets [skip ci]". If you push twice within seconds it can report a failure because its own push is rejected as out of date. That failure is harmless; the site deploys from your push. Just rerun `python3 build.py` if the stamp matters.
 - Pages occasionally fails with a GitHub 500; an empty commit (`git commit --allow-empty`) re-triggers the deploy.
-- To bump the version number, change `UI_VERSION` in `src/ui.js` (a new `versions/` file is created; old ones remain).
+- To bump the version number, change `UI_VERSION` in `src/ui.js`.
 
 ## Tests (run before pushing)
 
