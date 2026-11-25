@@ -1,0 +1,35 @@
+path,used for,suggested size px,notes
+cards/epidemic.png,epidemic card,500x700,
+cards/player/<city-slug>.png,player City card,500x700,e.g. cards/player/madrid.png
+cards/infection/<city-slug>.png,infection card,700x500,
+cards/events/<event-slug>.png,Event card,500x700,e.g. cards/events/purify-water.png
+pawns/pawn-sailor.png,pawn,120x160,transparent
+pawns/pawn-agronomist.png,pawn,120x160,transparent
+pawns/pawn-railwayman.png,pawn,120x160,transparent
+pawns/pawn-politician.png,pawn,120x160,transparent
+pawns/pawn-nurse.png,pawn,120x160,transparent
+pawns/pawn-scientist.png,pawn,120x160,transparent
+pawns/pawn-rural-doctor.png,pawn,120x160,transparent
+tokens/hospital-red.png,hospital,120x120,transparent
+tokens/cube-red.png,disease cube,64x64,
+tokens/research-red.png,research marker,90x90,
+tokens/hospital-blue.png,hospital,120x120,transparent
+tokens/cube-blue.png,disease cube,64x64,
+tokens/research-blue.png,research marker,90x90,
+tokens/hospital-black.png,hospital,120x120,transparent
+tokens/cube-black.png,disease cube,64x64,
+tokens/research-black.png,research marker,90x90,
+tokens/hospital-yellow.png,hospital,120x120,transparent
+tokens/cube-yellow.png,disease cube,64x64,
+tokens/research-yellow.png,research marker,90x90,
+tokens/purification.png,token,120x120,transparent
+tokens/prevention.png,token,120x120,transparent
+tokens/infection-rate.png,token,120x120,transparent
+tokens/outbreak.png,token,120x120,transparent
+tokens/railroad.png,token,158x90,transparent
+board/iberia.jpg,board image,1521x1080,must keep this aspect ratio
+alerts/epidemic.png,epidemic alert art,800x450,
+alerts/outbreak.png,outbreak alert art,800x450,
+audio/card-draw.mp3,sound,,
+audio/epidemic.mp3,sound,,
+audio/outbreak.mp3,sound,,
