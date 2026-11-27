@@ -16,7 +16,7 @@ A browser version of **Pandemic Iberia** (the Pandemic board game set in Spain a
 - Steve is **not a GitHub expert and does not read code**. Explain in plain language. Do not paste code into replies.
 - For **simple choice questions** (pick one of a few options), use **buttons** (the multiple-choice question dialog) rather than plain text. Open-ended questions can still be asked in plain text.
 - **Show mock-ups for visual changes and wait for him to say "push"** before pushing. For non-visual fixes he may say "go".
-- **End every update report with the current build time** (the stamp shown on the map).
+- **End every update report with the current build time** (the stamp shown on the map), and **always ask if you should push** whenever that build hasn't been pushed to GitHub yet.
 - Keep this `AGENTS.md` current as the project changes. Add a bullet under "## Latest" in `CHANGELOG.md` for each change (plain English, what the player sees).
 - Commit messages end with the co-author and session trailer lines your tooling asks for.
 - If he reports a bug with a screenshot, find the root cause rather than patching symptoms (several "doesn't work" reports were really hidden error messages, see Gotchas).
