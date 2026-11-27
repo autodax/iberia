@@ -1,4 +1,7 @@
 ## Latest
+- Fixed taking a passenger by train (or by ship as the Sailor): clicking a destination city now only asks once whether to bring a passenger, without popping up a stray action box or asking for the destination again; the Railwayman can also bring a passenger on a 1-stop railroad move.
+- Migrating patients (Influx of Patients) that travel by train now follow the railroad route through intermediate cities instead of moving in a straight line.
+- Science Triumph now automatically selects one cube from every infected city in the chosen region (without asking you to click each city); if a city has more than one disease color, you can switch which color to remove right in the Event window.
 - Changed the version and build stamp on the map to a darker antique olive green matching the surrounding sea palette, with a softer halo.
 - Hovering over a player's role name now previews their role card in the centre of the board (just like hovering over cards in hand); clicking still pins it open.
 - Replaced the expanding rings around pawns with a tall double-hop jump animation (at the start of a turn, as the idle turn reminder, and for all pawns when pressing Spacebar or tapping the compass rose).
