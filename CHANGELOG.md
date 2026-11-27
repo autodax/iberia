@@ -1,4 +1,5 @@
 ## Latest
+- The turn-change chime is shorter (about 2.8 seconds instead of 3.6) and a little quieter.
 - Placed railroad tokens now show a soft blend of the surrounding map between the rails and timbers (with the dark road line underneath removed), instead of a fixed beige paper fill.
 - Repo cleanup: removed unused older board pictures and the old-versions page (versions/) from the repo; docs updated.
 - Removed the "New game" heading at the top of the Game pop-up window.
