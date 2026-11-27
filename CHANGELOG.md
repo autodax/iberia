@@ -1,4 +1,5 @@
 ## Latest
+- Replaced the expanding rings around pawns with a tall double-hop jump animation (at the start of a turn, as the idle turn reminder, and for all pawns when pressing Spacebar or tapping the compass rose).
 - Removed the pulsing colored glow under the active pawn (the ring animation and the small yellow base ring now show whose turn it is).
 - The turn-change chime is shorter (about 2.8 seconds instead of 3.6) and a little quieter.
 - Placed railroad tokens now show a soft blend of the surrounding map between the rails and timbers (with the dark road line underneath removed), instead of a fixed beige paper fill.
