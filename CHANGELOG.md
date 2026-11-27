@@ -1,4 +1,5 @@
 ## Latest
+- Hovering over a player's role name now previews their role card in the centre of the board (just like hovering over cards in hand); clicking still pins it open.
 - Replaced the expanding rings around pawns with a tall double-hop jump animation (at the start of a turn, as the idle turn reminder, and for all pawns when pressing Spacebar or tapping the compass rose).
 - Removed the pulsing colored glow under the active pawn (the ring animation and the small yellow base ring now show whose turn it is).
 - The turn-change chime is shorter (about 2.8 seconds instead of 3.6) and a little quieter.

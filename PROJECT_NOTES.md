@@ -21,7 +21,7 @@ Start with `AGENTS.md` (full handoff guide). This file is the decision and verif
 
 ## Latest state (Nov 27, 2026)
 
-- Current build: v0.10.9, stamped Nov 27 15:35 UTC. Replaced the expanding pawn rings with a tall double-hop jump animation (start of turn, 5-second idle reminder, Spacebar, and compass rose tap), using explicit SVG translate + subtle ground shadow for Safari.
-- Prior recent changes: Removed active-pawn glow, shorter/quieter turn chime, surrounding-map blend under placed railroad tokens, repo cleanup (unused boards and old versions removed), renamed **New** to **Game**, removed "New game" heading, switched to `assets/board_ship.jpeg`. Details are under "Latest" in `CHANGELOG.md`.
-- Verified: engine 205/205, net 100/100, challenges 35/35, replaced PASS, plus Playwright verification of Spacebar and active-pawn jump animation with zero errors.
+- Current build: v0.10.9, stamped Nov 27 18:34 UTC. Enabled hover preview for role cards in board mode when hovering over any player's role name (clicking still pins it open).
+- Prior recent changes: Tall double-hop pawn jump animation (replacing expanding rings), removed active-pawn glow, shorter/quieter turn chime, surrounding-map blend under placed railroad tokens, repo cleanup (unused boards and old versions removed), renamed **New** to **Game**, removed "New game" heading, switched to `assets/board_ship.jpeg`. Details are under "Latest" in `CHANGELOG.md`.
+- Verified: Playwright check confirmed hovering a role name in board mode shows the role card preview and moving off hides it with zero errors.
 - Open follow-ups: none required. The repo was compacted on Nov 25, 2026 (fresh history, old versions and unused boards removed).
