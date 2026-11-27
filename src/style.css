@@ -325,8 +325,8 @@ aside #phaseLabel{display:none}
 #ring{position:absolute;inset:0;pointer-events:none;z-index:5}
 #ring[hidden]{display:none}
 #app.bm #bar{display:none}
-#verTag{position:absolute;left:38.5%;top:94.3%;font:600 calc(13px*var(--bs,1))/1.2 system-ui;color:#3f7f4c;text-shadow:0 0 3px #f4ecd2,0 0 3px #f4ecd2;z-index:3;pointer-events:none;white-space:nowrap}
-#app:not(.bm) #verTag{position:absolute;left:38.5%;top:94.3%;font:600 calc(13px*var(--bs,1))/1.2 system-ui;color:#3f7f4c;text-shadow:0 0 3px #f4ecd2,0 0 3px #f4ecd2;z-index:3;pointer-events:none;white-space:nowrap}
+#verTag{position:absolute;left:38.5%;top:94.3%;font:600 calc(13px*var(--bs,1))/1.2 system-ui;color:#4a5228;text-shadow:0 0 3px rgba(244,236,210,.65);z-index:3;pointer-events:none;white-space:nowrap}
+#app:not(.bm) #verTag{position:absolute;left:38.5%;top:94.3%;font:600 calc(13px*var(--bs,1))/1.2 system-ui;color:#4a5228;text-shadow:0 0 3px rgba(244,236,210,.65);z-index:3;pointer-events:none;white-space:nowrap}
 #app.bm .cancelMode{margin-top:6px;width:100%}
 
 /* other players: a condensed fan of small cards */

@@ -21,7 +21,7 @@ Start with `AGENTS.md` (full handoff guide). This file is the decision and verif
 
 ## Latest state (Nov 27, 2026)
 
-- Current build: v0.10.9, stamped Nov 27 18:34 UTC. Enabled hover preview for role cards in board mode when hovering over any player's role name (clicking still pins it open).
-- Prior recent changes: Tall double-hop pawn jump animation (replacing expanding rings), removed active-pawn glow, shorter/quieter turn chime, surrounding-map blend under placed railroad tokens, repo cleanup (unused boards and old versions removed), renamed **New** to **Game**, removed "New game" heading, switched to `assets/board_ship.jpeg`. Details are under "Latest" in `CHANGELOG.md`.
-- Verified: Playwright check confirmed hovering a role name in board mode shows the role card preview and moving off hides it with zero errors.
+- Current build: v0.10.9, stamped Nov 27 21:26 UTC. Updated the on-map version and build stamp (`#verTag`) to Option A (Dark Antique Olive `#4a5228` with a softer halo) to match the surrounding sea palette.
+- Prior recent changes: Hover preview for role cards in board mode, tall double-hop pawn jump animation (replacing expanding rings), removed active-pawn glow, shorter/quieter turn chime, surrounding-map blend under placed railroad tokens, repo cleanup (unused boards and old versions removed), renamed **New** to **Game**, removed "New game" heading, switched to `assets/board_ship.jpeg`. Details are under "Latest" in `CHANGELOG.md`.
+- Verified: Built `index.html` cleanly and verified `#verTag` CSS rule in the generated output.
 - Open follow-ups: none required. The repo was compacted on Nov 25, 2026 (fresh history, old versions and unused boards removed).
