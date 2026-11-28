@@ -21,7 +21,7 @@ Start with `AGENTS.md` (full handoff guide). This file is the decision and verif
 
 ## Latest state (Nov 28, 2026)
 
-- Current build: v0.10.9, stamped Nov 28 13:23 UTC. Nudged `DECK_SLOTS.infDeck` +3 px right (`x=990`) and `DECK_SLOTS.plDeck` −7 px left (`x=1113`) to align with the printed board placeholders.
-- Prior recent changes: 35% bright yellow region hover highlight (no border), remote cube-treatment chirp, purification and railroad supply piles smoothly gliding apart vertically, Science Triumph auto-selecting all infected cities in the chosen region, Railwayman/Sailor passenger flow fix, migrating patients following multi-stop railroad paths, darker antique olive green version stamp (`#4a5228`), hover preview for role cards in board mode, tall double-hop pawn jump animation. Details are under "Latest" in `CHANGELOG.md`.
-- Verified: Built `index.html` cleanly and verified updated `DECK_SLOTS` coordinates in the output.
+- Current build: v0.10.9, stamped Nov 28 13:45 UTC. Updated `assets/purification.png` (256×256) to the Option 1 map-textured parchment shield framing the restored slender stippled cyan droplet.
+- Prior recent changes: Deck alignment nudges (`infDeck` +3 px, `plDeck` −7 px), 35% bright yellow region hover highlight (no border), remote cube-treatment chirp, purification and railroad supply piles smoothly gliding apart vertically, Science Triumph auto-selecting all infected cities in the chosen region, Railwayman/Sailor passenger flow fix, migrating patients following multi-stop railroad paths, darker antique olive green version stamp (`#4a5228`), hover preview for role cards in board mode, tall double-hop pawn jump animation. Details are under "Latest" in `CHANGELOG.md`.
+- Verified: engine 205/205, net 100/100, and built `index.html` cleanly with the new token embedded.
 - Open follow-ups: none required. The repo was compacted on Nov 25, 2026 (fresh history, old versions and unused boards removed).

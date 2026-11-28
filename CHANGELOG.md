@@ -1,4 +1,5 @@
 ## Latest
+- Replaced the purification token with a parchment shield (with subtle map-line texture) framing the stippled cyan droplet.
 - Nudged the Infection deck slightly right and the Player deck left so both line up cleanly with their placeholders on the board.
 - Hovering over a region you can place a purification token in now highlights it in a clearer 35% bright yellow (no border).
 - The cube-treatment chirp now plays for remote players too (as well as when treating via role actions like Treat all at hospital or the Student's held cube).
