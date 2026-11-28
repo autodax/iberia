@@ -1,4 +1,5 @@
 ## Latest
+- Hovering over a region you can place a purification token in now highlights it in a clearer 35% bright yellow (no border).
 - The cube-treatment chirp now plays for remote players too (as well as when treating via role actions like Treat all at hospital or the Student's held cube).
 - The purification-token and railroad-token piles now smoothly glide apart vertically as tokens are taken (keeping their horizontal placement unchanged), making the remaining count easier to see at a glance, and gently compress back when a purification token returns.
 - Fixed taking a passenger by train (or by ship as the Sailor): clicking a destination city now only asks once whether to bring a passenger, without popping up a stray action box or asking for the destination again; the Railwayman can also bring a passenger on a 1-stop railroad move.

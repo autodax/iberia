@@ -21,7 +21,7 @@ Start with `AGENTS.md` (full handoff guide). This file is the decision and verif
 
 ## Latest state (Nov 28, 2026)
 
-- Current build: v0.10.9, stamped Nov 28 00:27 UTC. Moved the cube-treatment chirp (`tinyClick()`) into `commit()` for `treat`, `sttreat`, and `htreat` so remote players hear it too (not just the local player clicking a cube).
-- Prior recent changes: Purification and railroad supply piles smoothly glide apart vertically as tokens are taken, Science Triumph auto-selects all infected cities in the chosen region, Railwayman/Sailor passenger flow fix, migrating patients follow multi-stop railroad paths, darker antique olive green version stamp (`#4a5228`), hover preview for role cards in board mode, tall double-hop pawn jump animation. Details are under "Latest" in `CHANGELOG.md`.
-- Verified: Playwright check confirmed `tinyClick()` fires for both local and remote cube treatments with zero errors.
+- Current build: v0.10.9, stamped Nov 28 10:21 UTC. Updated region hover highlights to 35% bright yellow (`#ffd93a`, `fill-opacity: 0.35`, no border) in board-mode quick purify/Agronomist hover, and added matching 35% hover feedback to `regionMode` and `mapPick` region selection.
+- Prior recent changes: Remote cube-treatment chirp, purification and railroad supply piles smoothly gliding apart vertically, Science Triumph auto-selecting all infected cities in the chosen region, Railwayman/Sailor passenger flow fix, migrating patients following multi-stop railroad paths, darker antique olive green version stamp (`#4a5228`), hover preview for role cards in board mode, tall double-hop pawn jump animation. Details are under "Latest" in `CHANGELOG.md`.
+- Verified: Playwright check confirmed region hover sets `#ffd93a` at `0.35` opacity with `stroke="none"` and resets cleanly on mouseleave, with zero errors.
 - Open follow-ups: none required. The repo was compacted on Nov 25, 2026 (fresh history, old versions and unused boards removed).
