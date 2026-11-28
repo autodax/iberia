@@ -67,7 +67,7 @@ function waterSpot(x,y,w,extra){let L=layoutBase(),best=null;for(let dy=-36;dy<=
 // Where a region's purification stack (n tokens) and the Nurse's prevention token go. Together they sit close side by side, as a pair centred on the region; the prevention token pushes the water to one side.
 function regionSpots(r,n){let rc=regionCenter(r),hasP=state.prevention===r.id,sw=n>0?36+(Math.min(n,8)-1)*8:0,gap=2,W=sw+(n>0&&hasP?gap:0)+(hasP?40:0),L=layoutBase(),best=null;
  for(let dy=-36;dy<=36;dy+=3)for(let dx=-36;dx<=36;dx+=3){let h=Math.max(n>0?sw:0,hasP?40:0),b=[rc[0]+dx-W/2,rc[1]+dy-h/2,rc[0]+dx+W/2,rc[1]+dy+h/2],sc=Math.hypot(dx,dy)*2+hit(b,L.labels)*.05+hit(b,L.dots)*.2;if(!best||sc<best.s)best={x:rc[0]+dx,y:rc[1]+dy,s:sc}}
- let left=best.x-W/2;return {w:n>0?[left+sw/2,best.y]:null,p:hasP?[best.x+W/2-20,best.y]:null,sw}}
+ let left=best.x-W/2,oy=r.id==='r03'?-8:0;return {w:n>0?[left+sw/2,best.y+oy]:null,p:hasP?[best.x+W/2-20,best.y+oy]:null,sw}}
 function tokenSpot(x,y,w,h,extra){let cands=[[0,0]];for(let r of [14,26,38,50])for(let a=0;a<8;a++)cands.push([Math.round(r*Math.cos(a*Math.PI/4)),Math.round(r*Math.sin(a*Math.PI/4))]);let b=pick(cands.map(([dx,dy])=>[x+dx-w/2,y+dy-h/2]),w,h,extra);return [b.x+w/2,b.y+h/2]}
 // Some printed connections are curved on the board picture: CURVE gives how far (in map pixels) each bulges at its middle.
 const CURVE={'c27|c25':-14,'c28|c27':-11,'c31|c28':-14,'c37|c22':16,'c35|c46':29,'c45|c47':19,'c12|c14':24,'c15|c16':-6,'c31|c32':-6,'c24|c25':15};
