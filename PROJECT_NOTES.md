@@ -21,7 +21,7 @@ Start with `AGENTS.md` (full handoff guide). This file is the decision and verif
 
 ## Latest state (Nov 28, 2026)
 
-- Current build: v0.10.9, stamped Nov 28 10:21 UTC. Updated region hover highlights to 35% bright yellow (`#ffd93a`, `fill-opacity: 0.35`, no border) in board-mode quick purify/Agronomist hover, and added matching 35% hover feedback to `regionMode` and `mapPick` region selection.
-- Prior recent changes: Remote cube-treatment chirp, purification and railroad supply piles smoothly gliding apart vertically, Science Triumph auto-selecting all infected cities in the chosen region, Railwayman/Sailor passenger flow fix, migrating patients following multi-stop railroad paths, darker antique olive green version stamp (`#4a5228`), hover preview for role cards in board mode, tall double-hop pawn jump animation. Details are under "Latest" in `CHANGELOG.md`.
-- Verified: Playwright check confirmed region hover sets `#ffd93a` at `0.35` opacity with `stroke="none"` and resets cleanly on mouseleave, with zero errors.
+- Current build: v0.10.9, stamped Nov 28 13:23 UTC. Nudged `DECK_SLOTS.infDeck` +3 px right (`x=990`) and `DECK_SLOTS.plDeck` −7 px left (`x=1113`) to align with the printed board placeholders.
+- Prior recent changes: 35% bright yellow region hover highlight (no border), remote cube-treatment chirp, purification and railroad supply piles smoothly gliding apart vertically, Science Triumph auto-selecting all infected cities in the chosen region, Railwayman/Sailor passenger flow fix, migrating patients following multi-stop railroad paths, darker antique olive green version stamp (`#4a5228`), hover preview for role cards in board mode, tall double-hop pawn jump animation. Details are under "Latest" in `CHANGELOG.md`.
+- Verified: Built `index.html` cleanly and verified updated `DECK_SLOTS` coordinates in the output.
 - Open follow-ups: none required. The repo was compacted on Nov 25, 2026 (fresh history, old versions and unused boards removed).

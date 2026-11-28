@@ -1,4 +1,5 @@
 ## Latest
+- Nudged the Infection deck slightly right and the Player deck left so both line up cleanly with their placeholders on the board.
 - Hovering over a region you can place a purification token in now highlights it in a clearer 35% bright yellow (no border).
 - The cube-treatment chirp now plays for remote players too (as well as when treating via role actions like Treat all at hospital or the Student's held cube).
 - The purification-token and railroad-token piles now smoothly glide apart vertically as tokens are taken (keeping their horizontal placement unchanged), making the remaining count easier to see at a glance, and gently compress back when a purification token returns.

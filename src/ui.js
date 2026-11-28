@@ -922,7 +922,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&bmOn&&mode&&mode!==
  let mk=(id,c)=>'<filter id="'+id+'" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="'+rows.map((r,i)=>r.map(v=>v.toFixed(4)).join(' ')+' 0 '+((1-K)*c[i]/255).toFixed(4)).join(' ')+' 0 0 0 1 0"/></filter>';
  document.body.insertAdjacentHTML('beforeend','<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'+mk('dimPanel',[229,217,182])+mk('dimCity',[158,165,132])+mk('dimInf',[133,111,87])+'</defs></svg>')})();
 // Deck pictures on the board: the Infection deck and discard (top), the Player deck and discard (bottom right).
-const DECK_SLOTS={infDeck:[987,27,240,172],infDisc:[1256,24,250,173],plDeck:[1120,813,178,240],plDisc:[1325,813,174,240]};
+const DECK_SLOTS={infDeck:[990,27,240,172],infDisc:[1256,24,250,173],plDeck:[1113,813,178,240],plDisc:[1325,813,174,240]};
 // Which deck the current player should use next (it glows), and whether clicking a deck may advance the turn
 const sliding=()=>{let t=performance.now();for(let v of slideIn.values())if(t-v<950)return true;return false};   // a drawn card still sliding into a hand
 const boardBusy=()=>fxCurrent||fxQueue.length||busy||flyTarget||drawHide.size||sliding()||pawnFlying.size||railHide.size||microHide.size||microFlying;
