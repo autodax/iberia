@@ -1,4 +1,5 @@
 ## Latest
+- The purification-token and railroad-token piles now smoothly glide apart vertically as tokens are taken (keeping their horizontal placement unchanged), making the remaining count easier to see at a glance, and gently compress back when a purification token returns.
 - Fixed taking a passenger by train (or by ship as the Sailor): clicking a destination city now only asks once whether to bring a passenger, without popping up a stray action box or asking for the destination again; the Railwayman can also bring a passenger on a 1-stop railroad move.
 - Migrating patients (Influx of Patients) that travel by train now follow the railroad route through intermediate cities instead of moving in a straight line.
 - Science Triumph now automatically selects one cube from every infected city in the chosen region (without asking you to click each city); if a city has more than one disease color, you can switch which color to remove right in the Event window.

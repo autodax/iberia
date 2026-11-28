@@ -19,12 +19,9 @@ Start with `AGENTS.md` (full handoff guide). This file is the decision and verif
 - The v0.10.9 build and JavaScript challenge, engine, network, and replacement tests passed. Focused checks on the preview covered flight from the supply, fallback flight, and reduced motion.
 - The release commit was verified on GitHub main after pushing.
 
-## Latest state (Nov 27, 2026)
+## Latest state (Nov 28, 2026)
 
-- Current build: v0.10.9, stamped Nov 27 23:04 UTC. Three fixes ready locally:
-  1. **Science Triumph**: picking a region now auto-selects one cube from every infected city in that region (no second city-picking step on the map; multi-color cities show color buttons in the Event window).
-  2. **Railwayman / Sailor taking a passenger**: clicking a destination city no longer opens the stray `#pawnPanel` popup or asks twice about the destination; Railwayman can also bring a passenger on 1-stop railroad moves.
-  3. **Migrating patients on trains**: patients travelling across multiple railroad stops now follow the railroad route through intermediate cities instead of flying in a straight line.
-- Prior recent changes: Darker antique olive green version stamp (`#4a5228`), hover preview for role cards in board mode, tall double-hop pawn jump animation, removed active-pawn glow, shorter/quieter turn chime, surrounding-map blend under placed railroad tokens. Details are under "Latest" in `CHANGELOG.md`.
-- Verified: engine 205/205, challenges 35/35, plus Playwright end-to-end verification of Science Triumph, Railwayman passenger moves (1-stop and multi-stop, accept and cancel), and migrating patient rail routing with zero errors.
+- Current build: v0.10.9, stamped Nov 28 00:10 UTC. Purification-token and railroad-token supply piles now reuse their DOM elements and smoothly glide apart vertically as tokens are taken (keeping horizontal placement unchanged), and compress back when purification tokens return.
+- Prior recent changes: Science Triumph auto-selects all infected cities in the chosen region, Railwayman/Sailor passenger flow fix (no stray popup or double destination prompt), migrating patients follow multi-stop railroad paths, darker antique olive green version stamp (`#4a5228`), hover preview for role cards in board mode, tall double-hop pawn jump animation, removed active-pawn glow, shorter/quieter turn chime, surrounding-map blend under placed railroad tokens. Details are under "Latest" in `CHANGELOG.md`.
+- Verified: Playwright check confirmed water/rail DOM reuse for smooth `top` transition, unchanged horizontal placement, and zero errors.
 - Open follow-ups: none required. The repo was compacted on Nov 25, 2026 (fresh history, old versions and unused boards removed).

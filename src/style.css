@@ -664,6 +664,8 @@ html.uiScale #ring button{scale:var(--ui)}html.uiScale #app.bm #rightStrip{posit
 /* cube rows and token columns on the board (they replace the number counters) */
 #cubeCounts{position:absolute;left:0;top:0;right:0;bottom:0;width:auto;height:auto;display:block;pointer-events:none;z-index:3}
 #cubeCounts img.sl{position:absolute;max-width:none;max-height:none;object-fit:fill;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.32))}
+#cubeCounts img.water,#cubeCounts img.rail{transition:top .38s cubic-bezier(.22,.8,.36,1)}
+@media (prefers-reduced-motion:reduce){#cubeCounts img.water,#cubeCounts img.rail{transition:none}}
 #cubeCounts img.cube{filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
 #cubeCounts img.sl.gone{opacity:.16;filter:grayscale(1)}
 /* Player deck count turns red and pulses when 10 or fewer cards remain */
